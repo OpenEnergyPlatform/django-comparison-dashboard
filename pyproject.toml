@@ -11,6 +11,9 @@ packages = [{include = "django_comparison_dashboard"}]
 python = "^3.10"
 
 
+[tool.poetry.group.dev.dependencies]
+django = "^4.2.4"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
