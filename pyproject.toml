@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "django-comparison-dashboard"
+version = "0.1.0"
+description = "Django app to compare scenarios in a dashboard"
+authors = ["Hendrik Huyskens <hendrik.huyskens@rl-institut.de>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "django_comparison_dashboard"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
