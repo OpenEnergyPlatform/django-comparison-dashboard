@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import pathlib
 import sys
 
 import django
@@ -8,16 +9,14 @@ from django.conf import settings
 from django.core.management import call_command
 
 env = environ.Env()
+env.read_env(pathlib.Path(__file__).parent / "tests" / ".env")
 
 
 def runtests():
     if not settings.configured:
-        # Choose database for settings
-        DATABASES = {"default": env.db("DATABASE_URL")}
-
         # Configure test environment
         settings.configure(
-            DATABASES=DATABASES,
+            DATABASES={"default": env.db("DATABASE_URL")},
             INSTALLED_APPS=(
                 "django.contrib.contenttypes",
                 "django.contrib.auth",
@@ -55,7 +54,7 @@ def runtests():
     django.setup()
     failures = call_command(
         "test",
-        "django_comparison_dashboard",
+        "tests.test_modex_source",
         interactive=False,
         failfast=False,
         verbosity=2,
