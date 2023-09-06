@@ -5,7 +5,7 @@
 <div>
     <p>Welcome!</p>
 
-    <button type="submit" hx-post="{% url 'htmx-magic-happens' %}" hx-target='#show-sth' class="btn btn-success btn-sm">Press me!</button>
+    <button type="submit" hx-post="/htmx-magic-happens" hx-target='#show-sth' hx-swap="innerHTML" class="btn btn-success btn-sm">Press me!</button>
 </div>
 
 <div id="show-sth">

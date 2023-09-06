@@ -8,6 +8,6 @@ api = NinjaAPI()
 def hello(request):
     return "Hello world htmx"
 
-@api.get("/htmx-magic-happens")
+@api.post("/htmx-magic-happens")
 def magic(request):
     return HttpResponse("Ta! Daaa!")
