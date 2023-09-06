@@ -5,7 +5,10 @@
 <div>
     <p>Welcome!</p>
 
-    <button hx-get="/htmx-magic-happens" hx-target='#show-sth' hx-swap="innerHTML" class="btn btn-success btn-sm">Press me!</button>
+    <button hx-trigger="click" hx-get="/htmx-magic-happens" hx-target='#show-sth' hx-swap="innerHTML">
+        Click me!
+        <img class="htmx-indicator" src="/spinner.gif">
+    </button>
 </div>
 
 <div id="show-sth">
