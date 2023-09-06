@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div>
+    <p>Welcome!</p>
+
+    <button type="submit" hx-post="{% url 'htmx-magic-happens' %}" hx-target='#show-sth' class="btn btn-success btn-sm">Press me!</button>
+</div>
+
+<div id="show-sth">
+    <p>Wait for it</p>
+</div>
+
+{% endblock content %}
