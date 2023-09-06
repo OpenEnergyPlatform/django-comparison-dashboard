@@ -16,16 +16,16 @@ class Scenario(models.Model):
 class Data(models.Model):
     id = models.BigAutoField(primary_key=True)
     region = models.CharField(max_length=255)
-    input_energy_vector = models.CharField(max_length=255)
-    output_energy_vector = models.CharField(max_length=255)
+    input_energy_vector = models.CharField(max_length=255, null=True)
+    output_energy_vector = models.CharField(max_length=255, null=True)
     parameter_name = models.CharField(max_length=255)
     technology = models.CharField(max_length=255)
     technology_type = models.CharField(max_length=255)
     unit = models.CharField(max_length=255)
-    tags = models.JSONField(max_length=255)
-    method = models.JSONField(max_length=255)
-    source = models.CharField(max_length=255)
-    comment = models.CharField(max_length=255)
+    tags = models.JSONField(max_length=255, null=True)
+    method = models.JSONField(max_length=255, null=True)
+    source = models.CharField(max_length=255, null=True)
+    comment = models.CharField(max_length=255, null=True)
 
     class Meta:
         abstract = True
