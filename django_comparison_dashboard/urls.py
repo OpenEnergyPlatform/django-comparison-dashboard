@@ -11,7 +11,7 @@ urlpatterns = [
 ]
 
 hmtx_views = [
-    path("magic/", views.magic, name='magic'),
+    path("load-filter/", views.load_filter, name='filter'),
 ]
 
 urlpatterns += hmtx_views
