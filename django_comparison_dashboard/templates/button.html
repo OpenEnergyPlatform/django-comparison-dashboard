@@ -5,9 +5,8 @@
 <div>
     <p>Welcome!</p>
 
-    <button hx-trigger="click" hx-get="/magic/" hx-target='#show-sth' hx-swap="innerHTML">
+    <button hx-get="{% url 'magic' %}" hx-target='#show-sth' hx-swap="innerHTML">
         Click me!
-        <img class="htmx-indicator" src="/spinner.gif">
     </button>
 </div>
 
