@@ -1,0 +1,17 @@
+{% extends 'django_comparison_dashboard/base.html' %}
+
+{% block content %}
+
+<div>
+    <p>Welcome!</p>
+
+    <button hx-trigger="click" hx-get="{% url 'django_comparison_dashboard:magic' %}" hx-target='#show-sth' hx-swap="innerHTML">
+        Click me!
+    </button>
+</div>
+
+<div id="show-sth">
+    <p>Wait for it</p>
+</div>
+
+{% endblock content %}
