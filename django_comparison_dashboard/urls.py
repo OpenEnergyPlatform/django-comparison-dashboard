@@ -1,7 +1,6 @@
 from django.urls import path
 
 from django_comparison_dashboard import views
-from .api import api
 
 app_name = "django_comparison_dashboard"
 
