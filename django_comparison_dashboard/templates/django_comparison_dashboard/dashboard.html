@@ -1,53 +1,42 @@
-{% extends 'django_comparison_dashboard/base.html' %} {% block content %}
+{% extends 'django_comparison_dashboard/base.html' %} {% block content %} 
+{% load partials %} 
+
+{% startpartial filter_dropdown %} 
+<select name="second_dropdown">
+  {% for value in filtered_values %}
+  <option value="{{ value }}">{{ value }}</option>
+  {% endfor %}
+</select>
+{% endpartial %}
 
 <div class="align-center col-8 offset-2">
   <p class="lead mb-3 ml-0">Welcome</p>
   <hr />
-  <form
-    method="GET"
-    action="{% url 'django_comparison_dashboard:index' %}"
-    autocomplete="off"
-  >
+  <form method="GET" action="{% url 'django_comparison_dashboard:index' %}">
     <label for="cars">Choose a Scenario:</label>
     <select
       id="scenario"
-      name ="scenario"
-      hx-get="{% url 'django_comparison_dashboard:filter' %}?selected_item={value}"
-      hx-swap="innerHTML"
-      hx-trigger="select"
-      hx-target="#show-sth"
+      name="scenario"
+      hx-get="{% url 'django_comparison_dashboard:filter' %}?scenario={value}"
+      hx-target="#second_dropdown"
     >
       <option value="code_exposed_fig1">code_exposed_fig1</option>
       <option value="base_latest">base_latest</option>
       <option value="dummy_save">dummy_save</option>
       <option value="ID1,2_paper">ID1,2_paper</option>
     </select>
-
-    <button
-      type="submit"
-      hx-trigger="click"
-      hx-get="{% url 'django_comparison_dashboard:filter' %}"
-      hx-target="#second-dropdown"
-      hx-swap="innerHTML"
-      class="btn btn-success mt-2"
-    >
-      Click me!
-    </button>
+  </form>
+    {% filter_dropdown %}
+  <form>
+    
   </form>
 </div>
 <div class="align-center col-8 offset-2">
   <div id="content">
     <div id="filters">
-      <div id="filter-placeholder">
-        <select id="second-dropdown" name="second-dropdown">
-            <option value="">Select a filter option</option>
-        </select>
-      </div>
+      <div id="filter-placeholder"></div>
     </div>
   </div>
 </div>
 
 {% endblock content %}
-
-
-  
