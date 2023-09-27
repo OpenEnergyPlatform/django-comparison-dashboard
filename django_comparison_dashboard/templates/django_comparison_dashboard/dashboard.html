@@ -1,43 +1,53 @@
 {% extends 'django_comparison_dashboard/base.html' %} {% block content %}
 
-<div>
-  <div class="align-center col-8 offset-2">
-    <p class="lead mb-3 ml-0">Welcome</p>
-    <hr />
-    <form
-      method="GET"
-      action="{% url 'django_comparison_dashboard:index' %}"
-      autocomplete="off"
+<div class="align-center col-8 offset-2">
+  <p class="lead mb-3 ml-0">Welcome</p>
+  <hr />
+  <form
+    method="GET"
+    action="{% url 'django_comparison_dashboard:index' %}"
+    autocomplete="off"
+  >
+    <label for="cars">Choose a Scenario:</label>
+    <select
+      id="scenario"
+      name ="scenario"
+      hx-get="{% url 'django_comparison_dashboard:filter' %}?selected_item={value}"
+      hx-swap="innerHTML"
+      hx-trigger="select"
+      hx-target="#show-sth"
     >
-      <label for="cars">Choose a Scenario:</label>
-      <select
-        id="scenario"
-        hx-get="{% url 'django_comparison_dashboard:filter' %}"
-        hx-swap="innerHTML"
-        hx-trigger="select"
-        hx-target="#show-sth"
-      >
-        <option value="code_exposed_fig1">code_exposed_fig1</option>
-        <option value="base_latest">base_latest</option>
-        <option value="dummy_save">dummy_save</option>
-        <option value="ID1,2_paper">ID1,2_paper</option>
-      </select>
+      <option value="code_exposed_fig1">code_exposed_fig1</option>
+      <option value="base_latest">base_latest</option>
+      <option value="dummy_save">dummy_save</option>
+      <option value="ID1,2_paper">ID1,2_paper</option>
+    </select>
 
-      <button
-        type="submit"
-        hx-trigger="click"
-        hx-get="{% url 'django_comparison_dashboard:filter' %}"
-        hx-target="#show-sth"
-        hx-swap="innerHTML"
-        class="btn btn-success mt-2"
-      >
-        Click me!
-      </button>
-    </form>
-    <div id="show-sth">
-      <p>Wait for it</p>
+    <button
+      type="submit"
+      hx-trigger="click"
+      hx-get="{% url 'django_comparison_dashboard:filter' %}"
+      hx-target="#second-dropdown"
+      hx-swap="innerHTML"
+      class="btn btn-success mt-2"
+    >
+      Click me!
+    </button>
+  </form>
+</div>
+<div class="align-center col-8 offset-2">
+  <div id="content">
+    <div id="filters">
+      <div id="filter-placeholder">
+        <select id="second-dropdown" name="second-dropdown">
+            <option value="">Select a filter option</option>
+        </select>
+      </div>
     </div>
   </div>
 </div>
 
 {% endblock content %}
+
+
+  

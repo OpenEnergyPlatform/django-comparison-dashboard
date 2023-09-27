@@ -5,7 +5,7 @@
     "Region": ["HE,BW", "SN,TH", "BE_A"]
   },
   "base_latest": {
-    "Tags": ["ID1, ID2, ID9"],
+    "Tags": ["ID1", "ID2", "ID9"],
     "Year": [2016, 2030, 2050],
     "Region": ["NI_HE", "NW,HE"]
   },
