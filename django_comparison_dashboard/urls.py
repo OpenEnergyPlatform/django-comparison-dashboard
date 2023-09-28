@@ -6,11 +6,5 @@ app_name = "django_comparison_dashboard"
 
 
 urlpatterns = [
-    path('index/', views.IndexView.as_view(), name='index'),
+    path('index/', views.index, name='index'),
 ]
-
-hmtx_views = [
-    path("load-filter/", views.load_filter, name='filter'),
-]
-
-urlpatterns += hmtx_views
