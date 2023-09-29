@@ -17,7 +17,6 @@
       {{ scenario_form.as_div }}
       <button type="submit" class="btn btn-primary mt-2">Submit</button>
     </form>
-    {{ filter_options.as_div }}
   </div>
 
   <!-- Content with Filter / Presentation Tab and Charts -->
@@ -27,9 +26,9 @@
       <!-- Tab for Filters -->
       <div id="filters">
         <!-- General Filter Selection -->
-        <form class="box-vertical">
+        <form>
           <label for="Tags">Filter Tags</label>
-          <select name="second_dropdown" id="second_dropdown">
+          <select id="second_dropdown">
             {% for option in filter_options %}
               {% partial filter-option %}
             {% endfor %}
