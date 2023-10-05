@@ -1,47 +1,39 @@
-{% extends 'django_comparison_dashboard/base.html' %} 
+{% extends "django_comparison_dashboard/base.html" %}
 {% load partials %}
-
 {% block content %}
-
-<!-- reusable Partials -->
-{% startpartial filter-option %}
-  <option value="{{ option }}">{{ option }}</option>
-{% endpartial %}
-
-<div class="column">
-  <!-- Scenario Selection Forms -->
-  <div class="align-center">
-    <p class="lead mb-3 ml-0">Welcome</p>
-    <hr />
-    <form hx-post="{% url 'django_comparison_dashboard:index' %}" hx-target="#second_dropdown" hx-swap="innerHTML">
-      {{ scenario_form.as_div }}
-      <button type="submit" class="btn btn-primary mt-2">Submit</button>
-    </form>
-  </div>
-
-  <!-- Content with Filter / Presentation Tab and Charts -->
-  <div class="row align-center">
-    <!-- contains Filter / Presentation Tab -->
-    <div id="content" class="col-6">
-      <!-- Tab for Filters -->
-      <div id="filters">
-        <!-- General Filter Selection -->
-        <form>
-          <label for="Tags">Filter Tags</label>
-          <select id="second_dropdown">
-            {% for option in filter_options %}
-              {% partial filter-option %}
-            {% endfor %}
-          </select>
-        </form>
-      </div>
+    <div class="column">
+        <!-- Scenario Selection Forms -->
+        <div class="align-center">
+            <p class="lead mb-3 ml-0">Welcome</p>
+            <hr />
+            <form hx-post="{% url 'django_comparison_dashboard:index' %}"
+                  hx-target="#filters"
+                  hx-swap="innerHTML">
+                {{ scenario_form.as_div }}
+                <button type="submit" class="btn btn-primary mt-2">Submit</button>
+            </form>
+        </div>
+        <!-- Content with Filter / Presentation Tab and Charts -->
+        <div class="row align-center">
+            <!-- contains Filter / Presentation Tab -->
+            <div id="content" class="col-6">
+                <!-- Tab for Filters -->
+                <div id="filters">
+                    <!-- General Filter Selection -->
+                    {% startpartial filters inline=True %}
+                    <form>
+                        <label for="Tags">Filter Tags</label>
+                        <select id="second_dropdown">
+                            {% for option in filter_options %}<option value="{{ option }}">{{ option }}</option>{% endfor %}
+                        </select>
+                    </form>
+                {% endpartial %}
+            </div>
+        </div>
+        <!-- contains Charts and Chart Settings -->
+        <div id="charts" class="col-6">
+            <p>CHARTS !</p>
+        </div>
     </div>
-
-    <!-- contains Charts and Chart Settings -->
-    <div id="charts" class="col-6">
-      <p>CHARTS !</p>
-    </div>
-  </div>
 </div>
-
 {% endblock content %}
