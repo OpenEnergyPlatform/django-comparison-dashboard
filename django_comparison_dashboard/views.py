@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
-from django_comparison_dashboard.forms import Scenario
+from . import settings
+from .forms import Scenario
 
 
 def index(request):
@@ -11,14 +12,13 @@ def index(request):
 def get_filters(request):
     form = Scenario(request.POST)
     if form.is_valid():
-        filter_options = [
-            "ID1",
-            "ID2",
-            "ID9",
-        ]  # TODO get the options from data with form value
-        context = {"filter_options": filter_options}
+        filter_options = set()
+        for scenario in form.cleaned_data["scenarios"]:
+            filter_options.update(settings.DATASET[scenario]["Tags"])
         return render(
-            request, "django_comparison_dashboard/dashboard.html#filters", context
+            request,
+            "django_comparison_dashboard/dashboard.html#filters",
+            {"filter_options": filter_options},
         )
     else:
         print(form.errors)

@@ -2,4 +2,11 @@ from django import forms
 
 
 class Scenario(forms.Form):
-    scenario_choices = forms.MultipleChoiceField(choices=[('1', 'code_exposed_fig1'), ('2', 'base_latest'), ('3', 'dummy_save'), ('4', 'ID1,2_paper')])
+    scenarios = forms.MultipleChoiceField(
+        choices=[
+            ("code_exposed_fig1", "code_exposed_fig1"),
+            ("base_latest", "base_latest"),
+            ("dummy_save", "dummy_save"),
+            ("ID1,2_paper", "ID1,2_paper"),
+        ]
+    )
