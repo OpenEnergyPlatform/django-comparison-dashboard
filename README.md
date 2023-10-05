@@ -1,6 +1,6 @@
 # Django Comparison Dashboard
 
-This app holds functionality to examine and compare scenario data from various sources (OEP, databus, CSVs).  
+This app holds functionality to examine and compare scenario data from various sources (OEP, databus, CSVs).
 
 ## Installation
 
@@ -18,4 +18,5 @@ DJANGO_APPS = [
 ]
 ```
 
-
+Make sure `django-template-partials` is set up in project.
+See https://github.com/carltongibson/django-template-partials#installation for instructions.
