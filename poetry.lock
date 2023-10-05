@@ -65,10 +65,8 @@ version = "23.2"
 description = "django-template-partials"
 optional = false
 python-versions = "*"
-files = [
-    {file = "django-template-partials-23.2.tar.gz", hash = "sha256:120c65474ea0337e05454bb5e4fcbee3d98cc2b6383b8da6db11e8219ce9ca10"},
-    {file = "django_template_partials-23.2-py2.py3-none-any.whl", hash = "sha256:140abd1620cfc9fecc71d75d565d1d9f6a187872779a0fc587fae761660f2b99"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 Django = "*"
@@ -76,6 +74,12 @@ Django = "*"
 [package.extras]
 docs = ["Sphinx"]
 tests = ["coverage", "django_coverage_plugin"]
+
+[package.source]
+type = "git"
+url = "https://github.com/carltongibson/django-template-partials"
+reference = "HEAD"
+resolved_reference = "744ed8aea4d24d1a1c4317efc795e59307ecabf3"
 
 [[package]]
 name = "filelock"
@@ -322,4 +326,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "3f1587033b8fda31edc30d2a59a06d02a47b40f0b0f56f9018a2e950c63a0c00"
+content-hash = "9a19720f1c0599e31d73fa075472d4bec6599be5fcbfa4586dbf2f5e0b3f27ab"
