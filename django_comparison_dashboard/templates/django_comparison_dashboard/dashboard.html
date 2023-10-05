@@ -6,7 +6,7 @@
         <div class="align-center">
             <p class="lead mb-3 ml-0">Welcome</p>
             <hr />
-            <form hx-post="{% url 'django_comparison_dashboard:index' %}"
+            <form hx-post="{% url 'django_comparison_dashboard:filters' %}"
                   hx-target="#filters"
                   hx-swap="innerHTML">
                 {{ scenario_form.as_div }}
