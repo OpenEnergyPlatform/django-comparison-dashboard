@@ -1,4 +1,4 @@
-{% extends "django_comparison_dashboard/base.html" %}
+{% extends "base.html" %}
 {% load partials %}
 {% block content %}
     <div class="column">
@@ -23,7 +23,7 @@
                     {% startpartial filters inline=True %}
                     <form>
                         <label for="Tags">Filter Tags</label>
-                        <select id="second_dropdown">
+                        <select class="select" id="second_dropdown" multiple>
                             {% for option in filter_options %}<option value="{{ option }}">{{ option }}</option>{% endfor %}
                         </select>
                     </form>
@@ -37,3 +37,7 @@
     </div>
 </div>
 {% endblock content %}
+{% block javascript %}
+    {{ block.super }}
+    <script src="https://unpkg.com/htmx.org@1.6.0"></script>
+{% endblock javascript %}
