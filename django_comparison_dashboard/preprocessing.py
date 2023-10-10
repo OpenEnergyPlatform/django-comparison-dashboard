@@ -44,26 +44,37 @@ define_energy_model_units()
 def get_scalar_data(query: dict[str, str]) -> pd.DataFrame:
     filters, groupby, units = prepare_query(query)
     scalar_model = apps.get_model(settings.DASHBOARD_SCALAR_MODEL)
+
+    # Filter and groupby in DB
     queryset_filtered = scalar_model.objects.filter(**filters)
     if groupby:
         queryset = queryset_filtered.values(*(groupby + ["unit"])).annotate(value=Sum("value"))
     else:
         queryset = queryset_filtered.values()
     df = pd.DataFrame(queryset)
-    df = convert_units_in_df(df, units)
+    if df.empty:
+        return df
 
-    # Groupby has to be redone after unit conversion:
+    # Following preprocessing steps cannot be done in DB
+    df = convert_units_in_df(df, units)
+    df = aggregate_df(df, groupby)  # Groupby has to be redone after unit conversion
+    return df
+
+
+def aggregate_df(df: pd.DataFrame, groupby: list[str]) -> pd.DataFrame:
+    if df.empty:
+        return df
+
     if groupby:
         if "series" in df and len(df["series"].apply(len).unique()) > 1:
             raise PreprocessingError("Different ts lengths at aggregation found.")
         df = df.groupby(groupby + ["unit"]).aggregate("sum").reset_index()
         keep_columns = groupby + ["unit", "value", "series"]
         df = df[df.columns.intersection(keep_columns)]
-
     return df
 
 
-def convert_units_in_df(df: pd.DataFrame, units) -> pd.DataFrame:
+def convert_units_in_df(df: pd.DataFrame, units: list[str]) -> pd.DataFrame:
     """
     Convert values and values in series (timeseries data) depending on given units
 
@@ -78,7 +89,7 @@ def convert_units_in_df(df: pd.DataFrame, units) -> pd.DataFrame:
     Dataframe holding converted units
     """
 
-    def convert_units(row, convert_to):
+    def convert_units(row: pd.Series, convert_to: str):
         """
         Tries to convert value of row, given current unit of the row and conversion unit
 
@@ -112,6 +123,8 @@ def convert_units_in_df(df: pd.DataFrame, units) -> pd.DataFrame:
         return row
 
     # Check if unit conversion exists in unit registry
+    if df.empty:
+        return df
     all_units = df["unit"].unique()
     for unit_ in all_units:
         if unit_ not in REGISTRY:
