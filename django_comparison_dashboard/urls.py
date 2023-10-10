@@ -1,10 +1,10 @@
 from django.urls import path
 
-from .api import api
+from . import views
 
 app_name = "django_comparison_dashboard"
 
 
 urlpatterns = [
-    path("api/", api.urls),
+    path("scalars/", views.get_scalar_data),
 ]

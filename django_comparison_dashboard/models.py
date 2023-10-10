@@ -27,6 +27,15 @@ class Data(models.Model):
     source = models.CharField(max_length=255, null=True)
     comment = models.CharField(max_length=255, null=True)
 
+    filters = (
+        "region",
+        "input_energy_vector",
+        "output_energy_vector",
+        "parameter_name",
+        "technology",
+        "technology_type",
+    )
+
     class Meta:
         abstract = True
 
@@ -35,6 +44,16 @@ class ScalarData(Data):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, related_name="scalars")
     value = models.FloatField()
     year = models.IntegerField()
+
+    filters = (
+        "region",
+        "year",
+        "input_energy_vector",
+        "output_energy_vector",
+        "parameter_name",
+        "technology",
+        "technology_type",
+    )
 
 
 class TimeseriesData(Data):

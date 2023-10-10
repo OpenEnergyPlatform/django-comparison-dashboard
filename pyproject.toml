@@ -16,6 +16,7 @@ jmespath = "^1.0.1"
 pandas = "^2.1.0"
 requests = "^2.31.0"
 frictionless = "4.7.1"
+django-appconf = "^1.0.5"
 
 
 [tool.poetry.group.dev.dependencies]
