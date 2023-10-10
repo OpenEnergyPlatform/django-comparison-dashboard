@@ -21,12 +21,7 @@
                 <div id="filters">
                     <!-- General Filter Selection -->
                     {% startpartial filters inline=True %}
-                    <form>
-                        <label for="Tags">Filter Tags</label>
-                        <select id="second_dropdown">
-                            {% for option in filter_options %}<option value="{{ option }}">{{ option }}</option>{% endfor %}
-                        </select>
-                    </form>
+                    {{ filter_form.as_div }}
                 {% endpartial %}
             </div>
         </div>
