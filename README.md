@@ -1,6 +1,6 @@
 # Django Comparison Dashboard
 
-This app holds functionality to examine and compare scenario data from various sources (OEP, databus, CSVs).  
+This app holds functionality to examine and compare scenario data from various sources (OEP, databus, CSVs).
 
 ## Installation
 
@@ -18,4 +18,16 @@ DJANGO_APPS = [
 ]
 ```
 
+## For Developers
 
+You can download example scenario from MODEX like this:
+```bash
+export DJANGO_READ_DOT_ENV_FILE=True; python manage.py shell
+```
+within the shell run
+```python
+from django_comparison_dashboard.sources import modex
+
+modex.ModexDataSource.list_scenarios()[-2].download()
+```
+to download example data.
