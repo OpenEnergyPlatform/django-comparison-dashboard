@@ -1,9 +1,8 @@
 from django.http.response import JsonResponse
 
-from . import queries
-from .utils import prepare_query
+from . import preprocessing
 
 
 def get_scalar_data(request):
-    filters, group_by = prepare_query(request.GET.dict())
-    return JsonResponse(list(queries.get_scalar_data(filters, group_by)), safe=False)
+    query = request.GET.dict()
+    return JsonResponse(preprocessing.get_scalar_data(query).to_dict(orient="records"), safe=False)
