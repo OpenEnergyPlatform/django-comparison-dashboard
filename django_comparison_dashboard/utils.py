@@ -1,4 +1,4 @@
-def prepare_filters(filters):
+def prepare_query(query):
     """Unpacks filters given as list"""
 
     def parse_list(value):
@@ -6,4 +6,6 @@ def prepare_filters(filters):
             return value[1:-1].split(",")
         return value
 
-    return {k: parse_list(v) for k, v in filters.items()}
+    filters = {k: parse_list(v) for k, v in query.items() if k != "groupby"}
+    groupby = parse_list(query["groupby"]) if "groupby" in query else []
+    return filters, groupby

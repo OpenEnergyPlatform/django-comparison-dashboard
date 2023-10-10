@@ -1,18 +1,8 @@
 from django.apps import apps
 from django.conf import settings
+from django.db.models import Sum
 
 
-def prepare_filters(filters):
-    """Unpacks filters given as list"""
-
-    def parse_list(value):
-        if value[0] == "[" and value[-1] == "]":
-            return value[1:-1].split(",")
-        return value
-
-    return {k: parse_list(v) for k, v in filters.items()}
-
-
-def get_scalar_data(filters):
+def get_scalar_data(filters, group_by):
     scalar_model = apps.get_model(settings.DASHBOARD_SCALAR_MODEL)
-    return scalar_model.objects.filter(**filters)
+    return scalar_model.objects.filter(**filters).values(*group_by).annotate(Sum("value"))
