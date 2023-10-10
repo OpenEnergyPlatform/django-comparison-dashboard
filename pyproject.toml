@@ -10,7 +10,6 @@ packages = [{include = "django_comparison_dashboard"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 plotly = "^5.16.1"
-django-ninja = "^0.22.2"
 units = "^0.7"
 jmespath = "^1.0.1"
 pandas = "^2.1.0"
