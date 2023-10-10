@@ -9,6 +9,8 @@ from units.exception import IncompatibleUnitsError
 from units.predefined import define_units
 from units.registry import REGISTRY
 
+from .settings import GRAPHS_DEFAULT_OPTIONS
+
 
 class PreprocessingError(Exception):
     """Raised if preprocessing fails"""
@@ -41,8 +43,7 @@ define_units()
 define_energy_model_units()
 
 
-def get_scalar_data(query: dict[str, str]) -> pd.DataFrame:
-    filters, groupby, units = prepare_query(query)
+def get_scalar_data(filters: dict[str, str], groupby: list[str], units: list[str]) -> pd.DataFrame:
     scalar_model = apps.get_model(settings.DASHBOARD_SCALAR_MODEL)
 
     # Filter and groupby in DB
@@ -135,7 +136,7 @@ def convert_units_in_df(df: pd.DataFrame, units: list[str]) -> pd.DataFrame:
     return df
 
 
-def prepare_query(query: dict[str, str]) -> tuple[dict[str, str], list[str], list[str]]:
+def prepare_query(query: dict[str, str]) -> tuple[dict[str, str], list[str], list[str], dict[str, str]]:
     """Unpacks filters, groupby and units from query dict"""
 
     def parse_list(value):
@@ -143,7 +144,9 @@ def prepare_query(query: dict[str, str]) -> tuple[dict[str, str], list[str], lis
             return value[1:-1].split(",")
         return value
 
-    filters = {k: parse_list(v) for k, v in query.items() if k not in ("groupby", "units")}
+    plot_option_keys = list(GRAPHS_DEFAULT_OPTIONS["scalars"]["bar"].get_defaults().keys())
+    filters = {k: parse_list(v) for k, v in query.items() if k not in plot_option_keys + ["groupby", "units"]}
     groupby = parse_list(query["groupby"]) if "groupby" in query else []
     units = parse_list(query["units"]) if "units" in query else []
-    return filters, groupby, units
+    plot_options = {k: parse_list(v) for k, v in query.items() if k not in list(filters) + ["groupby", "units"]}
+    return filters, groupby, units, plot_options

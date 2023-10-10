@@ -1,8 +1,10 @@
-from django.http.response import JsonResponse
+from django.http.response import HttpResponse
 
-from . import preprocessing
+from . import graphs, preprocessing
 
 
-def get_scalar_data(request):
+def plot_scalar_data(request):
     query = request.GET.dict()
-    return JsonResponse(preprocessing.get_scalar_data(query).to_dict(orient="records"), safe=False)
+    filters, groupby, units, plot_options = preprocessing.prepare_query(query)
+    df = preprocessing.get_scalar_data(filters, groupby, units).to_dict(orient="records")
+    return HttpResponse(graphs.bar_plot(df, plot_options).to_html())
