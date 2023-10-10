@@ -10,6 +10,10 @@ from units.predefined import define_units
 from units.registry import REGISTRY
 
 
+class PreprocessingError(Exception):
+    """Raised if preprocessing fails"""
+
+
 def define_energy_model_units():
     scaled_unit("kW", "W", 1e3)
     scaled_unit("MW", "kW", 1e3)
@@ -46,7 +50,17 @@ def get_scalar_data(query: dict[str, str]) -> pd.DataFrame:
     else:
         queryset = queryset_filtered.values()
     df = pd.DataFrame(queryset)
-    return convert_units_in_df(df, units)
+    df = convert_units_in_df(df, units)
+
+    # Groupby has to be redone after unit conversion:
+    if groupby:
+        if "series" in df and len(df["series"].apply(len).unique()) > 1:
+            raise PreprocessingError("Different ts lengths at aggregation found.")
+        df = df.groupby(groupby + ["unit"]).aggregate("sum").reset_index()
+        keep_columns = groupby + ["unit", "value", "series"]
+        df = df[df.columns.intersection(keep_columns)]
+
+    return df
 
 
 def convert_units_in_df(df: pd.DataFrame, units) -> pd.DataFrame:
