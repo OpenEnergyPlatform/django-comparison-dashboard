@@ -40,7 +40,11 @@ define_energy_model_units()
 def get_scalar_data(query: dict[str, str]) -> pd.DataFrame:
     filters, groupby, units = prepare_query(query)
     scalar_model = apps.get_model(settings.DASHBOARD_SCALAR_MODEL)
-    queryset = scalar_model.objects.filter(**filters).values(*groupby).annotate(Sum("value"))
+    queryset_filtered = scalar_model.objects.filter(**filters)
+    if groupby:
+        queryset = queryset_filtered.values(*(groupby + ["unit"])).annotate(value=Sum("value"))
+    else:
+        queryset = queryset_filtered.values()
     df = pd.DataFrame(queryset)
     return convert_units_in_df(df, units)
 
