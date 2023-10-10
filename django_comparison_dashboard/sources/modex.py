@@ -64,7 +64,7 @@ class ModexDataSource(core.DataSource):
         )
         logging.info(f"Loading data for scenario {scenario}...")
         data = json.loads(response.text)
-        return data[table]
+        return [{k: v for k, v in d.items() if k not in ("id", "scenario_id")} for d in data[table]]
 
 
 class ModexScenario(core.Scenario):

@@ -31,8 +31,6 @@
     "encoding" : "cp1252",
     "schema": {
       "fields": [
-        {"name": "id", "description": "Unique identifier", "type": "integer", "unit": null},
-        {"name": "scenario_id", "description": "Scenario name", "type": "integer", "unit": null},
         {"name": "region", "description": "Country or region, add a flow from region a -> b: ['a', 'b']", "type": "string", "unit": null},
         {"name": "input_energy_vector", "description": "It describes any type of energy or energy carrier (e.g. electricity, heat, solar radiation, natural gas, ...) that enters a technology.", "type": "string", "unit": null},
         {"name": "output_energy_vector", "description": "It describes any type of energy or energy carrier (e.g. electricity, heat, hydrogen, LNG, CO2, ...) that exits a technology.", "type": "string", "unit": null},
