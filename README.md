@@ -28,3 +28,16 @@ This can be done by setting body attribute `hx-headers` like this:
 ```html
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 ```
+## For Developers
+
+You can download example scenario from MODEX like this:
+```bash
+export DJANGO_READ_DOT_ENV_FILE=True; python manage.py shell
+```
+within the shell run
+```python
+from django_comparison_dashboard.sources import modex
+
+modex.ModexDataSource.list_scenarios()[-2].download()
+```
+to download example data.

@@ -11,14 +11,51 @@ packages = [{include = "django_comparison_dashboard"}]
 python = "^3.10"
 plotly = "^5.16.1"
 django-template-partials = {git = "https://github.com/carltongibson/django-template-partials"}
+units = "^0.7"
+jmespath = "^1.0.1"
+pandas = "^2.1.0"
+requests = "^2.31.0"
+frictionless = "4.7.1"
+django-appconf = "^1.0.5"
+
 
 [tool.poetry.group.dev.dependencies]
 django = "^4.2.4"
 pre-commit = "^3.4.0"
+django-environ = "0.10.0"
+psycopg = {version = "3.1.9", extras = ["c"]}
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+# ==== pytest ====
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--ds=config.settings.test --reuse-db"
+python_files = [
+    "tests.py",
+    "test_*.py",
+]
+
+
+# ==== black ====
+[tool.black]
+line-length = 119
+target-version = ['py311']
+
+
+# ==== isort ====
+[tool.isort]
+profile = "black"
+line_length = 119
+known_first_party = [
+    "sedos_dashboard",
+    "config",
+]
+skip = ["venv/"]
+skip_glob = ["**/migrations/*.py"]
 
 
 [tool.ruff]
