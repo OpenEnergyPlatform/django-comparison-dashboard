@@ -5,7 +5,30 @@ import pandas as pd
 from django.shortcuts import get_object_or_404
 from frictionless import Resource, validate_resource
 
-from django_comparison_dashboard import models, settings
+from django_comparison_dashboard import forms, models, settings
+
+
+class SourceRegistry:
+    _instance = None
+    sources = {}
+
+    def __new__(cls):
+        if cls._instance is None:
+            print("Creating the object")
+            cls._instance = super().__new__(cls)
+            # Put any initialization here.
+        return cls._instance
+
+    @classmethod
+    def register(cls, source: type["DataSource"]):
+        cls.sources[source.name] = source
+
+    def __getitem__(self, item):
+        if item in self.sources:
+            return self.sources[item]
+        raise KeyError(
+            f"Can not find source '{item}' in source registry. Maybe you forgot to register it in the first place?"
+        )
 
 
 class ScenarioValidationError(Exception):
@@ -13,15 +36,19 @@ class ScenarioValidationError(Exception):
 
 
 class Scenario(abc.ABC):
-    source: "DataSource" = None
+    source_name: str = None
 
-    def __init__(self, scenario_id, data_type: settings.DataType):
+    def __init__(self, scenario_id, data_type: settings.DataType | str):
         self.id = scenario_id
-        self.data_type = data_type
+        self.data_type = data_type if isinstance(data_type, settings.DataType) else settings.DataType[data_type]
 
-    @abc.abstractmethod
     def __str__(self):
         """Return string representation of scenario"""
+        return self.id
+
+    @property
+    def source(self):
+        return SourceRegistry()[self.source_name]
 
     def is_present(self) -> bool:
         return models.Scenario.objects.filter(name=self.id, source__name=self.source.name).exists()
@@ -47,7 +74,12 @@ class Scenario(abc.ABC):
         """
         source = models.Source.objects.get_or_create(name=self.source.name)[0]
         scenario = models.Scenario.objects.get_or_create(name=self.id, source=source)[0]
-        data_model = models.ScalarData if self.data_type == settings.DataType.Scalar else models.TimeseriesData
+        if self.data_type == settings.DataType.Scalar:
+            data_model = models.ScalarData
+        elif self.data_type == models.TimeseriesData:
+            data_model = models.TimeseriesData
+        else:
+            raise TypeError(f"Unknown data type '{self.data_type}'.")
         data_model.objects.bulk_create(data_model(scenario=scenario, **item) for item in data)
 
     def _validate(self, data: dict | pd.DataFrame) -> None:
@@ -85,9 +117,10 @@ class Scenario(abc.ABC):
 
 class DataSource(abc.ABC):
     name: str = None
+    scenario: type[Scenario] = None
+    form = forms.DataSourceUploadForm
 
     @classmethod
-    @abc.abstractmethod
     def list_scenarios(cls) -> list[Scenario]:
         """
         List all available scenarios
