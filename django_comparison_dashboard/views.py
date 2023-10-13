@@ -4,11 +4,18 @@ from django.views.generic import FormView, TemplateView
 from . import graphs, models, preprocessing, sources
 
 
-def plot_scalar_data(request):
+def scalar_data_plot(request):
     query = request.GET.dict()
     filters, groupby, units, plot_options = preprocessing.prepare_query(query)
     df = preprocessing.get_scalar_data(filters, groupby, units).to_dict(orient="records")
     return HttpResponse(graphs.bar_plot(df, plot_options).to_html())
+
+
+def scalar_data_table(request):
+    query = request.GET.dict()
+    filters, groupby, units, plot_options = preprocessing.prepare_query(query)
+    df = preprocessing.get_scalar_data(filters, groupby, units)
+    return HttpResponse(df.to_html())
 
 
 class UploadView(TemplateView):
