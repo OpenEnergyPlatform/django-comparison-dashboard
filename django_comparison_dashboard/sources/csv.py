@@ -1,14 +1,19 @@
+import csv
+from io import TextIOWrapper
+
 from django_comparison_dashboard import forms, settings
 from django_comparison_dashboard.sources import core
 
 
 class CSVScenario(core.Scenario):
-    def __init__(self, scenario_id: int, data_type: settings.DataType, file):
+    source_name = "CSV"
+
+    def __init__(self, scenario_id: int, data_type: settings.DataType, csv_file):
         super().__init__(scenario_id, data_type)
-        self.file = file
+        self.csv_file = csv_file
 
     def __str__(self):
-        return f"{self.id} ({self.file.name})"
+        return f"{self.id} ({self.csv_file.name})"
 
 
 class CSVDataSource(core.DataSource):
@@ -26,4 +31,6 @@ class CSVDataSource(core.DataSource):
         pd.DataFrame
             holding scenario data
         """
-        print(scenario.file)
+        csv_text = TextIOWrapper(scenario.csv_file, encoding="utf-8")
+        csv_reader = csv.DictReader(csv_text, delimiter=";")
+        return [row for row in csv_reader]

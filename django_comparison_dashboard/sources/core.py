@@ -39,6 +39,8 @@ class Scenario(abc.ABC):
     source_name: str = None
 
     def __init__(self, scenario_id, data_type: settings.DataType | str):
+        if self.source_name is None:
+            raise RuntimeError("Source name not defined.")
         self.id = scenario_id
         self.data_type = data_type if isinstance(data_type, settings.DataType) else settings.DataType[data_type]
 

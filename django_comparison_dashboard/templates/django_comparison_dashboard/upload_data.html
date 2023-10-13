@@ -15,7 +15,8 @@
             <form method="post"
                   hx-post="{% url 'django_comparison_dashboard:scenario_form' %}"
                   hx-target="#scenario"
-                  hx-include="[name='source']">
+                  hx-include="[name='source']"
+                  hx-encoding='multipart/form-data'>
                 {% csrf_token %}
                 {{ form }}
                 <button type="submit">Submit</button>
