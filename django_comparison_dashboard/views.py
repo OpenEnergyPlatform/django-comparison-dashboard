@@ -22,10 +22,7 @@ class ScenarioFormView(FormView):
     template_name = "django_comparison_dashboard/upload_data.html#scenario"
 
     def get_source(self):
-        if self.request.method == "GET":
-            source_name = self.request.GET["source"]
-        else:
-            source_name = self.request.POST["source"]
+        source_name = self.request.GET["source"] if self.request.method == "GET" else self.request.POST["source"]
         source: sources.DataSource = sources.SOURCES[source_name]
         return source
 
