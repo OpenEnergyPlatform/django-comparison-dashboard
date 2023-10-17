@@ -1,5 +1,5 @@
 from django.http.response import HttpResponse
-from django.views.generic import FormView, TemplateView
+from django.views.generic import DetailView, FormView, ListView, TemplateView
 
 from . import graphs, models, preprocessing, sources
 
@@ -16,6 +16,34 @@ def scalar_data_table(request):
     filters, groupby, units, plot_options = preprocessing.prepare_query(query)
     df = preprocessing.get_scalar_data(filters, groupby, units)
     return HttpResponse(df.to_html())
+
+
+class ScenarioSelectionView(ListView):
+    template_name = "django_comparison_dashboard/scenario_list.html"
+    extra_context = {"sources": models.Source.objects.order_by("name").all()}
+    context_object_name = "scenarios"
+
+    def get_queryset(self):
+        if "source" in self.request.GET:
+            source = self.request.GET["source"]
+            return models.Scenario.objects.filter(source=source)
+        else:
+            return models.Scenario.objects.filter(source=models.Source.objects.order_by("name").first())
+
+    def get_template_names(self):
+        if "source" in self.request.GET:
+            return [f"{self.template_name}#scenarios"]
+        else:
+            return super().get_template_names()
+
+
+class ScenarioDetailView(DetailView):
+    template_name = "django_comparison_dashboard/scenario_list.html#scenario"
+    context_object_name = "scenario"
+
+    def get_object(self, queryset=None):
+        scenario_id = self.request.GET["scenario"]
+        return models.Scenario.objects.get(pk=scenario_id)
 
 
 class UploadView(TemplateView):
