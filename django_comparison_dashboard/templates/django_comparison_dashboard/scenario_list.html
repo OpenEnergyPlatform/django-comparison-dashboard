@@ -27,11 +27,20 @@
 </form>
 <div>
   Selected scenarios:
-  <ul id="selected_scenarios">
-    {% startpartial scenario inline=True %}
-    {% if scenario %}<li>#{{ scenario.id }}: {{ scenario.name }}</li>{% endif %}
-  {% endpartial %}
-</ul>
+  <form method="post">
+    {% csrf_token %}
+    <ul id="selected_scenarios">
+      {% startpartial scenario inline=True %}
+      {% if scenario %}
+        <li>
+          <input name="scenario_id" value="{{ scenario.id }}" hidden />
+          #{{ scenario.id }}: {{ scenario.name }}
+        </li>
+      {% endif %}
+    {% endpartial %}
+  </ul>
+  <button type="submit">Compare scenarios</button>
+</form>
 </div>
 {% endblock content %}
 {% block javascript %}

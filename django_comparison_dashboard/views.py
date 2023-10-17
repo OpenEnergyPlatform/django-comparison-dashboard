@@ -1,7 +1,15 @@
 from django.http.response import HttpResponse
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
-from . import graphs, models, preprocessing, sources
+from . import graphs, models, preprocessing, sources, utils
+
+
+class IndexView(TemplateView):
+    template_name = "django_comparison_dashboard/index.html"
+
+
+class DashboardView(TemplateView):
+    template_name = "django_comparison_dashboard/dashboard.html"
 
 
 def scalar_data_plot(request):
@@ -35,6 +43,10 @@ class ScenarioSelectionView(ListView):
             return [f"{self.template_name}#scenarios"]
         else:
             return super().get_template_names()
+
+    def post(self, request):
+        scenario_ids = request.POST.getlist("scenario_id")
+        return utils.redirect_params("django_comparison_dashboard:dashboard", scenario_ids=scenario_ids)
 
 
 class ScenarioDetailView(DetailView):
