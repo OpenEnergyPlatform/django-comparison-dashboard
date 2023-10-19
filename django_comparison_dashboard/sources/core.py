@@ -64,7 +64,7 @@ class Scenario(abc.ABC):
         self._store_in_db(data)
         logging.info(f"Successfully downloaded scenario '{self}'.")
 
-    def _store_in_db(self, data: list[dict] | pd.DataFrame):
+    def _store_in_db(self, data: pd.DataFrame):
         """
         Store data into corresponding database model (scalar or timeseries)
 
@@ -81,7 +81,9 @@ class Scenario(abc.ABC):
             data_model = models.TimeseriesData
         else:
             raise TypeError(f"Unknown data type '{self.data_type}'.")
-        data_model.objects.bulk_create(data_model(scenario=scenario, **item) for item in data)
+        data_model.objects.bulk_create(
+            data_model(scenario=scenario, **item) for item in data.to_dict(orient="records")
+        )
 
     def _validate(self, data: pd.DataFrame) -> None:
         """
