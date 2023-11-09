@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% load partials %}
+
+{% block content %}
+  <form hx-get="{% url 'django_comparison_dashboard:scenario_form' %}"
+        hx-target="#scenario"
+        hx-trigger="change">
+    <label for="source">Select source:</label>
+    <select id="source" name="source">
+      {% for source in sources %}<option value="{{ source }}">{{ source }}</option>{% endfor %}
+    </select>
+  </form>
+  <div id="scenario">
+    {% startpartial scenario inline=True %}
+    {% if form %}
+      <form method="post"
+            hx-post="{% url 'django_comparison_dashboard:scenario_form' %}"
+            hx-target="#scenario"
+            hx-include="[name='source']"
+            hx-encoding='multipart/form-data'>
+        {% csrf_token %}
+        {{ form }}
+        <button type="submit">Submit</button>
+      </form>
+    {% endif %}
+  {% endpartial %}
+</div>
+{% endblock content %}
+{% block javascript %}
+  {{ block.super }}
+  <script src="https://unpkg.com/htmx.org@1.6.0"></script>
+{% endblock javascript %}

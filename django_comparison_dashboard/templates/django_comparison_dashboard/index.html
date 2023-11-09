@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Contents:</h1>
+  <ul>
+    <li>
+      <a href="{% url 'django_comparison_dashboard:scenarios' %}">Scenario Selection</a>
+    </li>
+    <li>
+      <a href="{% url 'django_comparison_dashboard:upload' %}">Scenario Upload</a>
+    </li>
+  </ul>
+{% endblock content %}

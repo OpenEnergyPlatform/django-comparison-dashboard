@@ -10,8 +10,16 @@ OEP_URL = "https://openenergyplatform.org"
 CONNECTOR_URL = "https://modex.rl-institut.de/scenario/id/"
 
 
+class ModexScenario(core.Scenario):
+    source_name = "MODEX"
+
+    def __init__(self, scenario_id: int, data_type: settings.DataType):
+        super().__init__(scenario_id, data_type)
+
+
 class ModexDataSource(core.DataSource):
     name = "MODEX"
+    scenario = ModexScenario
 
     @classmethod
     def list_scenarios(cls) -> list[core.Scenario]:
@@ -35,7 +43,7 @@ class ModexDataSource(core.DataSource):
         ]
 
     @classmethod
-    def download_scenario(cls, scenario: "ModexScenario") -> list[dict]:
+    def download_scenario(cls, scenario: ModexScenario) -> list[dict]:
         """
         Download scenario data from OEDatamodel_API using table name and scenario ID
 
@@ -65,15 +73,3 @@ class ModexDataSource(core.DataSource):
         logging.info(f"Loading data for scenario {scenario}...")
         data = json.loads(response.text)
         return [{k: v for k, v in d.items() if k not in ("id", "scenario_id")} for d in data[table]]
-
-
-class ModexScenario(core.Scenario):
-    source = ModexDataSource
-
-    def __init__(self, scenario_id: int, data_type: settings.DataType, name: str, framework: str):
-        super().__init__(scenario_id, data_type)
-        self.name = name
-        self.framework = framework
-
-    def __str__(self):
-        return f"{self.name} ({self.framework})"

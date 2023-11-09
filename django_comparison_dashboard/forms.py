@@ -1,5 +1,7 @@
 from django import forms
 
+from . import settings
+
 
 class Scenario(forms.Form):
     scenarios = forms.MultipleChoiceField(
@@ -23,3 +25,16 @@ class Filter(forms.Form):
         if options:
             for filter, choice_list in options.items():
                 self.fields[filter].choices = choice_list
+
+
+class DataSourceUploadForm(forms.Form):
+    """Default upload form for a data source"""
+
+    scenario_id = forms.CharField(max_length=255)
+    data_type = forms.ChoiceField(choices=[(dt.name, dt.name) for dt in settings.DataType])
+
+
+class CSVSourceUploadForm(DataSourceUploadForm):
+    """Upload form for CSV data source"""
+
+    csv_file = forms.FileField()

@@ -4,14 +4,7 @@ import pathlib
 from dataclasses import dataclass
 from enum import IntEnum
 
-APP_DIR = pathlib.Path(__file__).parent
-DATA_DIR = APP_DIR / "data"
-
-with (DATA_DIR / "dataset.json").open("r", encoding="utf-8") as dataset_file:
-    DATASET = json.load(dataset_file)
-
-
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 
 USE_DUMMY_DATA = os.environ.get("USE_DUMMY_DATA", "False") == "True"
 SKIP_TS = os.environ.get("SKIP_TS", "False") == "True"

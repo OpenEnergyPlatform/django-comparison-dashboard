@@ -1,0 +1,3 @@
+region;output_energy_vector;input_energy_vector;parameter_name;technology;unit;tags;method;source;comment;year;value
+BB;water;electricity;installed capacity;hydro turbine;MW;;"{""value"": ""Capacity based on the date of commissioning and the remaining life of the technology""}";MaStR2021;;2020;3.57804
+BB;air;electricity;installed capacity;wind turbine;MW;;"{""value"": ""Capacity based on the date of commissioning and the remaining life of the technology""}";MaStR2021;;2020;4.57804

@@ -1,38 +1,40 @@
 {% extends "base.html" %}
+
 {% load partials %}
+
 {% block content %}
-    <div class="column">
-        <!-- Scenario Selection Forms -->
-        <div class="align-center">
-            <p class="lead mb-3 ml-0">Welcome</p>
-            <hr />
-            <form hx-post="{% url 'django_comparison_dashboard:filters' %}"
-                  hx-target="#filters"
-                  hx-swap="innerHTML">
-                {{ scenario_form.as_div }}
-                <button type="submit" class="btn btn-primary mt-2">Submit</button>
-            </form>
-        </div>
-        <!-- Content with Filter / Presentation Tab and Charts -->
-        <div class="row align-center">
-            <!-- contains Filter / Presentation Tab -->
-            <div id="content" class="col-6">
-                <!-- Tab for Filters -->
-                <div id="filters">
-                    <!-- General Filter Selection -->
-                    {% startpartial filters inline=True %}
-                    {{ filter_form.as_div }}
-                {% endpartial %}
-            </div>
-        </div>
-        <!-- contains Charts and Chart Settings -->
-        <div id="charts" class="col-6">
-            <p>CHARTS !</p>
-        </div>
+  <div class="column">
+    <!-- Scenario Selection Forms -->
+    <div class="align-center">
+      <p class="lead mb-3 ml-0">Welcome</p>
+      <hr />
+      <form hx-post="{% url 'django_comparison_dashboard:filters' %}"
+            hx-target="#filters"
+            hx-swap="innerHTML">
+        {{ scenario_form.as_div }}
+        <button type="submit" class="btn btn-primary mt-2">Submit</button>
+      </form>
     </div>
+    <!-- Content with Filter / Presentation Tab and Charts -->
+    <div class="row align-center">
+      <!-- contains Filter / Presentation Tab -->
+      <div id="content" class="col-6">
+        <!-- Tab for Filters -->
+        <div id="filters">
+          <!-- General Filter Selection -->
+          {% startpartial filters inline=True %}
+          {{ filter_form.as_div }}
+        {% endpartial %}
+      </div>
+    </div>
+    <!-- contains Charts and Chart Settings -->
+    <div id="charts" class="col-6">
+      <p>CHARTS !</p>
+    </div>
+  </div>
 </div>
 {% endblock content %}
 {% block javascript %}
-    {{ block.super }}
-    <script src="https://unpkg.com/htmx.org@1.6.0"></script>
+  {{ block.super }}
+  <script src="https://unpkg.com/htmx.org@1.6.0"></script>
 {% endblock javascript %}

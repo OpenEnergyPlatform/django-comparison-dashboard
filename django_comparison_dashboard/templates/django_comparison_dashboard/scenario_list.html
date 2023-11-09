@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% load partials %}
+
+{% block content %}
+  <form hx-get="{% url 'django_comparison_dashboard:scenario_detail' %}"
+        hx-target="#selected_scenarios"
+        hx-swap="afterbegin">
+    {% csrf_token %}
+    <select hx-get="{% url 'django_comparison_dashboard:scenarios' %}"
+            hx-target="#scenarios"
+            hx-trigger="change"
+            hx-swap="innerHTML"
+            name="source">
+      {% for source in sources %}<option value="{{ source.id }}">{{ source.name }}</option>{% endfor %}
+    </select>
+    <div id="scenarios">
+      {% startpartial scenarios inline=True %}
+      {% if scenarios %}
+        <select name="scenario">
+          {% for scenario in scenarios %}<option value="{{ scenario.id }}">{{ scenario.name }}</option>{% endfor %}
+        </select>
+      {% endif %}
+    {% endpartial %}
+  </div>
+  <button type="submit">Add scenario</button>
+</form>
+<div>
+  Selected scenarios:
+  <form method="post">
+    {% csrf_token %}
+    <ul id="selected_scenarios">
+      {% startpartial scenario inline=True %}
+      {% if scenario %}
+        <li>
+          <input name="scenario_id" value="{{ scenario.id }}" hidden />
+          #{{ scenario.id }}: {{ scenario.name }}
+        </li>
+      {% endif %}
+    {% endpartial %}
+  </ul>
+  <button type="submit">Compare scenarios</button>
+</form>
+</div>
+{% endblock content %}
+{% block javascript %}
+  {{ block.super }}
+  <script src="https://unpkg.com/htmx.org@1.6.0"></script>
+{% endblock javascript %}
