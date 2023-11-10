@@ -10,6 +10,9 @@ class FormFilter(django_filters.FilterSet):
         )
     """
 
+    scenario = django_filters.ModelMultipleChoiceFilter(
+        field_name="scenario", queryset=ScalarData.objects.order_by().values_list("scenario", flat=True).distinct()
+    )
     region = django_filters.ModelMultipleChoiceFilter(
         field_name="region", queryset=ScalarData.objects.order_by().values_list("region", flat=True).distinct()
     )
@@ -33,9 +36,17 @@ class FormFilter(django_filters.FilterSet):
         queryset=ScalarData.objects.order_by().values_list("technology_type", flat=True).distinct(),
     )
 
+    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
+        super().__init__(data=data, queryset=queryset, request=request, prefix=prefix)
+        if request is not None:
+            scenario_values = request.GET.getlist("scenario_ids")
+            if scenario_values:
+                self.filters["scenario"].extra["initial"] = scenario_values
+
     class Meta:
         model = ScalarData
         fields = [
+            "scenario",
             "region",
             "input_energy_vector",
             "output_energy_vector",

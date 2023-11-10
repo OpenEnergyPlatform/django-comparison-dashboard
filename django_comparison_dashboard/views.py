@@ -23,12 +23,12 @@ def index(request):
 
 
 def get_filters(request):
-    selected_scenario_ids = request.GET.getlist("scenario_ids")
-    selected_scenarios = models.Scenario.objects.filter(id__in=selected_scenario_ids)
+    # selected_scenario_ids = request.GET.getlist("scenario_ids")
+    # selected_scenarios = models.Scenario.objects.filter(id__in=selected_scenario_ids)
 
     # incoming request: localhost:8000/dashboard/?scenario_id=5&scenario_id=10
-    filter_list = ScalarData.objects.filter(scenario__in=selected_scenarios)
-    f = FormFilter(request.GET, queryset=filter_list)
+    # filter_list = ScalarData.objects.filter(scenario__in=selected_scenarios)
+    f = FormFilter(request.GET, queryset=ScalarData.objects.all())
     return render(request, "django_comparison_dashboard/dashboard.html", {"filter_form": f})
 
 
