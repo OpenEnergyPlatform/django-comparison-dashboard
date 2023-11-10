@@ -3,17 +3,34 @@ from django.shortcuts import render
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
 from . import graphs, models, preprocessing, sources, utils
-from .forms import Filter, Scenario
+from .filters import FormFilter
+from .models import ScalarData
 
 
 class IndexView(TemplateView):
     template_name = "django_comparison_dashboard/index.html"
 
 
+class DashboardView(TemplateView):
+    template_name = "django_comparison_dashboard/dashboard.html"
+
+
 def index(request):
-    filter_form = Filter(options=[])
-    context = {"scenario_form": Scenario(), "filter_form": filter_form}
+    filter_list = ScalarData.objects.all()
+    f = FormFilter(request.GET, queryset=filter_list)
+    context = {"filter_form": f}
     return render(request, "django_comparison_dashboard/dashboard.html", context)
+
+
+def get_filters(request):
+    selected_scenario_ids = request.GET.getlist("scenario_ids")
+    print(selected_scenario_ids)
+    selected_scenarios = models.Scenario.objects.filter(id__in=selected_scenario_ids)
+
+    # incoming request: localhost:8000/dashboard/?scenario_id=5&scenario_id=10
+    filter_list = ScalarData.objects.filter(scenario__in=selected_scenarios)
+    f = FormFilter(request.GET, queryset=filter_list)
+    return render(request, "django_comparison_dashboard/dashboard.html#filters", {"filter_form": f})
 
 
 def scalar_data_plot(request):
