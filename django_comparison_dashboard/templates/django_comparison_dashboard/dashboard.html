@@ -23,13 +23,19 @@
         <div id="filters">
           <!-- General Filter Selection -->
           {% startpartial filters inline=True %}
-          {{ filter_form.as_div }}
+          <form method="get"
+                hx-get="{% url 'django_comparison_dashboard:data_table' %}"
+                hx-target="#table">
+            {{ filter_form.form.as_p }}
+            <input type="submit" value="Apply Filters" />
+          </form>
         {% endpartial %}
       </div>
     </div>
     <!-- contains Charts and Chart Settings -->
     <div id="charts" class="col-6">
       <p>CHARTS !</p>
+      <div id="table"></div>
     </div>
   </div>
 </div>

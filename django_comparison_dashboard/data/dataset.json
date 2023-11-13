@@ -1,0 +1,22 @@
+{
+  "code_exposed_fig1": {
+    "Tags": ["ID9"],
+    "Year": [2050],
+    "Region": ["HE,BW", "SN,TH", "BE_A"]
+  },
+  "base_latest": {
+    "Tags": ["ID1", "ID2", "ID9"],
+    "Year": [2016, 2030, 2050],
+    "Region": ["NI_HE", "NW,HE"]
+  },
+  "dummy_save": {
+    "Tags": [],
+    "Year": [],
+    "Region": []
+  },
+  "ID1,2_paper": {
+    "Tags": ["ID2", "ID8"],
+    "Year": [2030, 2050],
+    "Region": ["ST,BB", "HE,BW", "NW,BB,BE,BW,BY,HB,HE,HH,MV,NI,RP,SH,SL,SN"]
+  }
+}

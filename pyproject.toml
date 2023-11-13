@@ -10,11 +10,13 @@ packages = [{include = "django_comparison_dashboard"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 plotly = "^5.16.1"
+django-template-partials = {git = "https://github.com/carltongibson/django-template-partials"}
 units = "^0.7"
 jmespath = "^1.0.1"
 pandas = "^2.1.0"
 requests = "^2.31.0"
 django-appconf = "^1.0.5"
+django-filter = "^23.3"
 pandera = {extras = ["io"], version = "^0.17.2"}
 
 
@@ -22,7 +24,7 @@ pandera = {extras = ["io"], version = "^0.17.2"}
 django = "^4.2.4"
 pre-commit = "^3.4.0"
 django-environ = "0.10.0"
-psycopg = {version = "3.1.9", extras = ["c"]}
+psycopg = {version = "3.1.9", extras = ["binary"]}
 
 [build-system]
 requires = ["poetry-core"]

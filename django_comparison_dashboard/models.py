@@ -27,15 +27,6 @@ class Data(models.Model):
     source = models.CharField(max_length=255, null=True)
     comment = models.CharField(max_length=255, null=True)
 
-    filters = (
-        "region",
-        "input_energy_vector",
-        "output_energy_vector",
-        "parameter_name",
-        "technology",
-        "technology_type",
-    )
-
     class Meta:
         abstract = True
 

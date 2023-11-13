@@ -1,7 +1,10 @@
 from django.http.response import HttpResponse
+from django.shortcuts import render
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
 from . import graphs, models, preprocessing, sources, utils
+from .filters import FormFilter
+from .models import ScalarData
 
 
 class IndexView(TemplateView):
@@ -10,6 +13,23 @@ class IndexView(TemplateView):
 
 class DashboardView(TemplateView):
     template_name = "django_comparison_dashboard/dashboard.html"
+
+
+def index(request):
+    filter_list = ScalarData.objects.all()
+    f = FormFilter(request.GET, queryset=filter_list)
+    context = {"filter_form": f}
+    return render(request, "django_comparison_dashboard/dashboard.html", context)
+
+
+def get_filters(request):
+    selected_scenario_ids = request.GET.getlist("scenario_ids")
+    selected_scenarios = models.Scenario.objects.filter(id__in=selected_scenario_ids)
+
+    # incoming request: localhost:8000/dashboard/?scenario_id=5&scenario_id=10
+    filter_list = ScalarData.objects.filter(scenario__in=selected_scenarios)
+    f = FormFilter(selected_scenario_ids, request.GET, queryset=filter_list)
+    return render(request, "django_comparison_dashboard/dashboard.html", {"filter_form": f})
 
 
 def scalar_data_plot(request):
