@@ -27,7 +27,8 @@
 </form>
 <div>
   Selected scenarios:
-  <form method="post">
+  <form method="get"
+        action="{% url 'django_comparison_dashboard:dashboard' %}">
     {% csrf_token %}
     <ul id="selected_scenarios">
       {% startpartial scenario inline=True %}

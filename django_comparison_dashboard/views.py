@@ -2,7 +2,7 @@ from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
-from . import graphs, models, preprocessing, sources, utils
+from . import graphs, models, preprocessing, sources
 from .filters import FormFilter
 from .models import ScalarData
 
@@ -63,10 +63,6 @@ class ScenarioSelectionView(ListView):
             return [f"{self.template_name}#scenarios"]
         else:
             return super().get_template_names()
-
-    def post(self, request):
-        scenario_ids = request.POST.getlist("scenario_id")
-        return utils.redirect_params("django_comparison_dashboard:dashboard", scenario_ids=scenario_ids)
 
 
 class ScenarioDetailView(DetailView):
