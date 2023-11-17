@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
 from . import graphs, models, preprocessing, sources, utils
-from .filters import FormFilter
+from .filters import FormFilter, GraphOptionFilter
 from .models import ScalarData
 
 
@@ -29,7 +29,13 @@ def get_filters(request):
     # incoming request: localhost:8000/dashboard/?scenario_id=5&scenario_id=10
     filter_list = ScalarData.objects.filter(scenario__in=selected_scenarios)
     f = FormFilter(selected_scenario_ids, request.GET, queryset=filter_list)
-    return render(request, "django_comparison_dashboard/dashboard.html", {"filter_form": f})
+
+    # also get graph options for charts
+    graph_options = GraphOptionFilter(request.GET, queryset=filter_list)
+
+    return render(
+        request, "django_comparison_dashboard/dashboard.html", {"filter_form": f, "graph_options": graph_options}
+    )
 
 
 def scalar_data_plot(request):

@@ -35,9 +35,17 @@
     <!-- contains Charts and Chart Settings -->
     <div id="charts" class="col-6">
       <p>CHARTS !</p>
-      <div id="table"></div>
-    </div>
+      {% startpartial graph_options inline=True %}
+      <form method="get"
+            hx-get="{% url 'django_comparison_dashboard:data_table' %}"
+            hx-target="#table">
+        {{ graph_options.form.as_p }}
+        <input type="submit" value="Apply Filters" />
+      </form>
+    {% endpartial %}
+    <div id="table"></div>
   </div>
+</div>
 </div>
 {% endblock content %}
 {% block javascript %}
