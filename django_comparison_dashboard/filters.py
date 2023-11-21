@@ -26,22 +26,9 @@ class FormFilter(django_filters.FilterSet):
 
 def available_filters():
     # get available filters from FormFilter
-    x_axis_choices = (
-        (0, "region"),
-        (1, "year"),
-        (2, "input_energy_vector"),
-        (3, "output_energy_vector"),
-        (4, "parameter_name"),
-        (5, "technology"),
-        (6, "technology_type"),
-    )
-    return x_axis_choices
-
-
-def y_axis_choices():
-    # get selected Scenarios like in FormFilter
-    y_axis_choices = ((0, "scenario1"),)
-    return y_axis_choices
+    available_filters = [(count, filter_name) for count, filter_name in enumerate(ScalarData.filters)]
+    # needs to be filtered by chosen scenarios
+    return available_filters
 
 
 class GraphOptionFilter(django_filters.FilterSet):
