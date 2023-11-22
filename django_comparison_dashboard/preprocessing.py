@@ -1,8 +1,6 @@
 import warnings
 
 import pandas as pd
-from django.apps import apps
-from django.conf import settings
 from django.db.models import Sum
 from units import NamedComposedUnit, scaled_unit, unit
 from units.exception import IncompatibleUnitsError
@@ -43,11 +41,7 @@ define_units()
 define_energy_model_units()
 
 
-def get_scalar_data(filters: dict[str, str], groupby: list[str], units: list[str]) -> pd.DataFrame:
-    scalar_model = apps.get_model(settings.DASHBOARD_SCALAR_MODEL)
-
-    # Filter and groupby in DB
-    queryset_filtered = scalar_model.objects.filter(**filters)
+def get_scalar_data(queryset_filtered: dict[str, str], groupby: list[str], units: list[str]) -> pd.DataFrame:
     if groupby:
         queryset = queryset_filtered.values(*(groupby + ["unit"])).annotate(value=Sum("value"))
     else:
