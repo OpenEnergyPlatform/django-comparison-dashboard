@@ -77,7 +77,7 @@ to download example data.
 .. |badge_contributing| image:: https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat
     :alt: contributions
 
-.. |badge_repo_counts| image:: http://hits.dwyl.com/OpenEnergyPlatform/django-comparison-dashboard.svg
+.. |badge_repo_counts| image:: 
     :alt: counter
 
 .. |badge_contributors| image:: https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square
