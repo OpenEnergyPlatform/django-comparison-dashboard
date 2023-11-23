@@ -39,6 +39,7 @@
       {% startpartial graph_options inline=True %}
       <form method="get"
             hx-get="{% url 'django_comparison_dashboard:data_plot' %}"
+            hx-include="#filters"
             hx-target="#plot">
         {{ graph_options_form.as_p }}
         <input type="submit" value="Apply Filters" />
