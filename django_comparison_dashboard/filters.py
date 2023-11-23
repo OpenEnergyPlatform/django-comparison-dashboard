@@ -28,7 +28,12 @@ class FormFilter(django_filters.FilterSet):
 
 
 def available_filters():
-    available_filters = [(filter_name, filter_name) for filter_name in ScalarData.filters]
+    # get available filters from FormFilter
+    available_filters = []
+    for count, filter_name in enumerate(ScalarData.filters):
+        filter_values = ScalarData.objects.values_list(filter_name, flat=True).distinct()
+        if filter_values:
+            available_filters.append((count, filter_name))
     return available_filters
 
 
