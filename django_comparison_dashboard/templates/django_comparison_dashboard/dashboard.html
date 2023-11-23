@@ -40,7 +40,7 @@
       <form method="get"
             hx-get="{% url 'django_comparison_dashboard:data_plot' %}"
             hx-target="#plot">
-        {{ graph_options.form.as_p }}
+        {{ graph_options_form.as_p }}
         <input type="submit" value="Apply Filters" />
       </form>
     {% endpartial %}
