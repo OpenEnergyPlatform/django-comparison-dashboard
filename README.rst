@@ -8,6 +8,20 @@
 Django Comparison Dashboard
 ===========================
 
+.. list-table::
+   :widths: auto
+
+   * - License
+     - |badge_license|
+   * - Documentation
+     - |badge_documentation|
+   * - Publication
+     -
+   * - Development
+     - |badge_issue_open| |badge_issue_closes| |badge_pr_open| |badge_pr_closes|
+   * - Community
+     - |badge_contributing| |badge_contributors| |badge_repo_counts|
+
 This app holds functionality to examine and compare scenario data from various sources (OEP, databus, CSVs).
 
 .. contents::
@@ -50,3 +64,33 @@ within the shell run
     modex.ModexDataSource.list_scenarios()[-2].download()
 
 to download example data.
+
+
+.. |badge_license| image:: https://img.shields.io/github/license/OpenEnergyPlatform/django-comparison-dashboard
+    :target: LICENSE.txt
+    :alt: License
+
+.. |badge_documentation| image::
+    :target:
+    :alt: Documentation
+
+.. |badge_contributing| image:: https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat
+    :alt: contributions
+
+.. |badge_repo_counts| image:: http://hits.dwyl.com/OpenEnergyPlatform/django-comparison-dashboard.svg
+    :alt: counter
+
+.. |badge_contributors| image:: https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square
+    :alt: contributors
+
+.. |badge_issue_open| image:: https://img.shields.io/github/issues-raw/OpenEnergyPlatform/django-comparison-dashboard
+    :alt: open issues
+
+.. |badge_issue_closes| image:: https://img.shields.io/github/issues-closed-raw/OpenEnergyPlatform/django-comparison-dashboard
+    :alt: closes issues
+
+.. |badge_pr_open| image:: https://img.shields.io/github/issues-pr-raw/OpenEnergyPlatform/django-comparison-dashboard
+    :alt: closes issues
+
+.. |badge_pr_closes| image:: https://img.shields.io/github/issues-pr-closed-raw/OpenEnergyPlatform/django-comparison-dashboard
+    :alt: closes issues
