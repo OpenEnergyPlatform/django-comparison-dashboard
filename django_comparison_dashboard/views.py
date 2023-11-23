@@ -1,8 +1,9 @@
 from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.views.generic import DetailView, FormView, ListView, TemplateView
+from django_htmx.http import retarget
 
-from . import graphs, models, preprocessing, sources, utils
+from . import graphs, models, preprocessing, sources
 from .filters import FormFilter, GraphOptionFilter
 from .models import ScalarData
 
@@ -23,33 +24,59 @@ def index(request):
 
 
 def get_filters(request):
-    selected_scenario_ids = request.GET.getlist("scenario_ids")
-    selected_scenarios = models.Scenario.objects.filter(id__in=selected_scenario_ids)
+    """
 
-    # incoming request: localhost:8000/dashboard/?scenario_id=5&scenario_id=10
-    filter_list = ScalarData.objects.filter(scenario__in=selected_scenarios)
-    f = FormFilter(selected_scenario_ids, request.GET, queryset=filter_list)
+    Example for incoming request: localhost:8000/dashboard/?scenario_id=5&scenario_id=10
 
-    # also get graph options for charts
-    graph_options = GraphOptionFilter(request.GET, queryset=filter_list)
+    Parameters
+    ----------
+    request
 
+    Returns
+    -------
+
+    """
+    selected_scenarios = request.GET.getlist("scenario_id")
+    scalar_data = ScalarData.objects.filter(scenario__in=selected_scenarios)
+    filter_form = FormFilter(request.GET, queryset=scalar_data)
+    graph_options = GraphOptionFilter(request.GET, queryset=scalar_data)
     return render(
-        request, "django_comparison_dashboard/dashboard.html", {"filter_form": f, "graph_options": graph_options}
+        request,
+        "django_comparison_dashboard/dashboard.html",
+        {"filter_form": filter_form, "graph_options": graph_options, "scenarios": selected_scenarios},
     )
 
 
 def scalar_data_plot(request):
-    query = request.GET.dict()
-    filters, groupby, units, plot_options = preprocessing.prepare_query(query)
-    df = preprocessing.get_scalar_data(filters, groupby, units).to_dict(orient="records")
-    return HttpResponse(graphs.bar_plot(df, plot_options).to_html())
+    selected_scenarios = request.GET.getlist("scenario_id")
+    scalar_data = ScalarData.objects.filter(scenario__in=selected_scenarios)
+    filter_form = FormFilter(request.GET, queryset=scalar_data)
+    if filter_form.is_valid():
+        df = preprocessing.get_scalar_data(filter_form.qs, [], []).to_dict(orient="records")
+        return HttpResponse(graphs.bar_plot(df, []).to_html())
+    else:
+        response = render(
+            request,
+            "django_comparison_dashboard/dashboard.html#filters",
+            {"filter_form": filter_form, "scenarios": selected_scenarios},
+        )
+        return retarget(response, "#filters")
 
 
 def scalar_data_table(request):
-    query = request.GET.dict()
-    filters, groupby, units, plot_options = preprocessing.prepare_query(query)
-    df = preprocessing.get_scalar_data(filters, groupby, units)
-    return HttpResponse(df.to_html())
+    selected_scenarios = request.GET.getlist("scenario_id")
+    scalar_data = ScalarData.objects.filter(scenario__in=selected_scenarios)
+    filter_form = FormFilter(request.GET, queryset=scalar_data)
+    if filter_form.is_valid():
+        df = preprocessing.get_scalar_data(filter_form.qs, [], [])
+        return HttpResponse(df.to_html())
+    else:
+        response = render(
+            request,
+            "django_comparison_dashboard/dashboard.html#filters",
+            {"filter_form": filter_form, "scenarios": selected_scenarios},
+        )
+        return retarget(response, "#filters")
 
 
 class ScenarioSelectionView(ListView):
@@ -69,10 +96,6 @@ class ScenarioSelectionView(ListView):
             return [f"{self.template_name}#scenarios"]
         else:
             return super().get_template_names()
-
-    def post(self, request):
-        scenario_ids = request.POST.getlist("scenario_id")
-        return utils.redirect_params("django_comparison_dashboard:dashboard", scenario_ids=scenario_ids)
 
 
 class ScenarioDetailView(DetailView):

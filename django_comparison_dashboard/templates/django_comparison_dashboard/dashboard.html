@@ -26,6 +26,7 @@
           <form method="get"
                 hx-get="{% url 'django_comparison_dashboard:data_table' %}"
                 hx-target="#table">
+            {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
             {{ filter_form.form.as_p }}
             <input type="submit" value="Apply Filters" />
           </form>
@@ -51,5 +52,5 @@
 {% endblock content %}
 {% block javascript %}
   {{ block.super }}
-  <script src="https://unpkg.com/htmx.org@1.6.0"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.7"></script>
 {% endblock javascript %}
