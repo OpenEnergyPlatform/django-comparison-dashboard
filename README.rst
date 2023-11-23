@@ -66,7 +66,7 @@ within the shell run
 to download example data.
 
 
-.. |badge_license| image:: https://img.shields.io/github/license/OpenEnergyPlatform/django-comparison-dashboard
+.. |badge_license| image:: https://img.shields.io/github/license/OpenEnergyPlatform/django-comparison-dashboard.svg
     :target: LICENSE.txt
     :alt: License
 
@@ -77,7 +77,7 @@ to download example data.
 .. |badge_contributing| image:: https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat
     :alt: contributions
 
-.. |badge_repo_counts| image:: 
+.. |badge_repo_counts| image:: http://hits.dwyl.com/OpenEnergyPlatform/django-comparison-dashboard.svg
     :alt: counter
 
 .. |badge_contributors| image:: https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square
