@@ -10,9 +10,13 @@ Django Comparison Dashboard
 
 This app holds functionality to examine and compare scenario data from various sources (OEP, databus, CSVs).
 
-Installation
-------------
+.. contents::
+    :depth: 2
+    :local:
+    :backlinks: top
 
+Installation
+============
 Install app via pip (currently only as GitHub dependency):
 
 .. code-block:: bash
@@ -29,7 +33,7 @@ Add app to your installed apps in django project settings:
     ]
 
 For Developers
---------------
+============
 
 You can download example scenario from MODEX like this:
 
