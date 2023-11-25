@@ -30,10 +30,10 @@ class FormFilter(django_filters.FilterSet):
 def available_filters():
     # get available filters from FormFilter
     available_filters = []
-    for count, filter_name in enumerate(ScalarData.filters):
+    for filter_name in enumerate(ScalarData.filters):
         filter_values = ScalarData.objects.values_list(filter_name, flat=True).distinct()
         if filter_values:
-            available_filters.append((count, filter_name))
+            available_filters.append((filter_name, filter_name))
     return available_filters
 
 
@@ -44,6 +44,8 @@ class GraphOptionForm(forms.Form):
     color = forms.ChoiceField(label="Color", choices=available_filters)
     hover_name = forms.ChoiceField(label="Hover", choices=available_filters)
     orientation = forms.ChoiceField(label="Orientation", choices=(("v", "vertical"), ("h", "horizontal")))
-    barmode = forms.ChoiceField(label="Mode", choices=((0, "relative"), (1, "group"), (2, "overlay")))
+    barmode = forms.ChoiceField(
+        label="Mode", choices=(("relative", "relative"), ("group", "group"), ("overlay", "overlay"))
+    )
     facet_col = forms.ChoiceField(label="Subplots", choices=available_filters)
     facet_col_wrap = forms.IntegerField(label="Subplots per Row")
