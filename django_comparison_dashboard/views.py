@@ -4,7 +4,7 @@ from django.views.generic import DetailView, FormView, ListView, TemplateView
 from django_htmx.http import retarget
 
 from . import graphs, models, preprocessing, sources
-from .filters import FormFilter, GraphOptionForm
+from .filters import FormFilter, GraphOptionForm, OrderAggregationForm
 from .models import ScalarData
 
 
@@ -40,10 +40,16 @@ def get_filters(request):
     scalar_data = ScalarData.objects.filter(scenario__in=selected_scenarios)
     filter_form = FormFilter(queryset=scalar_data)
     graph_options_form = GraphOptionForm()
+    order_aggregation_form = OrderAggregationForm()
     return render(
         request,
         "django_comparison_dashboard/dashboard.html",
-        {"filter_form": filter_form, "graph_options_form": graph_options_form, "scenarios": selected_scenarios},
+        {
+            "filter_form": filter_form,
+            "graph_options_form": graph_options_form,
+            "scenarios": selected_scenarios,
+            "order_aggregation_form": order_aggregation_form,
+        },
     )
 
 

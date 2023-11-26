@@ -28,6 +28,8 @@
                 hx-target="#table">
             {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
             {{ filter_form.form.as_p }}
+            <hr />
+            {{ order_aggregation_form.as_p }}
             <input type="submit" value="Apply Filters" />
           </form>
         {% endpartial %}
