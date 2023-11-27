@@ -59,3 +59,21 @@ class OrderAggregationForm(forms.Form):
     order_by = forms.ChoiceField(label="Order-By", choices=available_filters)
     group_by = forms.ChoiceField(label="Group-By", choices=available_filters)
     normalize = forms.BooleanField(label="Normalize Data", required=False)
+
+
+class UnitForm(forms.Form):
+    energy = forms.ChoiceField(
+        label="Energy", initial="GWh", choices=(("kWh", "kWh"), ("MWh", "MWh"), ("GWh", "GWh"), ("TWh", "TWh"))
+    )
+    power = forms.ChoiceField(
+        label="Power", initial="GW", choices=(("kW", "kW"), ("MW", "MW"), ("GW", "GW"), ("TW", "TW"))
+    )
+    power_per_hour = forms.ChoiceField(
+        label="Power per Hour",
+        initial="MW/h",
+        choices=(("kW/h", "kW/h"), ("MW/h", "MW/h"), ("GW/h", "GW/h"), ("TW/h", "TW/h")),
+    )
+    mass = forms.ChoiceField(label="Mass", initial="Gt", choices=(("Mt", "Mt"), ("Gt", "Gt")))
+    mass_per_year = forms.ChoiceField(
+        label="Mass per year", initial="Gt/a", choices=(("Mt/a", "Mt/a"), ("Gt/a", "Gt/a"))
+    )
