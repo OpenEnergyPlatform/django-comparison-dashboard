@@ -106,7 +106,6 @@ def scalar_data_plot(request):
             {"graph_options_form": graph_options_form},
         )
         return retarget(response, "#graph_options")
-
     return HttpResponse(graphs.bar_plot(df, graph_options_form.cleaned_data).to_html())
 
 

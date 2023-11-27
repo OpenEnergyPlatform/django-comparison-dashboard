@@ -51,18 +51,35 @@ def available_filters():
     return available_filters
 
 
+def available_filters_empty():
+    # get available filters from FormFilter
+    available_filters = []
+    available_filters.append(("", "---"))
+    for filter_name in ScalarData.filters:
+        filter_values = ScalarData.objects.values_list(filter_name, flat=True).distinct()
+        if filter_values:
+            available_filters.append((filter_name, filter_name))
+    return available_filters
+
+
 class GraphOptionForm(forms.Form):
     x = forms.ChoiceField(label="X-Axis", choices=available_filters, help_text="help text")
     y = forms.ChoiceField(label="Y-Axis", choices=available_filters)
-    text = forms.ChoiceField(label="Text", choices=available_filters)
+    text = forms.ChoiceField(label="Text", choices=available_filters_empty)
     color = forms.ChoiceField(label="Color", choices=available_filters)
     hover_name = forms.ChoiceField(label="Hover", choices=available_filters)
     orientation = forms.ChoiceField(label="Orientation", choices=(("v", "vertical"), ("h", "horizontal")))
     barmode = forms.ChoiceField(
         label="Mode", choices=(("relative", "relative"), ("group", "group"), ("overlay", "overlay"))
     )
-    facet_col = forms.ChoiceField(label="Subplots", choices=((None, "Nothing"), ("region", "region")), required=False)
+    facet_col = forms.ChoiceField(label="Subplots", choices=available_filters_empty, required=False)
     facet_col_wrap = forms.IntegerField(label="Subplots per Row")
+
+    def clean_facet_col(self):
+        data = self.cleaned_data["facet_col"]
+        if data == "":
+            return None
+        return data
 
 
 class OrderAggregationForm(forms.Form):
