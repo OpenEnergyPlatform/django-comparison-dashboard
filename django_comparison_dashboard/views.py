@@ -4,7 +4,8 @@ from django.views.generic import DetailView, FormView, ListView, TemplateView
 from django_htmx.http import retarget
 
 from . import graphs, models, preprocessing, sources
-from .filters import FormFilter, GraphOptionForm, OrderAggregationForm, UnitForm
+from .filters import ScenarioFilter
+from .forms import GraphOptionForm, OrderAggregationForm, UnitForm
 from .models import ScalarData
 
 
@@ -18,9 +19,8 @@ class DashboardView(TemplateView):
 
 def index(request):
     filter_list = ScalarData.objects.all()
-    f = FormFilter(request.GET, queryset=filter_list)
-    context = {"filter_form": f}
-    return render(request, "django_comparison_dashboard/dashboard.html", context)
+    scenario_filter = ScenarioFilter(request.GET, queryset=filter_list)
+    return render(request, "django_comparison_dashboard/dashboard.html", {"scenario_filter": scenario_filter})
 
 
 def get_filters(request):
@@ -38,7 +38,7 @@ def get_filters(request):
     """
     selected_scenarios = request.GET.getlist("scenario_id")
     scalar_data = ScalarData.objects.filter(scenario__in=selected_scenarios)
-    filter_form = FormFilter(queryset=scalar_data)
+    scenario_filter = ScenarioFilter(queryset=scalar_data)
     graph_options_form = GraphOptionForm()
     order_aggregation_form = OrderAggregationForm()
     unit_form = UnitForm()
@@ -46,7 +46,7 @@ def get_filters(request):
         request,
         "django_comparison_dashboard/dashboard.html",
         {
-            "filter_form": filter_form,
+            "scenario_filter": scenario_filter,
             "graph_options_form": graph_options_form,
             "scenarios": selected_scenarios,
             "order_aggregation_form": order_aggregation_form,
@@ -58,16 +58,16 @@ def get_filters(request):
 def scalar_data_plot(request):
     selected_scenarios = request.GET.getlist("scenario_id")
     scalar_data = ScalarData.objects.filter(scenario__in=selected_scenarios)
-    filter_form = FormFilter(request.GET, queryset=scalar_data)
+    scenario_filter = ScenarioFilter(request.GET, queryset=scalar_data)
     order_aggregation_form = OrderAggregationForm(request.GET)
     unit_form = UnitForm(request.GET)
     graph_options_form = GraphOptionForm(request.GET)
-    if not filter_form.is_valid():
+    if not scenario_filter.is_valid():
         response = render(
             request,
             "django_comparison_dashboard/dashboard.html#filters",
             {
-                "filter_form": filter_form,
+                "scenario_filter": scenario_filter,
                 "scenarios": selected_scenarios,
                 "order_aggregation_form": order_aggregation_form,
                 "unit_form": unit_form,
@@ -79,7 +79,7 @@ def scalar_data_plot(request):
             request,
             "django_comparison_dashboard/dashboard.html#filters",
             {
-                "filter_form": filter_form,
+                "scenario_filter": scenario_filter,
                 "scenarios": selected_scenarios,
                 "order_aggregation_form": order_aggregation_form,
                 "unit_form": unit_form,
@@ -91,14 +91,14 @@ def scalar_data_plot(request):
             request,
             "django_comparison_dashboard/dashboard.html#filters",
             {
-                "filter_form": filter_form,
+                "scenario_filter": scenario_filter,
                 "scenarios": selected_scenarios,
                 "order_aggregation_form": order_aggregation_form,
                 "unit_form": unit_form,
             },
         )
         return retarget(response, "#filters")
-    df = preprocessing.get_scalar_data(filter_form.qs, [], unit_form.cleaned_data).to_dict(orient="records")
+    df = preprocessing.get_scalar_data(scenario_filter.qs, [], unit_form.cleaned_data).to_dict(orient="records")
     if not graph_options_form.is_valid():
         response = render(
             request,
@@ -113,15 +113,15 @@ def scalar_data_plot(request):
 def scalar_data_table(request):
     selected_scenarios = request.GET.getlist("scenario_id")
     scalar_data = ScalarData.objects.filter(scenario__in=selected_scenarios)
-    filter_form = FormFilter(request.GET, queryset=scalar_data)
-    if filter_form.is_valid():
-        df = preprocessing.get_scalar_data(filter_form.qs, [], [])
+    scenario_filter = ScenarioFilter(request.GET, queryset=scalar_data)
+    if scenario_filter.is_valid():
+        df = preprocessing.get_scalar_data(scenario_filter.qs, [], [])
         return HttpResponse(df.to_html())
     else:
         response = render(
             request,
             "django_comparison_dashboard/dashboard.html#filters",
-            {"filter_form": filter_form, "scenarios": selected_scenarios},
+            {"scenario_filter": scenario_filter, "scenarios": selected_scenarios},
         )
         return retarget(response, "#filters")
 

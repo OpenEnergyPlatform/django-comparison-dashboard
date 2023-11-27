@@ -27,7 +27,7 @@
                 hx-get="{% url 'django_comparison_dashboard:data_table' %}"
                 hx-target="#table">
             {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
-            {{ filter_form.form.as_p }}
+            {{ scenario_filter.form.as_p }}
             <hr />
             {{ order_aggregation_form.as_p }}
             <hr />
