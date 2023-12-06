@@ -41,18 +41,29 @@ define_units()
 define_energy_model_units()
 
 
-def get_scalar_data(queryset_filtered: dict[str, str], groupby: list[str], units: list[str]) -> pd.DataFrame:
-    if groupby:
-        queryset = queryset_filtered.values(*(groupby + ["unit"])).annotate(value=Sum("value"))
+def get_scalar_data(queryset_filtered: dict[str, str], order_aggregation: list[str], units: list[str]) -> pd.DataFrame:
+    if order_aggregation:
+        # looks like: {'order_by': ['region'], 'group_by': ['year'], 'normalize': False}
+        groupby = order_aggregation["group_by"]
+        orderby = order_aggregation["order_by"]
+        if groupby:
+            queryset = queryset_filtered.values(*(groupby + ["unit"])).annotate(value=Sum("value"))
+        if orderby:
+            queryset = queryset.order_by(*(orderby))
+        df = pd.DataFrame(queryset)
+        if df.empty:
+            return df
+        df = convert_units_in_df(df, units)
+        df = aggregate_df(df, groupby)
     else:
         queryset = queryset_filtered.values()
-    df = pd.DataFrame(queryset)
-    if df.empty:
-        return df
+        df = pd.DataFrame(queryset)
+        if df.empty:
+            return df
 
     # Following preprocessing steps cannot be done in DB
     df = convert_units_in_df(df, units)
-    df = aggregate_df(df, groupby)  # Groupby has to be redone after unit conversion
+    # Groupby has to be redone after unit conversion
     return df
 
 

@@ -98,7 +98,9 @@ def scalar_data_plot(request):
             },
         )
         return retarget(response, "#filters")
-    df = preprocessing.get_scalar_data(scenario_filter.qs, [], unit_form.cleaned_data).to_dict(orient="records")
+    df = preprocessing.get_scalar_data(
+        scenario_filter.qs, order_aggregation_form.cleaned_data, unit_form.cleaned_data
+    ).to_dict(orient="records")
     if not graph_options_form.is_valid():
         response = render(
             request,

@@ -65,7 +65,7 @@ def available_filters_empty():
 class GraphOptionForm(forms.Form):
     x = forms.ChoiceField(label="X-Axis", choices=available_filters, help_text="help text")
     y = forms.ChoiceField(label="Y-Axis", choices=available_filters)
-    text = forms.ChoiceField(label="Text", choices=available_filters_empty)
+    text = forms.ChoiceField(label="Text", choices=available_filters_empty, required=False)
     color = forms.ChoiceField(label="Color", choices=available_filters)
     hover_name = forms.ChoiceField(label="Hover", choices=available_filters)
     orientation = forms.ChoiceField(label="Orientation", choices=(("v", "vertical"), ("h", "horizontal")))
@@ -76,7 +76,13 @@ class GraphOptionForm(forms.Form):
     facet_col_wrap = forms.IntegerField(label="Subplots per Row")
 
     def clean_facet_col(self):
-        data = self.cleaned_data["facet_col"]
+        data = self.cleaned_data["facet_col"]  # also needs for text
+        if data == "":
+            return None
+        return data
+
+    def clean_text(self):
+        data = self.cleaned_data["text"]  # also needs for text
         if data == "":
             return None
         return data
