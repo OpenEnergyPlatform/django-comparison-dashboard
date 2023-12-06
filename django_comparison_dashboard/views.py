@@ -115,16 +115,46 @@ def scalar_data_table(request):
     selected_scenarios = request.GET.getlist("scenario_id")
     scalar_data = ScalarData.objects.filter(scenario__in=selected_scenarios)
     scenario_filter = ScenarioFilter(request.GET, queryset=scalar_data)
-    if scenario_filter.is_valid():
-        df = preprocessing.get_scalar_data(scenario_filter.qs, [], [])
-        return HttpResponse(df.to_html())
-    else:
+    order_aggregation_form = OrderAggregationForm(request.GET)
+    unit_form = UnitForm(request.GET)
+    if not scenario_filter.is_valid():
         response = render(
             request,
             "django_comparison_dashboard/dashboard.html#filters",
-            {"scenario_filter": scenario_filter, "scenarios": selected_scenarios},
+            {
+                "scenario_filter": scenario_filter,
+                "scenarios": selected_scenarios,
+                "order_aggregation_form": order_aggregation_form,
+                "unit_form": unit_form,
+            },
         )
         return retarget(response, "#filters")
+    if not order_aggregation_form.is_valid():
+        response = render(
+            request,
+            "django_comparison_dashboard/dashboard.html#filters",
+            {
+                "scenario_filter": scenario_filter,
+                "scenarios": selected_scenarios,
+                "order_aggregation_form": order_aggregation_form,
+                "unit_form": unit_form,
+            },
+        )
+        return retarget(response, "#filters")
+    if not unit_form.is_valid():
+        response = render(
+            request,
+            "django_comparison_dashboard/dashboard.html#filters",
+            {
+                "scenario_filter": scenario_filter,
+                "scenarios": selected_scenarios,
+                "order_aggregation_form": order_aggregation_form,
+                "unit_form": unit_form,
+            },
+        )
+        return retarget(response, "#filters")
+    df = preprocessing.get_scalar_data(scenario_filter.qs, order_aggregation_form.cleaned_data, unit_form.cleaned_data)
+    return HttpResponse(df.to_html())
 
 
 class ScenarioSelectionView(ListView):
