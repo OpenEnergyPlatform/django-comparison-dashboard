@@ -48,13 +48,16 @@ def get_scalar_data(queryset_filtered: dict[str, str], order_aggregation: list[s
         orderby = order_aggregation["order_by"]
         if groupby:
             queryset = queryset_filtered.values(*(groupby + ["unit"])).annotate(value=Sum("value"))
-        if orderby:
-            queryset = queryset.order_by(*(orderby))
+        else:
+            queryset = queryset_filtered.values()
         df = pd.DataFrame(queryset)
         if df.empty:
             return df
+        # Following preprocessing steps cannot be done in DB
         df = convert_units_in_df(df, units)
-        df = aggregate_df(df, groupby)
+        df = aggregate_df(df, groupby, orderby)
+        # Groupby has to be redone after unit conversion, and if orderby is provided it will also be applied here
+        return df
     else:
         queryset = queryset_filtered.values()
         df = pd.DataFrame(queryset)
@@ -63,11 +66,10 @@ def get_scalar_data(queryset_filtered: dict[str, str], order_aggregation: list[s
 
     # Following preprocessing steps cannot be done in DB
     df = convert_units_in_df(df, units)
-    # Groupby has to be redone after unit conversion
     return df
 
 
-def aggregate_df(df: pd.DataFrame, groupby: list[str]) -> pd.DataFrame:
+def aggregate_df(df: pd.DataFrame, groupby: list[str], orderby: list[str]) -> pd.DataFrame:
     if df.empty:
         return df
 
@@ -77,6 +79,9 @@ def aggregate_df(df: pd.DataFrame, groupby: list[str]) -> pd.DataFrame:
         df = df.groupby(groupby + ["unit"]).aggregate("sum").reset_index()
         keep_columns = groupby + ["unit", "value", "series"]
         df = df[df.columns.intersection(keep_columns)]
+
+    if orderby:
+        df = df.sort_values(orderby)
     return df
 
 

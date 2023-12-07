@@ -89,8 +89,8 @@ class GraphOptionForm(forms.Form):
 
 
 class OrderAggregationForm(forms.Form):
-    order_by = forms.MultipleChoiceField(label="Order-By", choices=available_filters)
-    group_by = forms.MultipleChoiceField(label="Group-By", choices=available_filters)
+    order_by = forms.MultipleChoiceField(label="Order-By", choices=available_filters, required=False)
+    group_by = forms.MultipleChoiceField(label="Group-By", choices=available_filters, required=False)
     normalize = forms.BooleanField(label="Normalize Data", required=False)
 
 
