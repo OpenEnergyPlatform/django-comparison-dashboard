@@ -80,7 +80,9 @@ def aggregate_df(df: pd.DataFrame, groupby: list[str], orderby: list[str]) -> pd
         keep_columns = groupby + ["unit", "value", "series"]
         df = df[df.columns.intersection(keep_columns)]
 
-    if orderby:
+    # value of orderby has to be part of the values in groupby because other columns
+    # are not part of the queryset anymore
+    if orderby and orderby in groupby:
         df = df.sort_values(orderby)
     return df
 

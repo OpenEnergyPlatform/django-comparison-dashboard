@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.views.generic import DetailView, FormView, ListView, TemplateView
@@ -99,6 +100,20 @@ def scalar_data_plot(request):
             {"graph_options_form": graph_options_form},
         )
         return retarget(response, "#graph_options")
+
+    # checking if the filters choosen for the x and y Axis are part of the filters chosen in group_by
+    # when group_by is [] all values were choose for the dataframe
+    group_by = order_aggregation_form.cleaned_data["group_by"]
+    if not group_by == []:
+        if not graph_options_form.cleaned_data["x"] in group_by:
+            messages.add_message(
+                request, messages.WARNING, "Please choose a value for the X-Axis that was also choosen in Group-By."
+            )
+        if not graph_options_form.cleaned_data["y"] in group_by:
+            messages.add_message(
+                request, messages.WARNING, "Please choose a value for the Y-Axis that was also choosen in Group-By."
+            )
+
     return HttpResponse(graphs.bar_plot(df, graph_options_form.cleaned_data).to_html())
 
 
