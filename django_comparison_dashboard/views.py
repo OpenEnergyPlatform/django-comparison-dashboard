@@ -8,10 +8,6 @@ from .filters import FormFilter, GraphOptionForm
 from .models import ScalarData
 
 
-class IndexView(TemplateView):
-    template_name = "django_comparison_dashboard/index.html"
-
-
 class DashboardView(TemplateView):
     template_name = "django_comparison_dashboard/dashboard.html"
 

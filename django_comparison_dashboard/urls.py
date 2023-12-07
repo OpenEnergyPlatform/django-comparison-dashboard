@@ -7,7 +7,6 @@ app_name = "django_comparison_dashboard"
 urlpatterns = [
     path("index/", views.index, name="index"),
     path("filters/", views.get_filters, name="filters"),
-    path("", views.IndexView.as_view(), name="index"),
     path("dashboard/", views.get_filters, name="dashboard"),
     path("scalars/", views.scalar_data_plot, name="data_plot"),
     path("scalars/data/", views.scalar_data_table, name="data_table"),
