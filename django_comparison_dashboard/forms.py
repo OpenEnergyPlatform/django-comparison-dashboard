@@ -41,6 +41,9 @@ class CSVSourceUploadForm(DataSourceUploadForm):
     csv_file = forms.FileField()
 
 
+# left hand side filters for used for data selection
+
+
 def available_filters():
     # get available filters from FormFilter
     available_filters = []
@@ -60,32 +63,6 @@ def available_filters_empty():
         if filter_values:
             available_filters.append((filter_name, filter_name))
     return available_filters
-
-
-class GraphOptionForm(forms.Form):
-    x = forms.ChoiceField(label="X-Axis", choices=available_filters, help_text="help text")
-    y = forms.ChoiceField(label="Y-Axis", choices=available_filters)
-    text = forms.ChoiceField(label="Text", choices=available_filters_empty, required=False)
-    color = forms.ChoiceField(label="Color", choices=available_filters)
-    hover_name = forms.ChoiceField(label="Hover", choices=available_filters)
-    orientation = forms.ChoiceField(label="Orientation", choices=(("v", "vertical"), ("h", "horizontal")))
-    barmode = forms.ChoiceField(
-        label="Mode", choices=(("relative", "relative"), ("group", "group"), ("overlay", "overlay"))
-    )
-    facet_col = forms.ChoiceField(label="Subplots", choices=available_filters_empty, required=False)
-    facet_col_wrap = forms.IntegerField(label="Subplots per Row")
-
-    def clean_facet_col(self):
-        data = self.cleaned_data["facet_col"]  # also needs for text
-        if data == "":
-            return None
-        return data
-
-    def clean_text(self):
-        data = self.cleaned_data["text"]  # also needs for text
-        if data == "":
-            return None
-        return data
 
 
 class OrderAggregationForm(forms.Form):
@@ -120,3 +97,47 @@ class LabelForm(forms.Form):
 class ColorForm(forms.Form):
     color_name = forms.CharField(label="set color for", required=False)
     color_field = forms.CharField(label="color", widget=forms.TextInput(attrs={"type": "color"}), required=False)
+
+
+# right hand side options for plotting charts
+
+
+class GraphOptionForm(forms.Form):
+    x = forms.ChoiceField(label="X-Axis", choices=available_filters, help_text="help text")
+    y = forms.ChoiceField(label="Y-Axis", choices=available_filters)
+    text = forms.ChoiceField(label="Text", choices=available_filters_empty, required=False)
+    color = forms.ChoiceField(label="Color", choices=available_filters)
+    hover_name = forms.ChoiceField(label="Hover", choices=available_filters)
+    orientation = forms.ChoiceField(label="Orientation", choices=(("v", "vertical"), ("h", "horizontal")))
+    barmode = forms.ChoiceField(
+        label="Mode", choices=(("relative", "relative"), ("group", "group"), ("overlay", "overlay"))
+    )
+    facet_col = forms.ChoiceField(label="Subplots", choices=available_filters_empty, required=False)
+    facet_col_wrap = forms.IntegerField(label="Subplots per Row")
+
+    def clean_facet_col(self):
+        data = self.cleaned_data["facet_col"]
+        if data == "":
+            return None
+        return data
+
+    def clean_text(self):
+        data = self.cleaned_data["text"]
+        if data == "":
+            return None
+        return data
+
+
+class DisplayOptionForm(forms.Form):
+    chart_height = forms.IntegerField(label="Chart Height", required=False)
+    x_title = forms.CharField(label="X-Axis Title", required=False)
+    y_title = forms.CharField(label="Y-Axis Title", required=False)
+    subplot_title = forms.CharField(label="Subplot Title", required=False)
+    show_legend = forms.BooleanField(label="Show Legend", required=False)
+    legend_title = forms.CharField(label="Legend Title", required=False)
+    bar_gap = forms.IntegerField(label="Bar Gap", required=False)
+    margin_left = forms.IntegerField(label="Margin Left", required=False)
+    margin_right = forms.IntegerField(label="Margin Right", required=False)
+    margin_top = forms.IntegerField(label="Margin Top", required=False)
+    margin_bottom = forms.IntegerField(label="Margin Bottom", required=False)
+    subplot_spacing = forms.IntegerField(label="Subplot Spacing", required=False)
