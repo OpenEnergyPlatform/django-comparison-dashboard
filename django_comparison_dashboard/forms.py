@@ -115,3 +115,8 @@ class UnitForm(forms.Form):
 class LabelForm(forms.Form):
     label1 = forms.CharField(label="name of the thing to be labeled", required=False)
     label2 = forms.CharField(label="new label", required=False)
+
+
+class ColorForm(forms.Form):
+    color_name = forms.CharField(label="set color for", required=False)
+    color_field = forms.CharField(label="color", widget=forms.TextInput(attrs={"type": "color"}), required=False)

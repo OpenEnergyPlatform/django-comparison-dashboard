@@ -6,7 +6,7 @@ from django_htmx.http import retarget
 
 from . import graphs, models, preprocessing, sources
 from .filters import ScenarioFilter
-from .forms import GraphOptionForm, LabelForm, OrderAggregationForm, UnitForm
+from .forms import ColorForm, GraphOptionForm, LabelForm, OrderAggregationForm, UnitForm
 from .models import ScalarData
 
 
@@ -35,6 +35,17 @@ def add_label_form(request):
     )
 
 
+def add_color_form(request):
+    color_form = ColorForm()
+    return render(
+        request,
+        "django_comparison_dashboard/dashboard.html#colors",
+        {
+            "color_form": color_form,
+        },
+    )
+
+
 def get_filters(request):
     """
 
@@ -55,6 +66,7 @@ def get_filters(request):
     order_aggregation_form = OrderAggregationForm()
     unit_form = UnitForm()
     label_form = LabelForm()
+    color_form = ColorForm()
     return render(
         request,
         "django_comparison_dashboard/dashboard.html",
@@ -65,6 +77,7 @@ def get_filters(request):
             "order_aggregation_form": order_aggregation_form,
             "unit_form": unit_form,
             "label_form": label_form,
+            "color_form": color_form,
         },
     )
 

@@ -16,4 +16,5 @@ urlpatterns = [
     path("upload/", views.UploadView.as_view(), name="upload"),
     path("scenario_form/", views.ScenarioFormView.as_view(), name="scenario_form"),
     path("add_label", views.add_label_form, name="add_label_form"),
+    path("add_color", views.add_color_form, name="add_color_form"),
 ]
