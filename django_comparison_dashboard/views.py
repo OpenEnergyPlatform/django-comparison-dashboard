@@ -6,7 +6,7 @@ from django_htmx.http import retarget
 
 from . import graphs, models, preprocessing, sources
 from .filters import ScenarioFilter
-from .forms import GraphOptionForm, OrderAggregationForm, UnitForm
+from .forms import GraphOptionForm, LabelForm, OrderAggregationForm, UnitForm
 from .models import ScalarData
 
 
@@ -22,6 +22,17 @@ def index(request):
     filter_list = ScalarData.objects.all()
     scenario_filter = ScenarioFilter(request.GET, queryset=filter_list)
     return render(request, "django_comparison_dashboard/dashboard.html", {"scenario_filter": scenario_filter})
+
+
+def add_label_form(request):
+    label_form = LabelForm()
+    return render(
+        request,
+        "django_comparison_dashboard/dashboard.html#labels",
+        {
+            "label_form": label_form,
+        },
+    )
 
 
 def get_filters(request):
@@ -43,6 +54,7 @@ def get_filters(request):
     graph_options_form = GraphOptionForm()
     order_aggregation_form = OrderAggregationForm()
     unit_form = UnitForm()
+    label_form = LabelForm()
     return render(
         request,
         "django_comparison_dashboard/dashboard.html",
@@ -52,6 +64,7 @@ def get_filters(request):
             "scenarios": selected_scenarios,
             "order_aggregation_form": order_aggregation_form,
             "unit_form": unit_form,
+            "label_form": label_form,
         },
     )
 

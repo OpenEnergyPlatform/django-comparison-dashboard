@@ -110,3 +110,8 @@ class UnitForm(forms.Form):
     mass_per_year = forms.ChoiceField(
         label="Mass per year", initial="Gt/a", choices=(("Mt/a", "Mt/a"), ("Gt/a", "Gt/a"))
     )
+
+
+class LabelForm(forms.Form):
+    label1 = forms.CharField(label="name of the thing to be labeled", required=False)
+    label2 = forms.CharField(label="new label", required=False)
