@@ -41,22 +41,35 @@ define_units()
 define_energy_model_units()
 
 
-def get_scalar_data(queryset_filtered: dict[str, str], groupby: list[str], units: list[str]) -> pd.DataFrame:
-    if groupby:
-        queryset = queryset_filtered.values(*(groupby + ["unit"])).annotate(value=Sum("value"))
+def get_scalar_data(queryset_filtered: dict[str, str], order_aggregation: list[str], units: list[str]) -> pd.DataFrame:
+    if order_aggregation:
+        # looks like: {'order_by': ['region'], 'group_by': ['year'], 'normalize': False}
+        groupby = order_aggregation["group_by"]
+        orderby = order_aggregation["order_by"]
+        if groupby:
+            queryset = queryset_filtered.values(*(groupby + ["unit"])).annotate(value=Sum("value"))
+        else:
+            queryset = queryset_filtered.values()
+        df = pd.DataFrame(queryset)
+        if df.empty:
+            return df
+        # Following preprocessing steps cannot be done in DB
+        df = convert_units_in_df(df, units)
+        df = aggregate_df(df, groupby, orderby)
+        # Groupby has to be redone after unit conversion, and if orderby is provided it will also be applied here
+        return df
     else:
         queryset = queryset_filtered.values()
-    df = pd.DataFrame(queryset)
-    if df.empty:
-        return df
+        df = pd.DataFrame(queryset)
+        if df.empty:
+            return df
 
     # Following preprocessing steps cannot be done in DB
     df = convert_units_in_df(df, units)
-    df = aggregate_df(df, groupby)  # Groupby has to be redone after unit conversion
     return df
 
 
-def aggregate_df(df: pd.DataFrame, groupby: list[str]) -> pd.DataFrame:
+def aggregate_df(df: pd.DataFrame, groupby: list[str], orderby: list[str]) -> pd.DataFrame:
     if df.empty:
         return df
 
@@ -66,6 +79,11 @@ def aggregate_df(df: pd.DataFrame, groupby: list[str]) -> pd.DataFrame:
         df = df.groupby(groupby + ["unit"]).aggregate("sum").reset_index()
         keep_columns = groupby + ["unit", "value", "series"]
         df = df[df.columns.intersection(keep_columns)]
+
+    # value of orderby has to be part of the values in groupby because other columns
+    # are not part of the queryset anymore
+    if orderby and orderby in groupby:
+        df = df.sort_values(orderby)
     return df
 
 

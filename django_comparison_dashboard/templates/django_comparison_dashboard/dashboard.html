@@ -27,27 +27,53 @@
                 hx-get="{% url 'django_comparison_dashboard:data_table' %}"
                 hx-target="#table">
             {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
-            {{ filter_form.form.as_p }}
-            <input type="submit" value="Apply Filters" />
-          </form>
+            {{ scenario_filter.form.as_p }}
+            <hr />
+            {{ order_aggregation_form.as_p }}
+            <hr />
+            {{ unit_form.as_p }}
+            <hr />
+            {% startpartial labels inline=True %}
+            {{ label_form.as_p }}
+            <div id="more_labels"></div>
+          {% endpartial %}
+          <button type="button"
+                  hx-get="{% url 'django_comparison_dashboard:add_label_form' %}"
+                  hx-target="#more_labels"
+                  hx-swap="beforeend">Add another Label</button>
+          <hr />
+          {% startpartial colors inline=True %}
+          {{ color_form.as_p }}
+          <div id="more_colors"></div>
         {% endpartial %}
-      </div>
-    </div>
-    <!-- contains Charts and Chart Settings -->
-    <div id="chart-column" class="col-6">
-      <p>CHARTS !</p>
-      {% startpartial graph_options inline=True %}
-      <form method="get"
-            hx-get="{% url 'django_comparison_dashboard:data_plot' %}"
-            hx-include="#filters"
-            hx-target="#plot">
-        {{ graph_options_form.as_p }}
+        <button type="button"
+                hx-get="{% url 'django_comparison_dashboard:add_color_form' %}"
+                hx-target="#more_colors"
+                hx-swap="beforeend">Add another Color</button>
+        <hr />
         <input type="submit" value="Apply Filters" />
       </form>
     {% endpartial %}
-    <div id="plot"></div>
-    <div id="table"></div>
   </div>
+</div>
+<!-- contains Charts and Chart Settings -->
+<div id="chart-column" class="col-6">
+  <p>CHARTS !</p>
+  {% startpartial graph_options inline=True %}
+  <form method="get"
+        hx-get="{% url 'django_comparison_dashboard:data_plot' %}"
+        hx-include="#filters"
+        hx-target="#plot">
+    {{ graph_options_form.as_p }}
+    <hr />
+    <p>Display Options</p>
+    {{ display_options_form.as_p }}
+    <input type="submit" value="Apply Filters" />
+  </form>
+{% endpartial %}
+<div id="plot"></div>
+<div id="table"></div>
+</div>
 </div>
 </div>
 {% endblock content %}
