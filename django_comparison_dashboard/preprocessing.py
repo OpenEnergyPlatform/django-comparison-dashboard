@@ -7,8 +7,6 @@ from units.exception import IncompatibleUnitsError
 from units.predefined import define_units
 from units.registry import REGISTRY
 
-from .settings import GRAPHS_DEFAULT_OPTIONS
-
 
 class PreprocessingError(Exception):
     """Raised if preprocessing fails"""
@@ -51,19 +49,14 @@ def get_scalar_data(queryset_filtered: dict[str, str], order_aggregation: list[s
         else:
             queryset = queryset_filtered.values()
         df = pd.DataFrame(queryset)
-        if df.empty:
-            return df
         # Following preprocessing steps cannot be done in DB
         df = convert_units_in_df(df, units.values())
         df = aggregate_df(df, groupby, orderby)
         # Groupby has to be redone after unit conversion, and if orderby is provided it will also be applied here
         return df
-    else:
-        queryset = queryset_filtered.values()
-        df = pd.DataFrame(queryset)
-        if df.empty:
-            return df
 
+    queryset = queryset_filtered.values()
+    df = pd.DataFrame(queryset)
     # Following preprocessing steps cannot be done in DB
     df = convert_units_in_df(df, units)
     return df
@@ -146,19 +139,3 @@ def convert_units_in_df(df: pd.DataFrame, units: list[str]) -> pd.DataFrame:
     for unit_ in units:
         df = df.apply(convert_units, axis=1, convert_to=unit_)
     return df
-
-
-def prepare_query(query: dict[str, str]) -> tuple[dict[str, str], list[str], list[str], dict[str, str]]:
-    """Unpacks filters, groupby and units from query dict"""
-
-    def parse_list(value):
-        if value[0] == "[" and value[-1] == "]":
-            return value[1:-1].split(",")
-        return value
-
-    plot_option_keys = list(GRAPHS_DEFAULT_OPTIONS["scalars"]["bar"].get_defaults().keys())
-    filters = {k: parse_list(v) for k, v in query.items() if k not in plot_option_keys + ["groupby", "units"]}
-    groupby = parse_list(query["groupby"]) if "groupby" in query else []
-    units = parse_list(query["units"]) if "units" in query else []
-    plot_options = {k: parse_list(v) for k, v in query.items() if k not in list(filters) + ["groupby", "units"]}
-    return filters, groupby, units, plot_options

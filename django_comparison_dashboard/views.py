@@ -131,11 +131,11 @@ def scalar_data_plot(request):
     if not group_by == []:
         if not graph_options_form.cleaned_data["x"] in group_by:
             messages.add_message(
-                request, messages.WARNING, "Please choose a value for the X-Axis that was also choosen in Group-By."
+                request, messages.WARNING, "Please choose a value for the X-Axis that was also chosen in Group-By."
             )
         if not graph_options_form.cleaned_data["y"] in group_by:
             messages.add_message(
-                request, messages.WARNING, "Please choose a value for the Y-Axis that was also choosen in Group-By."
+                request, messages.WARNING, "Please choose a value for the Y-Axis that was also chosen in Group-By."
             )
 
     return HttpResponse(graphs.bar_plot(df, graph_options_form.cleaned_data).to_html())
