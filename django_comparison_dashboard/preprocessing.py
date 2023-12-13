@@ -54,7 +54,7 @@ def get_scalar_data(queryset_filtered: dict[str, str], order_aggregation: list[s
         if df.empty:
             return df
         # Following preprocessing steps cannot be done in DB
-        df = convert_units_in_df(df, units)
+        df = convert_units_in_df(df, units.values())
         df = aggregate_df(df, groupby, orderby)
         # Groupby has to be redone after unit conversion, and if orderby is provided it will also be applied here
         return df
