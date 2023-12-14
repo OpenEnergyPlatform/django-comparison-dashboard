@@ -2,6 +2,7 @@ from django import forms
 from django.forms.utils import ErrorDict
 
 from . import settings
+from .filters import ScenarioFilter
 from .models import ScalarData
 
 
@@ -101,11 +102,13 @@ class LabelForm(forms.Form):
 
 
 class ColorForm(forms.Form):
-    color_name = forms.CharField(label="set color for", required=False)
-    color_field = forms.CharField(label="color", widget=forms.TextInput(attrs={"type": "color"}), required=False)
+    color_key = forms.CharField(label="set color for", required=False)
+    color_value = forms.CharField(label="color", widget=forms.TextInput(attrs={"type": "color"}), required=False)
 
-
-# right hand side options for plotting charts
+    def full_clean(self):
+        """Pair keys and values into dict"""
+        self._errors = ErrorDict()
+        self.cleaned_data = dict(zip(self.data.getlist("color_key"), self.data.getlist("color_value")))
 
 
 class GraphOptionForm(forms.Form):
@@ -147,3 +150,83 @@ class DisplayOptionForm(forms.Form):
     margin_top = forms.IntegerField(label="Margin Top", required=False)
     margin_bottom = forms.IntegerField(label="Margin Bottom", required=False)
     subplot_spacing = forms.IntegerField(label="Subplot Spacing", required=False)
+
+
+class FilterSet:
+    forms = {}
+
+    def __init__(self, data: dict | None = None):
+        self.bound_forms = {form_name: form(data) for form_name, form in self.forms.items()}
+
+    def is_valid(self) -> bool:
+        for form in self.get_forms().values():
+            if not form.is_valid():
+                return False
+        return True
+
+    def get_forms(self) -> dict[str, "forms.Form"]:
+        return self.bound_forms
+
+    def get_context_data(self) -> dict:
+        return self.get_forms()
+
+    @property
+    def cleaned_data(self) -> dict:
+        data = {}
+        for form in self.bound_forms.values():
+            data |= form.cleaned_data
+        return data
+
+
+class DataFilterSet(FilterSet):
+    forms = {
+        "order_aggregation_form": OrderAggregationForm,
+        "label_form": LabelForm,
+        "unit_form": UnitForm,
+    }
+
+    def __init__(self, selected_scenarios: list[int], data: dict | None = None):
+        """Get filter set from selected scenarios."""
+        super().__init__(data)
+        self.selected_scenarios = selected_scenarios
+        scalar_data = ScalarData.objects.filter(scenario__in=selected_scenarios)
+        self.bound_forms["scenario_filter"] = ScenarioFilter(data, queryset=scalar_data)
+
+    @property
+    def queryset(self):
+        return self.bound_forms["scenario_filter"].qs
+
+    @property
+    def order_by(self):
+        return self.bound_forms["order_aggregation_form"].cleaned_data["order_by"]
+
+    @property
+    def group_by(self):
+        return self.bound_forms["order_aggregation_form"].cleaned_data["group_by"]
+
+    @property
+    def units(self):
+        return self.bound_forms["unit_form"].cleaned_data.values()
+
+    @property
+    def labels(self):
+        return self.bound_forms["label_form"].cleaned_data
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        context["scenarios"] = self.selected_scenarios
+        return context
+
+
+class GraphFilterSet(FilterSet):
+    forms = {
+        "color_form": ColorForm,
+        "graph_options_form": GraphOptionForm,
+        "display_options_form": DisplayOptionForm,
+    }
+
+    @property
+    def plot_options(self):
+        options = self.bound_forms["graph_options_form"].cleaned_data
+        options["color_discrete_map"] = self.bound_forms["color_form"].cleaned_data
+        return options

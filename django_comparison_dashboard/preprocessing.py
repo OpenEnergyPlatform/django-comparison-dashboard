@@ -7,6 +7,8 @@ from units.exception import IncompatibleUnitsError
 from units.predefined import define_units
 from units.registry import REGISTRY
 
+from .forms import DataFilterSet
+
 
 class PreprocessingError(Exception):
     """Raised if preprocessing fails"""
@@ -39,34 +41,32 @@ define_units()
 define_energy_model_units()
 
 
-def get_scalar_data(
-    queryset_filtered: dict[str, str], order_aggregation: list[str], units: list[str], labels: dict[str, str]
-) -> pd.DataFrame:
-    if order_aggregation:
+def get_scalar_data(filter_set: DataFilterSet) -> pd.DataFrame:
+    if filter_set.order_by or filter_set.group_by:
         # looks like: {'order_by': ['region'], 'group_by': ['year'], 'normalize': False}
-        groupby = order_aggregation["group_by"]
-        orderby = order_aggregation["order_by"]
-        if groupby:
-            queryset = queryset_filtered.values(*(groupby + ["unit"])).annotate(value=Sum("value"))
+        if filter_set.group_by:
+            queryset = filter_set.queryset.values(*(filter_set.group_by + ["unit"])).annotate(value=Sum("value"))
         else:
-            queryset = queryset_filtered.values()
+            queryset = filter_set.queryset.values()
         df = pd.DataFrame(queryset)
         # Following preprocessing steps cannot be done in DB
-        df = convert_units_in_df(df, units.values())
-        df = aggregate_df(df, groupby, orderby)
-        df = apply_labels_in_df(df, labels)
+        df = apply_labels_in_df(df, filter_set.labels)
+        df = convert_units_in_df(df, filter_set.units)
+        df = aggregate_df(df, filter_set.group_by)
+        df = df.sort_values(filter_set.order_by)
         # Groupby has to be redone after unit conversion, and if orderby is provided it will also be applied here
         return df
 
-    queryset = queryset_filtered.values()
+    queryset = filter_set.queryset.values()
     df = pd.DataFrame(queryset)
     # Following preprocessing steps cannot be done in DB
-    df = convert_units_in_df(df, units)
-    df = apply_labels_in_df(df, labels)
+    df = apply_labels_in_df(df, filter_set.labels)
+    df = convert_units_in_df(df, filter_set.units)
+    df = df.sort_values(filter_set.order_by)
     return df
 
 
-def aggregate_df(df: pd.DataFrame, groupby: list[str], orderby: list[str]) -> pd.DataFrame:
+def aggregate_df(df: pd.DataFrame, groupby: list[str]) -> pd.DataFrame:
     if df.empty:
         return df
 
@@ -76,11 +76,6 @@ def aggregate_df(df: pd.DataFrame, groupby: list[str], orderby: list[str]) -> pd
         df = df.groupby(groupby + ["unit"]).aggregate("sum").reset_index()
         keep_columns = groupby + ["unit", "value", "series"]
         df = df[df.columns.intersection(keep_columns)]
-
-    # value of orderby has to be part of the values in groupby because other columns
-    # are not part of the queryset anymore
-    if orderby and orderby in groupby:
-        df = df.sort_values(orderby)
     return df
 
 

@@ -6,6 +6,7 @@ import pandas
 from plotly import express as px
 from plotly import graph_objects as go
 
+from .forms import GraphFilterSet
 from .settings import (
     COLUMN_JOINER,
     GRAPHS_DEFAULT_LAYOUT,
@@ -59,7 +60,7 @@ def get_scalar_plot(data, options):
         return dot_plot(data, options["options"])
 
 
-def bar_plot(data, options):
+def bar_plot(data, filter_set: GraphFilterSet):
     # xaxis_title = options.pop("xaxis_title")
     # yaxis_title = options.pop("yaxis_title")
     # axis_type = options.pop("axis_type")
@@ -79,7 +80,7 @@ def bar_plot(data, options):
     # )
     # fig_options = {}
     try:
-        fig = px.bar(data, **options)
+        fig = px.bar(data, **filter_set.plot_options)
     except ValueError as ve:
         if str(ve) == "nan is not in list":
             raise PlottingError(
