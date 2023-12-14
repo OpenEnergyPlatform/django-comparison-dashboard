@@ -39,7 +39,9 @@ define_units()
 define_energy_model_units()
 
 
-def get_scalar_data(queryset_filtered: dict[str, str], order_aggregation: list[str], units: list[str]) -> pd.DataFrame:
+def get_scalar_data(
+    queryset_filtered: dict[str, str], order_aggregation: list[str], units: list[str], labels: dict[str, str]
+) -> pd.DataFrame:
     if order_aggregation:
         # looks like: {'order_by': ['region'], 'group_by': ['year'], 'normalize': False}
         groupby = order_aggregation["group_by"]
@@ -52,6 +54,7 @@ def get_scalar_data(queryset_filtered: dict[str, str], order_aggregation: list[s
         # Following preprocessing steps cannot be done in DB
         df = convert_units_in_df(df, units.values())
         df = aggregate_df(df, groupby, orderby)
+        df = apply_labels_in_df(df, labels)
         # Groupby has to be redone after unit conversion, and if orderby is provided it will also be applied here
         return df
 
@@ -59,6 +62,7 @@ def get_scalar_data(queryset_filtered: dict[str, str], order_aggregation: list[s
     df = pd.DataFrame(queryset)
     # Following preprocessing steps cannot be done in DB
     df = convert_units_in_df(df, units)
+    df = apply_labels_in_df(df, labels)
     return df
 
 
@@ -139,3 +143,29 @@ def convert_units_in_df(df: pd.DataFrame, units: list[str]) -> pd.DataFrame:
     for unit_ in units:
         df = df.apply(convert_units, axis=1, convert_to=unit_)
     return df
+
+
+def apply_labels_in_df(df: pd.DataFrame, labels: dict[str, str]) -> pd.DataFrame:
+    """
+    Map labels to their respective values given by user
+
+    Parameters
+    ----------
+    df: pd.DataFrame
+        Data to apply labels on
+    labels: dict[str, str]
+        Labels to apply, each found key is replaced with their corresponding value
+
+    Returns
+    -------
+    pd.DataFrame
+        Resulting dataframe with labels applied
+    """
+
+    def apply_label(value, labels):
+        try:
+            return labels.get(value, value)
+        except TypeError:
+            return value
+
+    return df.applymap(apply_label, labels=labels)

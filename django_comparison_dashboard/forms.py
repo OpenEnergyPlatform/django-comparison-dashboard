@@ -1,4 +1,5 @@
 from django import forms
+from django.forms.utils import ErrorDict
 
 from . import settings
 from .models import ScalarData
@@ -90,8 +91,13 @@ class UnitForm(forms.Form):
 
 
 class LabelForm(forms.Form):
-    label1 = forms.CharField(label="name of the thing to be labeled", required=False)
-    label2 = forms.CharField(label="new label", required=False)
+    label_key = forms.CharField(label="name of the thing to be labeled", required=False)
+    label_value = forms.CharField(label="new label", required=False)
+
+    def full_clean(self):
+        """Pair keys and values into dict"""
+        self._errors = ErrorDict()
+        self.cleaned_data = dict(zip(self.data.getlist("label_key"), self.data.getlist("label_value")))
 
 
 class ColorForm(forms.Form):
