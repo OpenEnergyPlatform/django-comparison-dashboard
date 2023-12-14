@@ -124,6 +124,18 @@ class GraphOptionForm(forms.Form):
     facet_col = forms.ChoiceField(label="Subplots", choices=available_filters_empty, required=False)
     facet_col_wrap = forms.IntegerField(label="Subplots per Row")
 
+    def __init__(self, *args, **kwargs):
+        self.data_filter_set = kwargs.pop("data_filter_set", None)
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        for key in ("x", "y", "color", "hover_name"):
+            value = cleaned_data[key]
+            if self.data_filter_set and self.data_filter_set.group_by and value not in self.data_filter_set.group_by:
+                self.add_error(key, "Please choose a value that was also chosen in Group-By.")
+        return cleaned_data
+
     def clean_facet_col(self):
         data = self.cleaned_data["facet_col"]
         if data == "":
@@ -221,9 +233,12 @@ class DataFilterSet(FilterSet):
 class GraphFilterSet(FilterSet):
     forms = {
         "color_form": ColorForm,
-        "graph_options_form": GraphOptionForm,
         "display_options_form": DisplayOptionForm,
     }
+
+    def __init__(self, data: dict | None = None, data_filter_set: DataFilterSet | None = None):
+        super().__init__(data)
+        self.bound_forms["graph_options_form"] = GraphOptionForm(data, data_filter_set=data_filter_set)
 
     @property
     def plot_options(self):

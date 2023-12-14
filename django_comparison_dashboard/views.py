@@ -1,4 +1,3 @@
-from django.contrib import messages
 from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.views.generic import DetailView, FormView, ListView, TemplateView
@@ -77,7 +76,7 @@ def scalar_data_plot(request):
         return retarget(response, "#filters")
     df = preprocessing.get_scalar_data(filter_set).to_dict(orient="records")
 
-    graph_filter_set = GraphFilterSet(request.GET)
+    graph_filter_set = GraphFilterSet(request.GET, data_filter_set=filter_set)
     if not graph_filter_set.is_valid():
         response = render(
             request,
@@ -85,18 +84,6 @@ def scalar_data_plot(request):
             context=graph_filter_set.get_context_data(),
         )
         return retarget(response, "#graph_options")
-
-    # checking if the filters choosen for the x and y Axis are part of the filters chosen in group_by
-    # when group_by is [] all values were choose for the dataframe
-    if filter_set.group_by:
-        if not graph_filter_set.cleaned_data["x"] in filter_set.group_by:
-            messages.add_message(
-                request, messages.WARNING, "Please choose a value for the X-Axis that was also chosen in Group-By."
-            )
-        if not graph_filter_set.cleaned_data["y"] in filter_set.group_by:
-            messages.add_message(
-                request, messages.WARNING, "Please choose a value for the Y-Axis that was also chosen in Group-By."
-            )
 
     return HttpResponse(graphs.bar_plot(df, graph_filter_set).to_html())
 
