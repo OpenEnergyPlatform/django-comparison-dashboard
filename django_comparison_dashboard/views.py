@@ -4,12 +4,9 @@ from django.views.generic import DetailView, FormView, ListView, TemplateView
 from django_htmx.http import retarget
 
 from . import graphs, models, preprocessing, sources
-from .filters import FormFilter
+from .filters import ScenarioFilter
+from .forms import ColorForm, DataFilterSet, GraphFilterSet, LabelForm
 from .models import ScalarData
-
-
-class IndexView(TemplateView):
-    template_name = "django_comparison_dashboard/index.html"
 
 
 class DashboardView(TemplateView):
@@ -18,9 +15,30 @@ class DashboardView(TemplateView):
 
 def index(request):
     filter_list = ScalarData.objects.all()
-    f = FormFilter(request.GET, queryset=filter_list)
-    context = {"filter_form": f}
-    return render(request, "django_comparison_dashboard/dashboard.html", context)
+    scenario_filter = ScenarioFilter(request.GET, queryset=filter_list)
+    return render(request, "django_comparison_dashboard/dashboard.html", {"scenario_filter": scenario_filter})
+
+
+def add_label_form(request):
+    label_form = LabelForm()
+    return render(
+        request,
+        "django_comparison_dashboard/dashboard.html#labels",
+        {
+            "label_form": label_form,
+        },
+    )
+
+
+def add_color_form(request):
+    color_form = ColorForm()
+    return render(
+        request,
+        "django_comparison_dashboard/dashboard.html#colors",
+        {
+            "color_form": color_form,
+        },
+    )
 
 
 def get_filters(request):
@@ -37,36 +55,51 @@ def get_filters(request):
 
     """
     selected_scenarios = request.GET.getlist("scenario_id")
-    scalar_data = ScalarData.objects.filter(scenario__in=selected_scenarios)
-    filter_form = FormFilter(selected_scenarios, request.GET, queryset=scalar_data)
+    filter_set = DataFilterSet(selected_scenarios)
+    graph_filter_set = GraphFilterSet()
     return render(
         request,
         "django_comparison_dashboard/dashboard.html",
-        {"filter_form": filter_form, "scenarios": selected_scenarios},
+        context=filter_set.get_context_data() | graph_filter_set.get_context_data(),
     )
 
 
 def scalar_data_plot(request):
-    query = request.GET.dict()
-    filters, groupby, units, plot_options = preprocessing.prepare_query(query)
-    df = preprocessing.get_scalar_data(filters, groupby, units).to_dict(orient="records")
-    return HttpResponse(graphs.bar_plot(df, plot_options).to_html())
+    selected_scenarios = request.GET.getlist("scenario_id")
+    filter_set = DataFilterSet(selected_scenarios, request.GET)
+    if not filter_set.is_valid():
+        response = render(
+            request,
+            "django_comparison_dashboard/dashboard.html#filters",
+            context=filter_set.get_context_data(),
+        )
+        return retarget(response, "#filters")
+    df = preprocessing.get_scalar_data(filter_set).to_dict(orient="records")
+
+    graph_filter_set = GraphFilterSet(request.GET, data_filter_set=filter_set)
+    if not graph_filter_set.is_valid():
+        response = render(
+            request,
+            "django_comparison_dashboard/dashboard.html#graph_options",
+            context=graph_filter_set.get_context_data(),
+        )
+        return retarget(response, "#graph_options")
+
+    return HttpResponse(graphs.bar_plot(df, graph_filter_set).to_html())
 
 
 def scalar_data_table(request):
     selected_scenarios = request.GET.getlist("scenario_id")
-    filter_list = ScalarData.objects.filter(scenario__in=selected_scenarios)
-    filter_form = FormFilter(selected_scenarios, request.GET, queryset=filter_list)
-    if filter_form.is_valid():
-        df = preprocessing.get_scalar_data(filter_form.qs, [], [])
-        return HttpResponse(df.to_html())
-    else:
+    filter_set = DataFilterSet(selected_scenarios, request.GET)
+    if not filter_set.is_valid():
         response = render(
             request,
             "django_comparison_dashboard/dashboard.html#filters",
-            {"filter_form": filter_form, "scenarios": selected_scenarios},
+            context=filter_set.get_context_data(),
         )
         return retarget(response, "#filters")
+    df = preprocessing.get_scalar_data(filter_set)
+    return HttpResponse(df.to_html())
 
 
 class ScenarioSelectionView(ListView):

@@ -7,7 +7,7 @@ from units.exception import IncompatibleUnitsError
 from units.predefined import define_units
 from units.registry import REGISTRY
 
-from .settings import GRAPHS_DEFAULT_OPTIONS
+from .forms import DataFilterSet
 
 
 class PreprocessingError(Exception):
@@ -41,18 +41,28 @@ define_units()
 define_energy_model_units()
 
 
-def get_scalar_data(queryset_filtered: dict[str, str], groupby: list[str], units: list[str]) -> pd.DataFrame:
-    if groupby:
-        queryset = queryset_filtered.values(*(groupby + ["unit"])).annotate(value=Sum("value"))
-    else:
-        queryset = queryset_filtered.values()
-    df = pd.DataFrame(queryset)
-    if df.empty:
+def get_scalar_data(filter_set: DataFilterSet) -> pd.DataFrame:
+    if filter_set.order_by or filter_set.group_by:
+        # looks like: {'order_by': ['region'], 'group_by': ['year'], 'normalize': False}
+        if filter_set.group_by:
+            queryset = filter_set.queryset.values(*(filter_set.group_by + ["unit"])).annotate(value=Sum("value"))
+        else:
+            queryset = filter_set.queryset.values()
+        df = pd.DataFrame(queryset)
+        # Following preprocessing steps cannot be done in DB
+        df = apply_labels_in_df(df, filter_set.labels)
+        df = convert_units_in_df(df, filter_set.units)
+        df = aggregate_df(df, filter_set.group_by)
+        df = df.sort_values(filter_set.order_by)
+        # Groupby has to be redone after unit conversion, and if orderby is provided it will also be applied here
         return df
 
+    queryset = filter_set.queryset.values()
+    df = pd.DataFrame(queryset)
     # Following preprocessing steps cannot be done in DB
-    df = convert_units_in_df(df, units)
-    df = aggregate_df(df, groupby)  # Groupby has to be redone after unit conversion
+    df = apply_labels_in_df(df, filter_set.labels)
+    df = convert_units_in_df(df, filter_set.units)
+    df = df.sort_values(filter_set.order_by)
     return df
 
 
@@ -130,17 +140,27 @@ def convert_units_in_df(df: pd.DataFrame, units: list[str]) -> pd.DataFrame:
     return df
 
 
-def prepare_query(query: dict[str, str]) -> tuple[dict[str, str], list[str], list[str], dict[str, str]]:
-    """Unpacks filters, groupby and units from query dict"""
+def apply_labels_in_df(df: pd.DataFrame, labels: dict[str, str]) -> pd.DataFrame:
+    """
+    Map labels to their respective values given by user
 
-    def parse_list(value):
-        if value[0] == "[" and value[-1] == "]":
-            return value[1:-1].split(",")
-        return value
+    Parameters
+    ----------
+    df: pd.DataFrame
+        Data to apply labels on
+    labels: dict[str, str]
+        Labels to apply, each found key is replaced with their corresponding value
 
-    plot_option_keys = list(GRAPHS_DEFAULT_OPTIONS["scalars"]["bar"].get_defaults().keys())
-    filters = {k: parse_list(v) for k, v in query.items() if k not in plot_option_keys + ["groupby", "units"]}
-    groupby = parse_list(query["groupby"]) if "groupby" in query else []
-    units = parse_list(query["units"]) if "units" in query else []
-    plot_options = {k: parse_list(v) for k, v in query.items() if k not in list(filters) + ["groupby", "units"]}
-    return filters, groupby, units, plot_options
+    Returns
+    -------
+    pd.DataFrame
+        Resulting dataframe with labels applied
+    """
+
+    def apply_label(value, labels):
+        try:
+            return labels.get(value, value)
+        except TypeError:
+            return value
+
+    return df.applymap(apply_label, labels=labels)
