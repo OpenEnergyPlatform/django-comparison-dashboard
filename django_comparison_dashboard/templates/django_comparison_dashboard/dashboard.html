@@ -8,12 +8,6 @@
     <div class="align-center">
       <p class="lead mb-3 ml-0">Welcome</p>
       <hr />
-      <form hx-post="{% url 'django_comparison_dashboard:filters' %}"
-            hx-target="#filters"
-            hx-swap="innerHTML">
-        {{ scenario_form.as_div }}
-        <button type="submit" class="btn btn-primary mt-2">Submit</button>
-      </form>
     </div>
     <!-- Content with Filter / Presentation Tab and Charts -->
     <div class="row align-center">
