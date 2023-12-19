@@ -186,6 +186,9 @@ class FilterSet:
     def cleaned_data(self) -> dict:
         data = {}
         for form in self.bound_forms.values():
+            if isinstance(form, ScenarioFilter):
+                data |= form.form.cleaned_data
+                continue
             data |= form.cleaned_data
         return data
 

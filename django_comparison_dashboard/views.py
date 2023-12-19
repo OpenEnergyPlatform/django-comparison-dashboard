@@ -6,7 +6,7 @@ from django_htmx.http import retarget
 from . import graphs, models, preprocessing, sources
 from .filters import ScenarioFilter
 from .forms import ColorForm, DataFilterSet, GraphFilterSet, LabelForm
-from .models import ScalarData
+from .models import FilterSettings, ScalarData
 
 
 class DashboardView(TemplateView):
@@ -100,6 +100,25 @@ def scalar_data_table(request):
         return retarget(response, "#filters")
     df = preprocessing.get_scalar_data(filter_set)
     return HttpResponse(df.to_html())
+
+
+def save_graph_options(request):
+    selected_scenarios = request.POST.getlist("scenario_id")
+
+    filter_set = DataFilterSet(selected_scenarios, request.POST)
+    graph_filter_set = GraphFilterSet(request.POST, data_filter_set=filter_set)
+
+    if filter_set.is_valid() and graph_filter_set.is_valid():
+        # Create an instance of FilterSettings and assign the form data
+        filter_settings = FilterSettings(
+            name=request.POST.get("name"),
+            filter_set=filter_set.cleaned_data,
+            graph_filter_set=graph_filter_set.cleaned_data,
+        )
+        filter_settings.save()
+        return HttpResponse(status=201)
+    else:
+        return HttpResponse("did not work")
 
 
 class ScenarioSelectionView(ListView):

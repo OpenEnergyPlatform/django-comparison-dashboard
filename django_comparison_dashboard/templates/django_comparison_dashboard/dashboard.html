@@ -76,6 +76,13 @@
 <div id="plot"></div>
 <div id="table"></div>
 </div>
+<form method="post"
+      hx-post="{% url 'django_comparison_dashboard:save' %}"
+      hx-include="#filters, #graph_options">
+  {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
+  <input type="text" id="name" name="name" />
+  <input type="submit" value="Save Filter Settings" />
+</form>
 </div>
 </div>
 {% endblock content %}

@@ -53,3 +53,9 @@ class TimeseriesData(Data):
     timeindex_stop = models.TimeField()
     timeindex_resolution = models.DurationField()
     series = ArrayField(models.FloatField())
+
+
+class FilterSettings(models.Model):
+    name = models.CharField(max_length=255)
+    filter_set = models.JSONField()
+    graph_filter_set = models.JSONField()
