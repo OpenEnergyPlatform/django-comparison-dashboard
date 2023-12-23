@@ -10,19 +10,21 @@ packages = [{include = "django_comparison_dashboard"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 plotly = "^5.16.1"
+django-template-partials = {git = "https://github.com/carltongibson/django-template-partials"}
 units = "^0.7"
 jmespath = "^1.0.1"
 pandas = "^2.1.0"
 requests = "^2.31.0"
-frictionless = "4.7.1"
 django-appconf = "^1.0.5"
+django-filter = "^23.3"
+pandera = {extras = ["io"], version = "^0.17.2"}
 
 
 [tool.poetry.group.dev.dependencies]
 django = "^4.2.4"
 pre-commit = "^3.4.0"
 django-environ = "0.10.0"
-psycopg = {version = "3.1.9", extras = ["c"]}
+psycopg = {version = "3.1.9", extras = ["binary"]}
 
 [build-system]
 requires = ["poetry-core"]
@@ -55,6 +57,26 @@ known_first_party = [
 ]
 skip = ["venv/"]
 skip_glob = ["**/migrations/*.py"]
+
+
+# ==== djLint ====
+[tool.djlint]
+blank_line_after_tag = "load,extends"
+close_void_tags = true
+format_css = true
+format_js = true
+# TODO: remove T002 when fixed https://github.com/Riverside-Healthcare/djLint/issues/687
+ignore = "H006,H030,H031,T002"
+include = "H017,H035"
+indent = 2
+max_line_length = 119
+profile = "django"
+
+[tool.djlint.css]
+indent_size = 2
+
+[tool.djlint.js]
+indent_size = 2
 
 
 [tool.ruff]

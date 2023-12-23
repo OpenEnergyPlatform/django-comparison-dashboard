@@ -43,7 +43,7 @@
         {"name": "source", "description": "Source", "type": "string", "unit": null},
         {"name": "comment", "description": "Comment", "type": "string", "unit": null},
 	    {"name": "year", "description": "Year", "type": "integer", "unit": null},
-        {"name": "value", "description": "Parameter value", "type": "number", "floatNumber": "True", "unit": "kW"}
+        {"name": "value", "description": "Parameter value", "type": "number", "floatNumber": true, "unit": "kW"}
       ]
     },
     "dialect":

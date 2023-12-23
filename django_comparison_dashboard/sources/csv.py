@@ -1,6 +1,8 @@
 import csv
 from io import TextIOWrapper
 
+import pandas as pd
+
 from django_comparison_dashboard import forms, settings
 from django_comparison_dashboard.sources import core
 
@@ -22,7 +24,7 @@ class CSVDataSource(core.DataSource):
     form = forms.CSVSourceUploadForm
 
     @classmethod
-    def download_scenario(cls, scenario: CSVScenario) -> list[dict]:
+    def download_scenario(cls, scenario: CSVScenario) -> pd.DataFrame:
         """
         Download scenario data from CSV file
 
@@ -31,6 +33,10 @@ class CSVDataSource(core.DataSource):
         pd.DataFrame
             holding scenario data
         """
-        csv_text = TextIOWrapper(scenario.csv_file, encoding="utf-8")
+        csv_text = (
+            TextIOWrapper(scenario.csv_file, encoding="utf-8")
+            if not isinstance(scenario.csv_file, TextIOWrapper)
+            else scenario.csv_file
+        )
         csv_reader = csv.DictReader(csv_text, delimiter=";")
-        return [row for row in csv_reader]
+        return pd.DataFrame([row for row in csv_reader])

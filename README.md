@@ -18,6 +18,16 @@ DJANGO_APPS = [
 ]
 ```
 
+## Requirements
+
+Make sure `django-template-partials` is set up in project.
+See https://github.com/carltongibson/django-template-partials#installation for instructions.
+
+Make sure `X-CRSFToken` is set for secure HTMX request.
+This can be done by setting body attribute `hx-headers` like this:
+```html
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+```
 ## For Developers
 
 You can download example scenario from MODEX like this:

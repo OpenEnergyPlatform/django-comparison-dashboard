@@ -27,15 +27,6 @@ class Data(models.Model):
     source = models.CharField(max_length=255, null=True)
     comment = models.CharField(max_length=255, null=True)
 
-    filters = (
-        "region",
-        "input_energy_vector",
-        "output_energy_vector",
-        "parameter_name",
-        "technology",
-        "technology_type",
-    )
-
     class Meta:
         abstract = True
 
@@ -62,3 +53,9 @@ class TimeseriesData(Data):
     timeindex_stop = models.TimeField()
     timeindex_resolution = models.DurationField()
     series = ArrayField(models.FloatField())
+
+
+class FilterSettings(models.Model):
+    name = models.CharField(max_length=255)
+    filter_set = models.JSONField()
+    graph_filter_set = models.JSONField()
