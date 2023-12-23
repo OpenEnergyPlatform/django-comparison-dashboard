@@ -16,5 +16,6 @@ urlpatterns = [
     path("scenario_form/", views.ScenarioFormView.as_view(), name="scenario_form"),
     path("add_label/", views.add_label_form, name="add_label_form"),
     path("add_color/", views.add_color_form, name="add_color_form"),
-    path("save/", views.save_graph_options, name="save"),
+    path("save/", views.save_filter_settings, name="save"),
+    path("load/", views.load_filter_settings, name="load"),
 ]

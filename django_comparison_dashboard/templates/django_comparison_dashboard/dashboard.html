@@ -9,6 +9,13 @@
       <p class="lead mb-3 ml-0">Welcome</p>
       <hr />
     </div>
+    <form method="get"
+          hx-get="{% url 'django_comparison_dashboard:load' %}"
+          hx-swap="none">
+      {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
+      <input type="text" id="name" name="name" label="name" />
+      <input type="submit" value="Load Filter Settings" />
+    </form>
     <!-- Content with Filter / Presentation Tab and Charts -->
     <div class="row align-center">
       <!-- contains Filter / Presentation Tab -->
@@ -78,9 +85,10 @@
 </div>
 <form method="post"
       hx-post="{% url 'django_comparison_dashboard:save' %}"
-      hx-include="#filters, #graph_options">
+      hx-include="#filters, #graph_options"
+      hx-swap="none">
   {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
-  <input type="text" id="name" name="name" />
+  <input type="text" id="name" name="name" label="name" />
   <input type="submit" value="Save Filter Settings" />
 </form>
 </div>

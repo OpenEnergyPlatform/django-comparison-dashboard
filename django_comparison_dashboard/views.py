@@ -57,6 +57,9 @@ def get_filters(request):
     selected_scenarios = request.GET.getlist("scenario_id")
     filter_set = DataFilterSet(selected_scenarios)
     graph_filter_set = GraphFilterSet()
+    print(filter_set.get_context_data())
+    print("+++")
+    print(graph_filter_set.get_context_data())
     return render(
         request,
         "django_comparison_dashboard/dashboard.html",
@@ -102,7 +105,7 @@ def scalar_data_table(request):
     return HttpResponse(df.to_html())
 
 
-def save_graph_options(request):
+def save_filter_settings(request):
     selected_scenarios = request.POST.getlist("scenario_id")
 
     filter_set = DataFilterSet(selected_scenarios, request.POST)
@@ -119,6 +122,27 @@ def save_graph_options(request):
         return HttpResponse(status=201)
     else:
         return HttpResponse("did not work")
+
+
+def load_filter_settings(request):
+    # scenarios is still retrieved from GET request because it's not saved in the FilterSets
+    selected_scenarios = request.GET.getlist("scenario_id")
+    name = request.GET.get("name")
+    try:
+        # need to check the name and if it is in the database
+        filter_settings = FilterSettings.objects.get(name=name)
+
+        filter_set = DataFilterSet(selected_scenarios, filter_settings.filter_set)
+        graph_filter_set = GraphFilterSet(filter_settings.graph_filter_set, filter_set)
+
+        return render(
+            request,
+            "django_comparison_dashboard/dashboard.html",
+            context=filter_set.get_context_data() | graph_filter_set.get_context_data(),
+        )
+    except FilterSettings.DoesNotExist:
+        # needs a proper error
+        return HttpResponse(status=404)
 
 
 class ScenarioSelectionView(ListView):

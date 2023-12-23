@@ -1,5 +1,4 @@
 from django import forms
-from django.forms.utils import ErrorDict
 
 from . import settings
 from .filters import ScenarioFilter
@@ -97,8 +96,15 @@ class LabelForm(forms.Form):
 
     def full_clean(self):
         """Pair keys and values into dict"""
-        self._errors = ErrorDict()
-        self.cleaned_data = dict(zip(self.data.getlist("label_key"), self.data.getlist("label_value")))
+        self.cleaned_data = {}
+        if hasattr(self.data, "getlist"):  # Check if data is a QueryDict
+            label_keys = self.data.getlist("label_key")
+            label_values = self.data.getlist("label_value")
+            self.cleaned_data = dict(zip(label_keys, label_values))
+        else:  # If data is a regular dictionary
+            self.cleaned_data = self.data
+
+        super().full_clean()
 
 
 class ColorForm(forms.Form):
@@ -107,8 +113,15 @@ class ColorForm(forms.Form):
 
     def full_clean(self):
         """Pair keys and values into dict"""
-        self._errors = ErrorDict()
-        self.cleaned_data = dict(zip(self.data.getlist("color_key"), self.data.getlist("color_value")))
+        self.cleaned_data = {}
+        if hasattr(self.data, "getlist"):  # Check if data is a QueryDict
+            color_keys = self.data.getlist("color_key")
+            color_values = self.data.getlist("color_value")
+            self.cleaned_data = dict(zip(color_keys, color_values))
+        else:  # If data is a regular dictionary
+            self.cleaned_data = self.data
+
+        super().full_clean()
 
 
 class GraphOptionForm(forms.Form):
@@ -232,6 +245,9 @@ class DataFilterSet(FilterSet):
         context["scenarios"] = self.selected_scenarios
         return context
 
+    def get_forms(self) -> dict[str, "forms.Form"]:
+        return self.bound_forms
+
 
 class GraphFilterSet(FilterSet):
     forms = {
@@ -248,3 +264,6 @@ class GraphFilterSet(FilterSet):
         options = self.bound_forms["graph_options_form"].cleaned_data
         options["color_discrete_map"] = self.bound_forms["color_form"].cleaned_data
         return options
+
+    def get_forms(self) -> dict[str, "forms.Form"]:
+        return self.bound_forms
