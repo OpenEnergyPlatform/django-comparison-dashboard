@@ -50,7 +50,7 @@
           <div class="card-body">
             <div class="tab-content">
               <!-- Filters Tab Content -->
-              <div class="tab-pane" id="filters" role="tabpanel">
+              <div class="tab-pane active" id="filters" role="tabpanel">
                 <!-- General Filter Selection -->
                 <h5 class="card-title">General Filters</h5>
                 {% startpartial filters inline=True %}
@@ -58,7 +58,7 @@
                 {{ scenario_filter.form.as_p }}
               {% endpartial %}
             </div>
-            <div class="tab-pane active" id="o_a_label" role="tabpanel">
+            <div class="tab-pane" id="o_a_label" role="tabpanel">
               <!-- Order/Aggregation- and Unit Settings -->
               <h5 class="card-title">Order, Aggregation and Label Settings</h5>
               {{ order_aggregation_form.as_p }}
@@ -145,6 +145,12 @@
 {% endblock content %}
 {% block javascript %}
   {{ block.super }}
+  <script>
+    // Activate Bootstrap tooltips
+    $(document).ready(function() {
+      $('[data-toggle="tooltip"]').tooltip();
+    });
+  </script>
   <script src="https://unpkg.com/htmx.org@1.9.7"></script>
   <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
 {% endblock javascript %}

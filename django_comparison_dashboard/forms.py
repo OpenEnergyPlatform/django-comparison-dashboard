@@ -125,7 +125,11 @@ class ColorForm(forms.Form):
 
 
 class GraphOptionForm(forms.Form):
-    x = forms.ChoiceField(label="X-Axis", choices=available_filters, help_text="help text")
+    x = forms.ChoiceField(
+        label="X-Axis",
+        choices=available_filters,
+        help_text="<span class='helptext' data-toggle='tooltip' data-placement='top' title='tooltip content'>?</span>",
+    )
     y = forms.ChoiceField(label="Y-Axis", choices=available_filters)
     text = forms.ChoiceField(label="Text", choices=available_filters_empty, required=False)
     color = forms.ChoiceField(label="Color", choices=available_filters)
