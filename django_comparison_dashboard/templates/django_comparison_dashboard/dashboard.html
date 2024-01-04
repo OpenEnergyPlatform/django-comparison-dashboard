@@ -17,7 +17,7 @@
               hx-get="{% url 'django_comparison_dashboard:load' %}"
               hx-swap="none">
           {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
-          <input type="text" id="name" name="name" label="name" />
+          <input type="text" class="form-control" id="name" name="name" label="name" />
           <input type="submit" class="btn btn-primary" value="Load Filter Settings" />
         </form>
         <!-- contains Filters in different Tabs -->
@@ -131,7 +131,7 @@
       hx-include="#filters, #graph_options"
       hx-swap="none">
   {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
-  <input type="text" id="name" name="name" label="name" />
+  <input type="text" class="form-control" id="name" name="name" label="name" />
   <input type="submit" class="btn btn-primary" value="Save Filter Settings" />
 </form>
 </div>
@@ -146,8 +146,7 @@
 {% block javascript %}
   {{ block.super }}
   <script>
-    // Activate Bootstrap tooltips
-    $(document).ready(function() {
+    $(function() {
       $('[data-toggle="tooltip"]').tooltip();
     });
   </script>
