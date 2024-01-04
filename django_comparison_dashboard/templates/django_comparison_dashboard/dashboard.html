@@ -18,7 +18,7 @@
               hx-swap="none">
           {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
           <input type="text" id="name" name="name" label="name" />
-          <input type="submit" value="Load Filter Settings" />
+          <input type="submit" class="btn btn-primary" value="Load Filter Settings" />
         </form>
         <!-- contains Filters in different Tabs -->
         <div class="card">
@@ -50,7 +50,7 @@
           <div class="card-body">
             <div class="tab-content">
               <!-- Filters Tab Content -->
-              <div class="tab-pane active" id="filters" role="tabpanel">
+              <div class="tab-pane" id="filters" role="tabpanel">
                 <!-- General Filter Selection -->
                 <h5 class="card-title">General Filters</h5>
                 {% startpartial filters inline=True %}
@@ -58,7 +58,7 @@
                 {{ scenario_filter.form.as_p }}
               {% endpartial %}
             </div>
-            <div class="tab-pane" id="o_a_label" role="tabpanel">
+            <div class="tab-pane active" id="o_a_label" role="tabpanel">
               <!-- Order/Aggregation- and Unit Settings -->
               <h5 class="card-title">Order, Aggregation and Label Settings</h5>
               {{ order_aggregation_form.as_p }}
@@ -69,11 +69,14 @@
               {% startpartial labels inline=True %}
               <div>
                 {{ label_form.as_p }}
-                <button _="on click remove my.parentElement">X</button>
+                <button _="on click remove my.parentElement"
+                        class="close btn btn-primary"
+                        aria-label="Close">x</button>
               </div>
             {% endpartial %}
             <div id="more_labels"></div>
             <button type="button"
+                    class="btn btn-primary"
                     hx-get="{% url 'django_comparison_dashboard:add_label_form' %}"
                     hx-target="#more_labels"
                     hx-swap="beforeend">Add another Label</button>
@@ -89,11 +92,14 @@
             {% startpartial colors inline=True %}
             <div>
               {{ color_form.as_p }}
-              <button _="on click remove my.parentElement">X</button>
+              <button _="on click remove my.parentElement"
+                      class="close btn btn-primary"
+                      aria-label="Close">x</button>
             </div>
           {% endpartial %}
           <div id="more_colors"></div>
           <button type="button"
+                  class="btn btn-primary"
                   hx-get="{% url 'django_comparison_dashboard:add_color_form' %}"
                   hx-target="#more_colors"
                   hx-swap="beforeend">Add another Color</button>
@@ -108,10 +114,12 @@
   </div>
   <div class="card-footer">
     <button type="button"
+            class="btn btn-primary"
             hx-get="{% url 'django_comparison_dashboard:data_table' %}"
             hx-include="#scenario_id, #filters, #o_a_label"
             hx-target="#table">Make table</button>
     <button type="button"
+            class="btn btn-primary"
             hx-get="{% url 'django_comparison_dashboard:data_plot' %}"
             hx-include="#scenario_id, #filters, #o_a_label, #graph_options, #display_options"
             hx-target="#plot">Make Chart</button>
@@ -124,7 +132,7 @@
       hx-swap="none">
   {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
   <input type="text" id="name" name="name" label="name" />
-  <input type="submit" value="Save Filter Settings" />
+  <input type="submit" class="btn btn-primary" value="Save Filter Settings" />
 </form>
 </div>
 <!-- contains Charts and Table -->
