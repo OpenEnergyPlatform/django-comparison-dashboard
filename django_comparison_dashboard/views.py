@@ -125,7 +125,6 @@ def save_filter_settings(request):
 
 
 def load_filter_settings(request):
-    # scenarios is still retrieved from GET request because it's not saved in the FilterSets
     selected_scenarios = request.GET.getlist("scenario_id")
     name = request.GET.get("name")
     try:
