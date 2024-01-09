@@ -15,10 +15,17 @@
         <!-- Load Filter Settings -->
         <form method="get"
               hx-get="{% url 'django_comparison_dashboard:load' %}"
-              hx-swap="none">
+              hx-swap="none"
+              class="d-flex">
           {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
-          <input type="text" class="form-control" id="name" name="name" label="name" />
-          <input type="submit" class="btn btn-primary" value="Load Filter Settings" />
+          <input type="text"
+                 class="form-control flex-grow-1"
+                 id="name"
+                 name="name"
+                 label="name" />
+          <input type="submit"
+                 class="btn btn-primary ml-2"
+                 value="Load Filter Settings" />
         </form>
         <!-- contains Filters in different Tabs -->
         <div class="card">
@@ -112,7 +119,7 @@
       </div>
     </div>
   </div>
-  <div class="card-footer">
+  <div class="card-footer d-flex justify-content-between">
     <button type="button"
             class="btn btn-primary"
             hx-get="{% url 'django_comparison_dashboard:data_table' %}"
@@ -129,10 +136,17 @@
 <form method="post"
       hx-post="{% url 'django_comparison_dashboard:save' %}"
       hx-include="#filters, #graph_options"
-      hx-swap="none">
+      hx-swap="none"
+      class="d-flex">
   {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
-  <input type="text" class="form-control" id="name" name="name" label="name" />
-  <input type="submit" class="btn btn-primary" value="Save Filter Settings" />
+  <input type="text"
+         class="form-control flex-grow-1"
+         id="name"
+         name="name"
+         label="name" />
+  <input type="submit"
+         class="btn btn-primary ml-2"
+         value="Save Filter Settings" />
 </form>
 </div>
 <!-- contains Charts and Table -->
