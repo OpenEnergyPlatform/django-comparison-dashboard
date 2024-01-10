@@ -56,6 +56,6 @@ class TimeseriesData(Data):
 
 
 class FilterSettings(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     filter_set = models.JSONField()
     graph_filter_set = models.JSONField()

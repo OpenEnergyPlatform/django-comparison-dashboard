@@ -57,9 +57,6 @@ def get_filters(request):
     selected_scenarios = request.GET.getlist("scenario_id")
     filter_set = DataFilterSet(selected_scenarios)
     graph_filter_set = GraphFilterSet()
-    print(filter_set.get_context_data())
-    print("+++")
-    print(graph_filter_set.get_context_data())
     return render(
         request,
         "django_comparison_dashboard/dashboard.html",
@@ -122,6 +119,16 @@ def save_filter_settings(request):
         return HttpResponse(status=201)
     else:
         return HttpResponse("did not work")
+
+
+def save_precheck_name(request):
+    name = request.POST.get("name")
+    if name == "":
+        return HttpResponse("<div id='name_error' class='alert alert-warning'>Please enter a name.</div>")
+    if FilterSettings.objects.filter(name=name).exists():
+        return HttpResponse("<div id='name_error' class='alert alert-warning'>This name already exists.</div>")
+    else:
+        return HttpResponse("<div id='name_error' class='alert alert-success'>Name is valid.</div>")
 
 
 def load_filter_settings(request):

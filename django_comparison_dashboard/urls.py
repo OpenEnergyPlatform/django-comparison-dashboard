@@ -17,5 +17,6 @@ urlpatterns = [
     path("add_label/", views.add_label_form, name="add_label_form"),
     path("add_color/", views.add_color_form, name="add_color_form"),
     path("save/", views.save_filter_settings, name="save"),
+    path("save/name", views.save_precheck_name, name="save_name"),
     path("load/", views.load_filter_settings, name="load"),
 ]

@@ -84,7 +84,15 @@
 <form hx-post="{% url 'django_comparison_dashboard:save' %}"
       hx-include="#filters, #graph_options"
       hx-swap="none">
-  <input type="text" id="save_settings" name="name" label="name" />
+  <input type="text"
+         id="save_settings"
+         name="name"
+         label="name"
+         hx-swap="outerhtml"
+         hx-trigger="keyup changed delay:500ms"
+         hx-post="{% url 'django_comparison_dashboard:save_name' %}"
+         hx-target="#name_error" />
+  <div id="name_error"></div>
   <input type="submit" value="Save Filter Settings" />
 </form>
 </div>
