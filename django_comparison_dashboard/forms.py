@@ -45,37 +45,25 @@ class CSVSourceUploadForm(DataSourceUploadForm):
 # left hand side filters for used for data selection
 
 
-def available_filters():
-    # get available filters from FormFilter
-    available_filters = []
-    for filter_name in ScalarData.filters:
-        filter_values = ScalarData.objects.values_list(filter_name, flat=True).distinct()
-        if filter_values:
-            available_filters.append((filter_name, filter_name))
-    return available_filters
-
-
-def available_filters_empty():
-    # get available filters from FormFilter
-    available_filters = []
-    available_filters.append(("", "---"))
-    for filter_name in ScalarData.filters:
-        filter_values = ScalarData.objects.values_list(filter_name, flat=True).distinct()
-        if filter_values:
-            available_filters.append((filter_name, filter_name))
+def get_available_filters(value=False, empty=False):
+    available_filters = [(filter_name, filter_name) for filter_name in ScalarData.filters]
+    if value:
+        available_filters.insert(0, ("value", "value"))
+    if empty:
+        available_filters.insert(0, ("", "---"))
     return available_filters
 
 
 class OrderAggregationForm(forms.Form):
     order_by = forms.MultipleChoiceField(
         label="Order-By",
-        choices=available_filters,
+        choices=get_available_filters,
         required=False,
         widget=forms.SelectMultiple(attrs={"class": "form-control"}),
     )
     group_by = forms.MultipleChoiceField(
         label="Group-By",
-        choices=available_filters,
+        choices=get_available_filters,
         required=False,
         widget=forms.SelectMultiple(attrs={"class": "form-control"}),
     )
@@ -162,24 +150,24 @@ class ColorForm(forms.Form):
 class GraphOptionForm(forms.Form):
     x = forms.ChoiceField(
         label="X-Axis",
-        choices=available_filters,
+        choices=get_available_filters(value=True),
         help_text="<span class='helptext' data-toggle='tooltip' data-placement='top' title='tooltip content'>?</span>",
         widget=forms.Select(attrs={"class": "form-control"}),
     )
     y = forms.ChoiceField(
-        label="Y-Axis", choices=available_filters, widget=forms.Select(attrs={"class": "form-control"})
+        label="Y-Axis", choices=get_available_filters(value=True), widget=forms.Select(attrs={"class": "form-control"})
     )
     text = forms.ChoiceField(
         label="Text",
-        choices=available_filters_empty,
+        choices=get_available_filters(value=True, empty=True),
         required=False,
         widget=forms.Select(attrs={"class": "form-control"}),
     )
     color = forms.ChoiceField(
-        label="Color", choices=available_filters, widget=forms.Select(attrs={"class": "form-control"})
+        label="Color", choices=get_available_filters, widget=forms.Select(attrs={"class": "form-control"})
     )
     hover_name = forms.ChoiceField(
-        label="Hover", choices=available_filters, widget=forms.Select(attrs={"class": "form-control"})
+        label="Hover", choices=get_available_filters, widget=forms.Select(attrs={"class": "form-control"})
     )
     orientation = forms.ChoiceField(
         label="Orientation",
@@ -193,7 +181,7 @@ class GraphOptionForm(forms.Form):
     )
     facet_col = forms.ChoiceField(
         label="Subplots",
-        choices=available_filters_empty,
+        choices=get_available_filters(empty=True),
         required=False,
         widget=forms.Select(attrs={"class": "form-control"}),
     )
