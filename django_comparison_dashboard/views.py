@@ -55,12 +55,15 @@ def get_filters(request):
 
     """
     selected_scenarios = request.GET.getlist("scenario_id")
+    filter_setting_names = list(FilterSettings.objects.values("name"))
     filter_set = DataFilterSet(selected_scenarios)
     graph_filter_set = GraphFilterSet()
     return render(
         request,
         "django_comparison_dashboard/dashboard.html",
-        context=filter_set.get_context_data() | graph_filter_set.get_context_data(),
+        context=filter_set.get_context_data()
+        | graph_filter_set.get_context_data()
+        | {"name_list": filter_setting_names},
     )
 
 
@@ -107,18 +110,27 @@ def save_filter_settings(request):
 
     filter_set = DataFilterSet(selected_scenarios, request.POST)
     graph_filter_set = GraphFilterSet(request.POST, data_filter_set=filter_set)
+    name = request.POST.get("name")
+    name_list = list(FilterSettings.objects.values("name"))
 
-    if filter_set.is_valid() and graph_filter_set.is_valid():
+    if not filter_set.is_valid() and graph_filter_set.is_valid():
+        return HttpResponse("Forms are not valid")
+    elif name == "" or name in name_list:
+        return HttpResponse("wrong name input")
+    else:
         # Create an instance of FilterSettings and assign the form data
         filter_settings = FilterSettings(
-            name=request.POST.get("name"),
+            name=name,
             filter_set=filter_set.cleaned_data,
             graph_filter_set=graph_filter_set.cleaned_data,
         )
         filter_settings.save()
-        return HttpResponse(status=201)
-    else:
-        return HttpResponse("did not work")
+
+        return render(
+            request,
+            "django_comparison_dashboard/dashboard.html#load_settings",
+            {"name_list": name_list},
+        )
 
 
 def save_precheck_name(request):
