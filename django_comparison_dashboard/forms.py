@@ -198,7 +198,7 @@ class GraphOptionForm(forms.Form):
         widget=forms.Select(attrs={"class": "form-control"}),
     )
     facet_col_wrap = forms.IntegerField(
-        label="Subplots per Row", widget=forms.NumberInput(attrs={"class": "form-control"})
+        label="Subplots per Row", widget=forms.NumberInput(attrs={"class": "form-control"}), initial=1
     )
 
     def __init__(self, *args, **kwargs):
