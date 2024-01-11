@@ -145,6 +145,21 @@ def load_filter_settings(request):
         return HttpResponse(status=404)
 
 
+class ChartView(TemplateView):
+    template_name = "django_comparison_dashboard/chart.html"
+
+    def get_context_data(self, *args, **kwargs):
+        selected_scenarios = self.request.GET.getlist("scenario_id")
+        filter_set = DataFilterSet(selected_scenarios, self.request.GET)
+        if not filter_set.is_valid():
+            raise ValueError  # TODO: Real user feedback
+        graph_filter_set = GraphFilterSet(self.request.GET, data_filter_set=filter_set)
+        if not graph_filter_set.is_valid():
+            raise ValueError  # TODO: Real user feedback
+        df = preprocessing.get_scalar_data(filter_set).to_dict(orient="records")
+        return {"chart": graphs.bar_plot(df, graph_filter_set).to_html()}
+
+
 class ScenarioSelectionView(ListView):
     template_name = "django_comparison_dashboard/scenario_list.html"
     extra_context = {"sources": models.Source.objects.order_by("name").all()}
