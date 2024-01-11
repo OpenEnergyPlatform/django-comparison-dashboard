@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+authors:
+  - family-names: "Huyskens"
+    given-names: "Hendrik"
+    alias: "@henhuy"
+    affiliation: "Reiner Lemoine Institut"
+title: "Django Comparison Dashboard"
+type: software
+license: MIT
+version: 0.2.0
+doi:
+date-released: 2023-08-11
+url: "https://github.com/rl-institut/super-repo/"
