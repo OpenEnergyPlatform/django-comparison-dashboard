@@ -18,7 +18,6 @@
               hx-get="{% url 'django_comparison_dashboard:load' %}"
               hx-swap="none"
               class="d-flex">
-          {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
           <select class="form-control flex-grow-1" id="name" name="name" label="name">
             {% for name in name_list %}<option value="{{ name.name }}">{{ name.name }}</option>{% endfor %}
           </select>
@@ -59,7 +58,6 @@
         </div>
         <div class="card-body">
           <div class="tab-content">
-            <!-- Filters Tab Content -->
             <div class="tab-pane active" id="filters" role="tabpanel">
               <!-- General Filter Selection -->
               <h5 class="card-title">General Filters</h5>
@@ -91,7 +89,6 @@
                   hx-target="#more_labels"
                   hx-swap="beforeend">Add another Label</button>
         </div>
-        <!-- Graph Options Tab Content -->
         <div class="tab-pane" id="graph_options" role="tabpanel">
           <!-- General Graph Options -->
           <h5 class="card-title">General Graph Options</h5>
@@ -137,24 +134,26 @@
 </div>
 <!-- Save Filter Settings -->
 <form method="post"
+      id="save_settings"
       hx-post="{% url 'django_comparison_dashboard:save' %}"
       hx-include="#filters, #graph_options"
-      hx-swap="none"
-      class="d-flex">
-  {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
+      hx-target="#validation_error"
+      class="d-flex"
+      novalidate>
   <input type="text"
          class="form-control flex-grow-1"
-         id="save_settings"
+         id="save_name"
          name="name"
          label="name"
          hx-swap="outerhtml"
-         hx-trigger="keyup changed delay:500ms"
+         hx-trigger="keyup delay:500ms"
          hx-post="{% url 'django_comparison_dashboard:save_name' %}"
          hx-target="#name_error" />
   <div id="name_error"></div>
   <input type="submit"
          class="btn btn-primary ml-2"
          value="Save Filter Settings" />
+  <div id="validation_error"></div>
 </form>
 </div>
 <!-- contains Charts and Table -->

@@ -106,17 +106,25 @@ def scalar_data_table(request):
 
 
 def save_filter_settings(request):
-    selected_scenarios = request.POST.getlist("scenario_id")
-
-    filter_set = DataFilterSet(selected_scenarios, request.POST)
-    graph_filter_set = GraphFilterSet(request.POST, data_filter_set=filter_set)
     name = request.POST.get("name")
     name_list = list(FilterSettings.objects.values("name"))
+    if name == "" or FilterSettings.objects.filter(name=name).exists():
+        response = HttpResponse("<div id='name_error' class='alert alert-warning'>Wrong name input</div>")
+        return retarget(response, "#name_error")
 
-    if not filter_set.is_valid() or not graph_filter_set.is_valid():
-        return HttpResponse("Forms are not valid")
-    elif name == "" or name in name_list:
-        return HttpResponse("wrong name input")
+    selected_scenarios = request.POST.getlist("scenario_id")
+    filter_set = DataFilterSet(selected_scenarios, request.POST)
+    if not filter_set.is_valid():
+        return HttpResponse(
+            "<div id='validation_error' class='alert alert-warning'>Scenario or Other Form not valid</div>"
+        )
+
+    graph_filter_set = GraphFilterSet(request.POST, data_filter_set=filter_set)
+    if not graph_filter_set.is_valid():
+        return HttpResponse(
+            "<div id='validation_error' class='alert alert-warning'>Graph or Display Form not valid</div>"
+        )
+
     else:
         # Create an instance of FilterSettings and assign the form data
         filter_settings = FilterSettings(
@@ -126,11 +134,12 @@ def save_filter_settings(request):
         )
         filter_settings.save()
 
-        return render(
+        response = render(
             request,
             "django_comparison_dashboard/dashboard.html#load_settings",
             {"name_list": name_list},
         )
+        return retarget(response, "#load_settings")
 
 
 def save_precheck_name(request):
