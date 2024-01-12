@@ -45,54 +45,75 @@ class CSVSourceUploadForm(DataSourceUploadForm):
 # left hand side filters for used for data selection
 
 
-def available_filters():
-    # get available filters from FormFilter
-    available_filters = []
-    for filter_name in ScalarData.filters:
-        filter_values = ScalarData.objects.values_list(filter_name, flat=True).distinct()
-        if filter_values:
-            available_filters.append((filter_name, filter_name))
-    return available_filters
-
-
-def available_filters_empty():
-    # get available filters from FormFilter
-    available_filters = []
-    available_filters.append(("", "---"))
-    for filter_name in ScalarData.filters:
-        filter_values = ScalarData.objects.values_list(filter_name, flat=True).distinct()
-        if filter_values:
-            available_filters.append((filter_name, filter_name))
+def get_available_filters(value=False, empty=False):
+    available_filters = [(filter_name, filter_name) for filter_name in ScalarData.filters]
+    if value:
+        available_filters.insert(0, ("value", "value"))
+    if empty:
+        available_filters.insert(0, ("", "---"))
     return available_filters
 
 
 class OrderAggregationForm(forms.Form):
-    order_by = forms.MultipleChoiceField(label="Order-By", choices=available_filters, required=False)
-    group_by = forms.MultipleChoiceField(label="Group-By", choices=available_filters, required=False)
-    normalize = forms.BooleanField(label="Normalize Data", required=False)
+    order_by = forms.MultipleChoiceField(
+        label="Order-By",
+        choices=get_available_filters,
+        required=False,
+        widget=forms.SelectMultiple(attrs={"class": "form-control"}),
+    )
+    group_by = forms.MultipleChoiceField(
+        label="Group-By",
+        choices=get_available_filters,
+        required=False,
+        widget=forms.SelectMultiple(attrs={"class": "form-control"}),
+    )
+    normalize = forms.BooleanField(
+        label="Normalize Data", required=False, widget=forms.CheckboxInput(attrs={"class": "form-check-input"})
+    )
 
 
 class UnitForm(forms.Form):
     energy = forms.ChoiceField(
-        label="Energy", initial="GWh", choices=(("kWh", "kWh"), ("MWh", "MWh"), ("GWh", "GWh"), ("TWh", "TWh"))
+        label="Energy",
+        initial="GWh",
+        choices=(("kWh", "kWh"), ("MWh", "MWh"), ("GWh", "GWh"), ("TWh", "TWh")),
+        widget=forms.Select(attrs={"class": "form-control"}),
     )
     power = forms.ChoiceField(
-        label="Power", initial="GW", choices=(("kW", "kW"), ("MW", "MW"), ("GW", "GW"), ("TW", "TW"))
+        label="Power",
+        initial="GW",
+        choices=(("kW", "kW"), ("MW", "MW"), ("GW", "GW"), ("TW", "TW")),
+        widget=forms.Select(attrs={"class": "form-control"}),
     )
     power_per_hour = forms.ChoiceField(
         label="Power per Hour",
         initial="MW/h",
         choices=(("kW/h", "kW/h"), ("MW/h", "MW/h"), ("GW/h", "GW/h"), ("TW/h", "TW/h")),
+        widget=forms.Select(attrs={"class": "form-control"}),
     )
-    mass = forms.ChoiceField(label="Mass", initial="Gt", choices=(("Mt", "Mt"), ("Gt", "Gt")))
+    mass = forms.ChoiceField(
+        label="Mass",
+        initial="Gt",
+        choices=(("Mt", "Mt"), ("Gt", "Gt")),
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
     mass_per_year = forms.ChoiceField(
-        label="Mass per year", initial="Gt/a", choices=(("Mt/a", "Mt/a"), ("Gt/a", "Gt/a"))
+        label="Mass per year",
+        initial="Gt/a",
+        choices=(("Mt/a", "Mt/a"), ("Gt/a", "Gt/a")),
+        widget=forms.Select(attrs={"class": "form-control"}),
     )
 
 
 class LabelForm(forms.Form):
-    label_key = forms.CharField(label="name of the thing to be labeled", required=False)
-    label_value = forms.CharField(label="new label", required=False)
+    label_key = forms.CharField(
+        label="name of the thing to be labeled",
+        required=False,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    label_value = forms.CharField(
+        label="new label", required=False, widget=forms.TextInput(attrs={"class": "form-control"})
+    )
 
     def full_clean(self):
         """Pair keys and values into dict"""
@@ -108,7 +129,9 @@ class LabelForm(forms.Form):
 
 
 class ColorForm(forms.Form):
-    color_key = forms.CharField(label="set color for", required=False)
+    color_key = forms.CharField(
+        label="set color for", required=False, widget=forms.TextInput(attrs={"class": "form-control"})
+    )
     color_value = forms.CharField(label="color", widget=forms.TextInput(attrs={"type": "color"}), required=False)
 
     def full_clean(self):
@@ -125,17 +148,46 @@ class ColorForm(forms.Form):
 
 
 class GraphOptionForm(forms.Form):
-    x = forms.ChoiceField(label="X-Axis", choices=available_filters, help_text="help text")
-    y = forms.ChoiceField(label="Y-Axis", choices=available_filters)
-    text = forms.ChoiceField(label="Text", choices=available_filters_empty, required=False)
-    color = forms.ChoiceField(label="Color", choices=available_filters)
-    hover_name = forms.ChoiceField(label="Hover", choices=available_filters)
-    orientation = forms.ChoiceField(label="Orientation", choices=(("v", "vertical"), ("h", "horizontal")))
-    barmode = forms.ChoiceField(
-        label="Mode", choices=(("relative", "relative"), ("group", "group"), ("overlay", "overlay"))
+    x = forms.ChoiceField(
+        label="X-Axis",
+        choices=get_available_filters(value=True),
+        help_text="<span class='helptext' data-toggle='tooltip' data-placement='top' title='tooltip content'>?</span>",
+        widget=forms.Select(attrs={"class": "form-control"}),
     )
-    facet_col = forms.ChoiceField(label="Subplots", choices=available_filters_empty, required=False)
-    facet_col_wrap = forms.IntegerField(label="Subplots per Row")
+    y = forms.ChoiceField(
+        label="Y-Axis", choices=get_available_filters(value=True), widget=forms.Select(attrs={"class": "form-control"})
+    )
+    text = forms.ChoiceField(
+        label="Text",
+        choices=get_available_filters(value=True, empty=True),
+        required=False,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    color = forms.ChoiceField(
+        label="Color", choices=get_available_filters, widget=forms.Select(attrs={"class": "form-control"})
+    )
+    hover_name = forms.ChoiceField(
+        label="Hover", choices=get_available_filters, widget=forms.Select(attrs={"class": "form-control"})
+    )
+    orientation = forms.ChoiceField(
+        label="Orientation",
+        choices=(("v", "vertical"), ("h", "horizontal")),
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    barmode = forms.ChoiceField(
+        label="Mode",
+        choices=(("relative", "relative"), ("group", "group"), ("overlay", "overlay")),
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    facet_col = forms.ChoiceField(
+        label="Subplots",
+        choices=get_available_filters(empty=True),
+        required=False,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    facet_col_wrap = forms.IntegerField(
+        label="Subplots per Row", widget=forms.NumberInput(attrs={"class": "form-control"}), initial=1
+    )
 
     def __init__(self, *args, **kwargs):
         self.data_filter_set = kwargs.pop("data_filter_set", None)
@@ -163,18 +215,42 @@ class GraphOptionForm(forms.Form):
 
 
 class DisplayOptionForm(forms.Form):
-    chart_height = forms.IntegerField(label="Chart Height", required=False)
-    x_title = forms.CharField(label="X-Axis Title", required=False)
-    y_title = forms.CharField(label="Y-Axis Title", required=False)
-    subplot_title = forms.CharField(label="Subplot Title", required=False)
-    show_legend = forms.BooleanField(label="Show Legend", required=False)
-    legend_title = forms.CharField(label="Legend Title", required=False)
-    bar_gap = forms.IntegerField(label="Bar Gap", required=False)
-    margin_left = forms.IntegerField(label="Margin Left", required=False)
-    margin_right = forms.IntegerField(label="Margin Right", required=False)
-    margin_top = forms.IntegerField(label="Margin Top", required=False)
-    margin_bottom = forms.IntegerField(label="Margin Bottom", required=False)
-    subplot_spacing = forms.IntegerField(label="Subplot Spacing", required=False)
+    chart_height = forms.IntegerField(
+        label="Chart Height", required=False, widget=forms.NumberInput(attrs={"class": "form-control"})
+    )
+    x_title = forms.CharField(
+        label="X-Axis Title", required=False, widget=forms.TextInput(attrs={"class": "form-control"})
+    )
+    y_title = forms.CharField(
+        label="Y-Axis Title", required=False, widget=forms.TextInput(attrs={"class": "form-control"})
+    )
+    subplot_title = forms.CharField(
+        label="Subplot Title", required=False, widget=forms.TextInput(attrs={"class": "form-control"})
+    )
+    show_legend = forms.BooleanField(
+        label="Show Legend", required=False, widget=forms.CheckboxInput(attrs={"class": "form-check-input"})
+    )
+    legend_title = forms.CharField(
+        label="Legend Title", required=False, widget=forms.TextInput(attrs={"class": "form-control"})
+    )
+    bar_gap = forms.IntegerField(
+        label="Bar Gap", required=False, widget=forms.NumberInput(attrs={"class": "form-control"})
+    )
+    margin_left = forms.IntegerField(
+        label="Margin Left", required=False, widget=forms.NumberInput(attrs={"class": "form-control"})
+    )
+    margin_right = forms.IntegerField(
+        label="Margin Right", required=False, widget=forms.NumberInput(attrs={"class": "form-control"})
+    )
+    margin_top = forms.IntegerField(
+        label="Margin Top", required=False, widget=forms.NumberInput(attrs={"class": "form-control"})
+    )
+    margin_bottom = forms.IntegerField(
+        label="Margin Bottom", required=False, widget=forms.NumberInput(attrs={"class": "form-control"})
+    )
+    subplot_spacing = forms.IntegerField(
+        label="Subplot Spacing", required=False, widget=forms.NumberInput(attrs={"class": "form-control"})
+    )
 
 
 class FilterSet:
