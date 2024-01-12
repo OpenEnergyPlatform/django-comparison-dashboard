@@ -1,4 +1,4 @@
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 from django_htmx.http import retarget
@@ -149,11 +149,19 @@ def get_chart(request):
     # TODO: Merge view ScalarPlotView, check if "single" chart is requested
     selected_scenarios = request.GET.getlist("scenario_id")
     filter_set = DataFilterSet(selected_scenarios, request.GET)
+    error_message = (
+        "Could not render chart due to invalid {error_type}. "
+        "This might occur, if {error_type} have been updated/changed. "
+        "Please check {error_type} or regenerate chart URL from "
+        "dashboard."
+    )
     if not filter_set.is_valid():
-        raise ValueError  # TODO: Real user feedback
+        error_type = "filter settings"
+        return HttpResponseBadRequest(error_message.format(error_type=error_type))
     graph_filter_set = GraphFilterSet(request.GET, data_filter_set=filter_set)
     if not graph_filter_set.is_valid():
-        raise ValueError  # TODO: Real user feedback
+        error_type = "graph options"
+        return HttpResponseBadRequest(error_message.format(error_type=error_type))
     df = preprocessing.get_scalar_data(filter_set).to_dict(orient="records")
     response = HttpResponse(graphs.bar_plot(df, graph_filter_set).to_html())
     response["HX-Redirect"] = request.get_full_path_info()
