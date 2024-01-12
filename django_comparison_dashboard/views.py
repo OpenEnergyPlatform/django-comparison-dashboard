@@ -57,9 +57,6 @@ def get_filters(request):
     selected_scenarios = request.GET.getlist("scenario_id")
     filter_set = DataFilterSet(selected_scenarios)
     graph_filter_set = GraphFilterSet()
-    print(filter_set.get_context_data())
-    print("+++")
-    print(graph_filter_set.get_context_data())
     return render(
         request,
         "django_comparison_dashboard/dashboard.html",
