@@ -113,7 +113,7 @@ def save_filter_settings(request):
     name = request.POST.get("name")
     name_list = list(FilterSettings.objects.values("name"))
 
-    if not filter_set.is_valid() and graph_filter_set.is_valid():
+    if not filter_set.is_valid() or not graph_filter_set.is_valid():
         return HttpResponse("Forms are not valid")
     elif name == "" or name in name_list:
         return HttpResponse("wrong name input")
