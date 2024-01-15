@@ -67,7 +67,7 @@ def get_filters(request):
 class ScalarPlotView(TemplateView):
     template_name = "django_comparison_dashboard/partials/plot.html"
 
-    def get_context_data(self, **kwargs):
+    def get(self, request, *args, **kwargs):
         selected_scenarios = self.request.GET.getlist("scenario_id")
         filter_set = DataFilterSet(selected_scenarios, self.request.GET)
         if not filter_set.is_valid():
@@ -88,7 +88,7 @@ class ScalarPlotView(TemplateView):
             )
             return retarget(response, "#graph_options")
 
-        return {"chart": graphs.bar_plot(df, graph_filter_set).to_html()}
+        return render(request, self.template_name, {"chart": graphs.bar_plot(df, graph_filter_set).to_html()})
 
 
 def scalar_data_table(request):
