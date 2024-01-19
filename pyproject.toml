@@ -16,6 +16,7 @@ pandas = "^2.1.0"
 requests = "^2.31.0"
 frictionless = "4.7.1"
 django-appconf = "^1.0.5"
+django-template-partials = "^23.4"
 
 
 [tool.poetry.group.dev.dependencies]
