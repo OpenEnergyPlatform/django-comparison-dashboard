@@ -2,8 +2,9 @@ import abc
 import logging
 
 import pandas as pd
+import pandera
+import pandera.io
 from django.shortcuts import get_object_or_404
-from frictionless import Resource, validate_resource
 
 from django_comparison_dashboard import forms, models, settings
 
@@ -14,9 +15,7 @@ class SourceRegistry:
 
     def __new__(cls):
         if cls._instance is None:
-            print("Creating the object")
             cls._instance = super().__new__(cls)
-            # Put any initialization here.
         return cls._instance
 
     @classmethod
@@ -65,7 +64,7 @@ class Scenario(abc.ABC):
         self._store_in_db(data)
         logging.info(f"Successfully downloaded scenario '{self}'.")
 
-    def _store_in_db(self, data: list[dict] | pd.DataFrame):
+    def _store_in_db(self, data: pd.DataFrame):
         """
         Store data into corresponding database model (scalar or timeseries)
 
@@ -82,11 +81,13 @@ class Scenario(abc.ABC):
             data_model = models.TimeseriesData
         else:
             raise TypeError(f"Unknown data type '{self.data_type}'.")
-        data_model.objects.bulk_create(data_model(scenario=scenario, **item) for item in data)
+        data_model.objects.bulk_create(
+            data_model(scenario=scenario, **item) for item in data.to_dict(orient="records")
+        )
 
-    def _validate(self, data: dict | pd.DataFrame) -> None:
+    def _validate(self, data: pd.DataFrame) -> None:
         """
-        Validate given data using frictionless and source-related schema
+        Validate given data using pandera and source-related schema
 
         Parameters
         ----------
@@ -96,25 +97,16 @@ class Scenario(abc.ABC):
         Returns
         -------
         dict
-            in case of an error a frictionless error report is returned, otherwise None is returned
+            in case of an error a report is returned, otherwise None is returned
 
         Raises
         ------
-        ScenarioValidationError
+        pandera.errors.SchemaError
             if scenario data does not fit into OEDatamodel format
         """
         logging.info(f"Validating data for scenario {self}...")
-        resource = Resource(
-            name=str(self.data_type),
-            profile="tabular-data-resource",
-            data=data,
-            schema=settings.MODEX_OUTPUT_SCHEMA[str(self.data_type)],
-        )
-        report = validate_resource(resource)
-        if report["stats"]["errors"] != 0:
-            error = ScenarioValidationError(f"Could not validate scenario data for scenario '{self}'.")
-            error.add_note(str(report))
-            raise error
+        schema = pandera.io.from_frictionless_schema(settings.MODEX_OUTPUT_SCHEMA[str(self.data_type)])
+        schema.validate(data, lazy=True)
 
 
 class DataSource(abc.ABC):

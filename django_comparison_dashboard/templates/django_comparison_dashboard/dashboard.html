@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% load partials %}
+
+{% block content %}
+  <div class="container">
+    <!-- Scenario Selection Forms -->
+    <div class="row align-center">
+      <p class="lead mb-3 ml-0">Welcome to the SEDOS Dashboard</p>
+      <hr />
+    </div>
+    <!-- Content with Filter / Presentation Tab and Charts -->
+    <div class="row align-center">
+      <div class="col-4">
+        <!-- Load Filter Settings -->
+        <form method="get"
+              hx-get="{% url 'django_comparison_dashboard:load' %}"
+              hx-swap="none"
+              class="d-flex">
+          {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
+          <input type="text"
+                 class="form-control flex-grow-1"
+                 id="name"
+                 name="name"
+                 label="name" />
+          <input type="submit"
+                 class="btn btn-primary ml-2"
+                 value="Load Filter Settings" />
+        </form>
+        <!-- contains Filters in different Tabs -->
+        <div class="card">
+          <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active"
+                   id="filters-tab"
+                   data-bs-toggle="tab"
+                   href="#filters">Scenario</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link"
+                   id="o-a-l-tab"
+                   data-bs-toggle="tab"
+                   href="#o_a_label">Other</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link"
+                   id="graph-options-tab"
+                   data-bs-toggle="tab"
+                   href="#graph_options">Graph</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link"
+                   id="display-options-tab"
+                   data-bs-toggle="tab"
+                   href="#display_options">Display</a>
+              </li>
+            </ul>
+          </div>
+          <div class="card-body">
+            <div class="tab-content">
+              <!-- Filters Tab Content -->
+              <div class="tab-pane active" id="filters" role="tabpanel">
+                <!-- General Filter Selection -->
+                <h5 class="card-title">General Filters</h5>
+                {% startpartial filters inline=True %}
+                {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
+                {{ scenario_filter.form.as_p }}
+              {% endpartial %}
+            </div>
+            <div class="tab-pane" id="o_a_label" role="tabpanel">
+              <!-- Order/Aggregation- and Unit Settings -->
+              <h5 class="card-title">Order, Aggregation and Label Settings</h5>
+              {{ order_aggregation_form.as_p }}
+              <hr />
+              {{ unit_form.as_p }}
+              <hr />
+              <!-- Label Settings with adaptable amount of labels -->
+              {% startpartial labels inline=True %}
+              <div>
+                {{ label_form.as_p }}
+                <button _="on click remove my.parentElement"
+                        class="close btn btn-primary"
+                        aria-label="Close">x</button>
+              </div>
+            {% endpartial %}
+            <div id="more_labels"></div>
+            <button type="button"
+                    class="btn btn-primary"
+                    hx-get="{% url 'django_comparison_dashboard:add_label_form' %}"
+                    hx-target="#more_labels"
+                    hx-swap="beforeend">Add another Label</button>
+          </div>
+          <!-- Graph Options Tab Content -->
+          <div class="tab-pane" id="graph_options" role="tabpanel">
+            <!-- General Graph Options -->
+            <h5 class="card-title">General Graph Options</h5>
+            {% startpartial graph_options inline=True %}
+            {{ graph_options_form.as_p }}
+            <hr />
+            <!-- Color Settings with adaptable amount of colors -->
+            {% startpartial colors inline=True %}
+            <div>
+              {{ color_form.as_p }}
+              <button _="on click remove my.parentElement"
+                      class="close btn btn-primary"
+                      aria-label="Close">x</button>
+            </div>
+          {% endpartial %}
+          <div id="more_colors"></div>
+          <button type="button"
+                  class="btn btn-primary"
+                  hx-get="{% url 'django_comparison_dashboard:add_color_form' %}"
+                  hx-target="#more_colors"
+                  hx-swap="beforeend">Add another Color</button>
+        {% endpartial %}
+      </div>
+      <div class="tab-pane" id="display_options" role="tabpanel">
+        <!-- Display Options -->
+        <h5 class="card-title">Display Options</h5>
+        {{ display_options_form.as_p }}
+      </div>
+    </div>
+  </div>
+  <div class="card-footer d-flex justify-content-between">
+    <button type="button"
+            class="btn btn-primary"
+            hx-get="{% url 'django_comparison_dashboard:data_table' %}"
+            hx-include="#scenario_id, #filters, #o_a_label"
+            hx-target="#table">Make table</button>
+    <button type="button"
+            class="btn btn-primary"
+            hx-get="{% url 'django_comparison_dashboard:data_plot' %}"
+            hx-include="#scenario_id, #filters, #o_a_label, #graph_options, #display_options"
+            hx-target="#plot">Make Chart</button>
+    <button type="button"
+            class="btn btn-primary"
+            hx-get="{% url 'django_comparison_dashboard:data_plot' %}"
+            hx-include="#scenario_id, #filters, #o_a_label, #graph_options, #display_options"
+            hx-target="#plot">Make Chart</button>
+  </div>
+</div>
+<!-- Save Filter Settings -->
+<form method="post"
+      hx-post="{% url 'django_comparison_dashboard:save' %}"
+      hx-include="#filters, #graph_options"
+      hx-swap="none"
+      class="d-flex">
+  {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
+  <input type="text"
+         class="form-control flex-grow-1"
+         id="name"
+         name="name"
+         label="name" />
+  <input type="submit"
+         class="btn btn-primary ml-2"
+         value="Save Filter Settings" />
+</form>
+</div>
+<!-- contains Charts and Table -->
+<div class="col-8">
+  <div id="plot"></div>
+  <div id="table"></div>
+</div>
+</div>
+</div>
+{% endblock content %}
+{% block javascript %}
+  {{ block.super }}
+  <script>
+    $(function() {
+      $('[data-toggle="tooltip"]').tooltip();
+    });
+  </script>
+  <script src="https://unpkg.com/htmx.org@1.9.7"></script>
+  <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+{% endblock javascript %}
