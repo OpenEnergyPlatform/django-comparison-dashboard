@@ -109,21 +109,16 @@ def save_filter_settings(request):
     name = request.POST.get("name")
     name_list = list(FilterSettings.objects.values("name"))
     if name == "" or FilterSettings.objects.filter(name=name).exists():
-        response = HttpResponse("<div id='name_error' class='alert alert-warning'>Wrong name input</div>")
-        return retarget(response, "#name_error")
+        return HttpResponse("Wrong name input.")
 
     selected_scenarios = request.POST.getlist("scenario_id")
     filter_set = DataFilterSet(selected_scenarios, request.POST)
     if not filter_set.is_valid():
-        return HttpResponse(
-            "<div id='validation_error' class='alert alert-warning'>Scenario or Other Form not valid</div>"
-        )
+        return HttpResponse("Scenario or Other Form not valid.")
 
     graph_filter_set = GraphFilterSet(request.POST, data_filter_set=filter_set)
     if not graph_filter_set.is_valid():
-        return HttpResponse(
-            "<div id='validation_error' class='alert alert-warning'>Graph or Display Form not valid</div>"
-        )
+        return HttpResponse("Graph or Display Form not valid.")
 
     else:
         # Create an instance of FilterSettings and assign the form data
@@ -145,11 +140,11 @@ def save_filter_settings(request):
 def save_precheck_name(request):
     name = request.POST.get("name")
     if name == "":
-        return HttpResponse("<div id='name_error' class='alert alert-warning'>Please enter a name.</div>")
+        return HttpResponse("Please enter a name.", status=400)
     if FilterSettings.objects.filter(name=name).exists():
-        return HttpResponse("<div id='name_error' class='alert alert-warning'>This name already exists.</div>")
+        return HttpResponse("This name already exits.", status=400)
     else:
-        return HttpResponse("<div id='name_error' class='alert alert-success'>Name is valid.</div>")
+        return HttpResponse("Your input is correct.", status=200)
 
 
 def load_filter_settings(request):

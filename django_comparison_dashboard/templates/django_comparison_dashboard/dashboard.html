@@ -18,12 +18,13 @@
               hx-get="{% url 'django_comparison_dashboard:load' %}"
               hx-swap="none"
               class="d-flex">
-          <select class="form-control flex-grow-1" id="name" name="name" label="name">
+          <select class="form-control flex-grow-1"
+                  id="load_name"
+                  name="name"
+                  label="name">
             {% for name in name_list %}<option value="{{ name.name }}">{{ name.name }}</option>{% endfor %}
           </select>
-          <input type="submit"
-                 class="btn btn-primary ml-2"
-                 value="Load Filter Settings" />
+          <button type="submit" class="btn btn-primary ml-2">Load Filter Settings</button>
         </form>
       {% endpartial %}
       <!-- contains Filters in different Tabs -->
@@ -135,25 +136,30 @@
 <!-- Save Filter Settings -->
 <form method="post"
       id="save_settings"
+      hx-swap="innerhtml"
       hx-post="{% url 'django_comparison_dashboard:save' %}"
       hx-include="#filters, #graph_options"
-      hx-target="#validation_error"
+      hx-target="#save_error"
       class="d-flex"
-      novalidate>
-  <input type="text"
-         class="form-control flex-grow-1"
-         id="save_name"
-         name="name"
-         label="name"
-         hx-swap="outerhtml"
-         hx-trigger="keyup delay:500ms"
-         hx-post="{% url 'django_comparison_dashboard:save_name' %}"
-         hx-target="#name_error" />
-  <div id="name_error"></div>
-  <input type="submit"
-         class="btn btn-primary ml-2"
-         value="Save Filter Settings" />
-  <div id="validation_error"></div>
+      novalidate
+      _="on load hide .alert">
+  <div hx-ext='response-targets'>
+    <input type="text"
+           class="form-control flex-grow-1"
+           id="save_name"
+           name="name"
+           label="name"
+           hx-swap="innerhtml"
+           hx-trigger="keyup delay:500ms changed"
+           hx-post="{% url 'django_comparison_dashboard:save_name' %}"
+           hx-target="#save_sucess"
+           hx-target-4
+           None="#save_error"
+           _="on htmx:afterRequest log event.detail.xhr if event.detail.xhr.status === 200 show #save_sucess hide #save_error remove @disabled from #save_button else show #save_error hide #save_sucess add @disabled to #save_button" />
+    <button type="submit" id="save_button" class="btn btn-primary ml-2" disabled>Save Filter Settings</button>
+    <div id="save_error" class="alert alert-warning"></div>
+    <div id="save_sucess" class="alert alert-success"></div>
+  </div>
 </form>
 </div>
 <!-- contains Charts and Table -->
@@ -172,5 +178,6 @@
     });
   </script>
   <script src="https://unpkg.com/htmx.org@1.9.7"></script>
+  <script src='https://unpkg.com/htmx.org/dist/ext/response-targets.js'></script>
   <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
 {% endblock javascript %}
