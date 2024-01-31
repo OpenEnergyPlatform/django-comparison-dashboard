@@ -55,12 +55,15 @@ def get_filters(request):
 
     """
     selected_scenarios = request.GET.getlist("scenario_id")
+    filter_setting_names = list(FilterSettings.objects.values("name"))
     filter_set = DataFilterSet(selected_scenarios)
     graph_filter_set = GraphFilterSet()
     return render(
         request,
         "django_comparison_dashboard/dashboard.html",
-        context=filter_set.get_context_data() | graph_filter_set.get_context_data(),
+        context=filter_set.get_context_data()
+        | graph_filter_set.get_context_data()
+        | {"name_list": filter_setting_names},
     )
 
 
@@ -106,26 +109,50 @@ def scalar_data_table(request):
 
 
 def save_filter_settings(request):
+    name = request.POST.get("name")
+    name_list = list(FilterSettings.objects.values("name"))
+    if name == "":
+        return HttpResponse("Please enter a name.")
+    if FilterSettings.objects.filter(name=name).exists():
+        return HttpResponse("Name already exists.")
+
     selected_scenarios = request.POST.getlist("scenario_id")
-
     filter_set = DataFilterSet(selected_scenarios, request.POST)
-    graph_filter_set = GraphFilterSet(request.POST, data_filter_set=filter_set)
+    if not filter_set.is_valid():
+        return HttpResponse("Scenario or Other Form not valid.")
 
-    if filter_set.is_valid() and graph_filter_set.is_valid():
+    graph_filter_set = GraphFilterSet(request.POST, data_filter_set=filter_set)
+    if not graph_filter_set.is_valid():
+        return HttpResponse("Graph or Display Form not valid.")
+
+    else:
         # Create an instance of FilterSettings and assign the form data
         filter_settings = FilterSettings(
-            name=request.POST.get("name"),
+            name=name,
             filter_set=filter_set.cleaned_data,
             graph_filter_set=graph_filter_set.cleaned_data,
         )
         filter_settings.save()
-        return HttpResponse(status=201)
+
+        response = render(
+            request,
+            "django_comparison_dashboard/dashboard.html#load_settings",
+            {"name_list": name_list},
+        )
+        return retarget(response, "#load_settings")
+
+
+def save_precheck_name(request):
+    name = request.POST.get("name")
+    if name == "":
+        return HttpResponse("Please enter a name.", status=400)
+    if FilterSettings.objects.filter(name=name).exists():
+        return HttpResponse("This name already exits.", status=400)
     else:
-        return HttpResponse("did not work")
+        return HttpResponse("Your input is correct.", status=200)
 
 
 def load_filter_settings(request):
-    # scenarios is still retrieved from GET request because it's not saved in the FilterSets
     selected_scenarios = request.GET.getlist("scenario_id")
     name = request.GET.get("name")
     try:
@@ -134,11 +161,14 @@ def load_filter_settings(request):
 
         filter_set = DataFilterSet(selected_scenarios, filter_settings.filter_set)
         graph_filter_set = GraphFilterSet(filter_settings.graph_filter_set, filter_set)
+        filter_setting_names = list(FilterSettings.objects.values("name"))
 
         return render(
             request,
             "django_comparison_dashboard/dashboard.html",
-            context=filter_set.get_context_data() | graph_filter_set.get_context_data(),
+            context=filter_set.get_context_data()
+            | graph_filter_set.get_context_data()
+            | {"name_list": filter_setting_names},
         )
     except FilterSettings.DoesNotExist:
         # needs a proper error

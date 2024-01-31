@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project tries to adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.0] - 2024-01-19
+## [0.3.1] - HTMX - 2024-01-22
+### Added
+- django-htmx to dependencies
+
+## [0.3.0] - First Deploy - 2024-01-19
 ### Added
 - index view
 - scenario selection view
