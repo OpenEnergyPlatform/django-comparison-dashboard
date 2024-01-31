@@ -151,7 +151,8 @@ class GraphOptionForm(forms.Form):
     x = forms.ChoiceField(
         label="X-Axis",
         choices=get_available_filters(value=True),
-        help_text="<span class='helptext' data-toggle='tooltip' data-placement='top' title='tooltip content'>?</span>",
+        # help_text="<span class='helptext' data-toggle='tooltip'
+        # data-placement='top' title='tooltip content'>?</span>",
         widget=forms.Select(attrs={"class": "form-control"}),
     )
     y = forms.ChoiceField(
@@ -197,7 +198,11 @@ class GraphOptionForm(forms.Form):
         cleaned_data = super().clean()
         for key in ("x", "y", "color", "hover_name"):
             value = cleaned_data[key]
-            if self.data_filter_set and self.data_filter_set.group_by and value not in self.data_filter_set.group_by:
+            if (
+                self.data_filter_set
+                and self.data_filter_set.group_by
+                and value not in self.data_filter_set.group_by + ["value"]
+            ):
                 self.add_error(key, "Please choose a value that was also chosen in Group-By.")
         return cleaned_data
 

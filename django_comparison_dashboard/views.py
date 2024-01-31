@@ -1,4 +1,4 @@
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 from django_htmx.http import retarget
@@ -67,28 +67,31 @@ def get_filters(request):
     )
 
 
-def scalar_data_plot(request):
-    selected_scenarios = request.GET.getlist("scenario_id")
-    filter_set = DataFilterSet(selected_scenarios, request.GET)
-    if not filter_set.is_valid():
-        response = render(
-            request,
-            "django_comparison_dashboard/dashboard.html#filters",
-            context=filter_set.get_context_data(),
-        )
-        return retarget(response, "#filters")
-    df = preprocessing.get_scalar_data(filter_set).to_dict(orient="records")
+class ScalarPlotView(TemplateView):
+    template_name = "django_comparison_dashboard/partials/plot.html"
 
-    graph_filter_set = GraphFilterSet(request.GET, data_filter_set=filter_set)
-    if not graph_filter_set.is_valid():
-        response = render(
-            request,
-            "django_comparison_dashboard/dashboard.html#graph_options",
-            context=graph_filter_set.get_context_data(),
-        )
-        return retarget(response, "#graph_options")
+    def get(self, request, *args, **kwargs):
+        selected_scenarios = self.request.GET.getlist("scenario_id")
+        filter_set = DataFilterSet(selected_scenarios, self.request.GET)
+        if not filter_set.is_valid():
+            response = render(
+                self.request,
+                "django_comparison_dashboard/dashboard.html#filters",
+                context=filter_set.get_context_data(),
+            )
+            return retarget(response, "#filters")
+        df = preprocessing.get_scalar_data(filter_set).to_dict(orient="records")
 
-    return HttpResponse(graphs.bar_plot(df, graph_filter_set).to_html())
+        graph_filter_set = GraphFilterSet(self.request.GET, data_filter_set=filter_set)
+        if not graph_filter_set.is_valid():
+            response = render(
+                self.request,
+                "django_comparison_dashboard/dashboard.html#graph_options",
+                context=graph_filter_set.get_context_data(),
+            )
+            return retarget(response, "#graph_options")
+
+        return render(request, self.template_name, {"chart": graphs.bar_plot(df, graph_filter_set).to_html()})
 
 
 def scalar_data_table(request):
@@ -170,6 +173,29 @@ def load_filter_settings(request):
     except FilterSettings.DoesNotExist:
         # needs a proper error
         return HttpResponse(status=404)
+
+
+def get_chart(request):
+    # TODO: Merge view ScalarPlotView, check if "single" chart is requested
+    selected_scenarios = request.GET.getlist("scenario_id")
+    filter_set = DataFilterSet(selected_scenarios, request.GET)
+    error_message = (
+        "Could not render chart due to invalid {error_type}. "
+        "This might occur, if {error_type} have been updated/changed. "
+        "Please check {error_type} or regenerate chart URL from "
+        "dashboard."
+    )
+    if not filter_set.is_valid():
+        error_type = "filter settings"
+        return HttpResponseBadRequest(error_message.format(error_type=error_type))
+    graph_filter_set = GraphFilterSet(request.GET, data_filter_set=filter_set)
+    if not graph_filter_set.is_valid():
+        error_type = "graph options"
+        return HttpResponseBadRequest(error_message.format(error_type=error_type))
+    df = preprocessing.get_scalar_data(filter_set).to_dict(orient="records")
+    response = HttpResponse(graphs.bar_plot(df, graph_filter_set).to_html())
+    response["HX-Redirect"] = request.get_full_path_info()
+    return response
 
 
 class ScenarioSelectionView(ListView):

@@ -4,7 +4,7 @@ import pathlib
 from dataclasses import dataclass
 from enum import IntEnum
 
-VERSION = "0.2.0"
+VERSION = "0.3.1"
 
 USE_DUMMY_DATA = os.environ.get("USE_DUMMY_DATA", "False") == "True"
 SKIP_TS = os.environ.get("SKIP_TS", "False") == "True"
