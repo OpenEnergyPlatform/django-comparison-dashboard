@@ -167,11 +167,14 @@ def load_filter_settings(request):
 
         filter_set = DataFilterSet(selected_scenarios, filter_settings.filter_set)
         graph_filter_set = GraphFilterSet(filter_settings.graph_filter_set, filter_set)
+        filter_setting_names = list(FilterSettings.objects.values("name"))
 
         return render(
             request,
             "django_comparison_dashboard/dashboard.html",
-            context=filter_set.get_context_data() | graph_filter_set.get_context_data(),
+            context=filter_set.get_context_data()
+            | graph_filter_set.get_context_data()
+            | {"name_list": filter_setting_names},
         )
     except FilterSettings.DoesNotExist:
         # needs a proper error

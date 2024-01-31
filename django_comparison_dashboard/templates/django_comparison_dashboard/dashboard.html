@@ -15,12 +15,12 @@
         <!-- Load Filter Settings -->
         {% startpartial load_settings inline=True %}
         <form method="get"
-              hx-get="{% url 'django_comparison_dashboard:load' %}"
-              hx-swap="none"
+              action="{% url 'django_comparison_dashboard:load' %}"
               class="d-flex">
           <select class="form-control flex-grow-1" id="name" name="name" label="name">
             {% for name in name_list %}<option value="{{ name.name }}">{{ name.name }}</option>{% endfor %}
           </select>
+          {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
           <input type="submit"
                  class="btn btn-primary ml-2"
                  value="Load Filter Settings" />
@@ -136,7 +136,7 @@
 <form method="post"
       id="save_settings"
       hx-post="{% url 'django_comparison_dashboard:save' %}"
-      hx-include="#filters, #graph_options"
+      hx-include="#filters, #o_a_label, #graph_options, #display_options"
       hx-target="#validation_error"
       class="d-flex"
       novalidate>
