@@ -111,8 +111,11 @@ def scalar_data_table(request):
 def save_filter_settings(request):
     name = request.POST.get("name")
     name_list = list(FilterSettings.objects.values("name"))
-    if name == "" or FilterSettings.objects.filter(name=name).exists():
-        response = HttpResponse("<div id='name_error' class='alert alert-warning'>Wrong name input</div>")
+    if name == "":
+        response = HttpResponse("<div id='name_error' class='alert alert-warning'>Name is empty</div>")
+        return retarget(response, "#name_error")
+    if FilterSettings.objects.filter(name=name).exists():
+        response = HttpResponse("<div id='name_error' class='alert alert-warning'>Name already exists</div>")
         return retarget(response, "#name_error")
 
     selected_scenarios = request.POST.getlist("scenario_id")
