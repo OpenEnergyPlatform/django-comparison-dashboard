@@ -31,19 +31,15 @@ class KeyValueFormPartialView(View):
 
     def post(self, request):
         count = int(request.POST[f"{self.prefix}-TOTAL_FORMS"])
+        form_data = request.POST.dict()
         if "add" in request.path:
-            form_data = request.POST.dict()
             form_data[f"{self.prefix}-TOTAL_FORMS"] = count + 1
-            formset = formset_factory(self.form)
-            form = formset(form_data, prefix=self.prefix)
-            return HttpResponse(form.as_p())
         if "remove" in request.path:
-            count = int(request.POST[f"{self.prefix}-TOTAL_FORMS"])
-            form_data = request.POST.dict()
-            form_data[f"{self.prefix}-TOTAL_FORMS"] = count - 1
-            formset = formset_factory(self.form)
-            form = formset(form_data, prefix=self.prefix)
-            return HttpResponse(form.as_p())
+            if count > 0:
+                form_data[f"{self.prefix}-TOTAL_FORMS"] = count - 1
+        formset = formset_factory(self.form)
+        form = formset(form_data, prefix=self.prefix)
+        return HttpResponse(form.as_p())
 
 
 def get_filters(request):
