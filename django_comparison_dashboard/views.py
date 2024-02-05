@@ -1,11 +1,12 @@
+from django.forms.formsets import formset_factory
 from django.http.response import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
-from django.views.generic import DetailView, FormView, ListView, TemplateView
+from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from django_htmx.http import retarget
 
 from . import graphs, models, preprocessing, sources
 from .filters import ScenarioFilter
-from .forms import ColorForm, DataFilterSet, GraphFilterSet, LabelForm
+from .forms import DataFilterSet, GraphFilterSet
 from .models import FilterSettings, ScalarData
 
 
@@ -19,26 +20,30 @@ def index(request):
     return render(request, "django_comparison_dashboard/dashboard.html", {"scenario_filter": scenario_filter})
 
 
-def add_label_form(request):
-    label_form = LabelForm()
-    return render(
-        request,
-        "django_comparison_dashboard/dashboard.html#labels",
-        {
-            "label_form": label_form,
-        },
-    )
+class KeyValueFormPartialView(View):
+    prefix = ""
+    form = None
 
+    def __init__(self, prefix, form, **kwargs):
+        super().__init__(**kwargs)
+        self.prefix = prefix
+        self.form = form
 
-def add_color_form(request):
-    color_form = ColorForm()
-    return render(
-        request,
-        "django_comparison_dashboard/dashboard.html#colors",
-        {
-            "color_form": color_form,
-        },
-    )
+    def post(self, request):
+        count = int(request.POST[f"{self.prefix}-TOTAL_FORMS"])
+        if "add" in request.path:
+            form_data = request.POST.dict()
+            form_data[f"{self.prefix}-TOTAL_FORMS"] = count + 1
+            formset = formset_factory(self.form)
+            form = formset(form_data, prefix=self.prefix)
+            return HttpResponse(form.as_p())
+        if "remove" in request.path:
+            count = int(request.POST[f"{self.prefix}-TOTAL_FORMS"])
+            form_data = request.POST.dict()
+            form_data[f"{self.prefix}-TOTAL_FORMS"] = count - 1
+            formset = formset_factory(self.form)
+            form = formset(form_data, prefix=self.prefix)
+            return HttpResponse(form.as_p())
 
 
 def get_filters(request):
