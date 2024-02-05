@@ -325,7 +325,8 @@ class DataFilterSet(FilterSet):
 
     @property
     def labels(self):
-        return self.bound_forms["label_form"].cleaned_data
+        labels_raw = self.bound_forms["label_form"].cleaned_data
+        return {key: value for key, value in zip(labels_raw["label_key"], labels_raw["label_value"])}
 
     def get_context_data(self):
         context = super().get_context_data()
@@ -349,7 +350,10 @@ class GraphFilterSet(FilterSet):
     @property
     def plot_options(self):
         options = self.bound_forms["graph_options_form"].cleaned_data
-        options["color_discrete_map"] = self.bound_forms["color_form"].cleaned_data
+        colors_raw = self.bound_forms["color_form"].cleaned_data
+        options["color_discrete_map"] = {
+            key: value for key, value in zip(colors_raw["color_key"], colors_raw["color_value"])
+        }
         return options
 
     def get_forms(self) -> dict[str, "forms.Form"]:
