@@ -1,4 +1,5 @@
 from django import forms
+from django.forms.formsets import BaseFormSet, formset_factory
 
 from . import settings
 from .filters import ScenarioFilter
@@ -115,17 +116,34 @@ class LabelForm(forms.Form):
         label="new label", required=False, widget=forms.TextInput(attrs={"class": "form-control"})
     )
 
-    def full_clean(self):
-        """Pair keys and values into dict"""
-        self.cleaned_data = {}
-        if hasattr(self.data, "getlist"):  # Check if data is a QueryDict
-            label_keys = self.data.getlist("label_key")
-            label_values = self.data.getlist("label_value")
-            self.cleaned_data = dict(zip(label_keys, label_values))
-        else:  # If data is a regular dictionary
-            self.cleaned_data = self.data
 
-        super().full_clean()
+class KeyValueFormset(BaseFormSet):
+    def __init__(self, data=None, **kwargs):
+        super().__init__(data, **kwargs)
+        if data is not None and isinstance(data, dict) and self.key_field_name in data:
+            item_count = len(data[self.key_field_name])
+            formset_data = {f"{self.prefix}-INITIAL_FORMS": 0, f"{self.prefix}-TOTAL_FORMS": item_count}
+            for i in range(item_count):
+                formset_data[f"{self.prefix}-{i}-{self.key_field_name}"] = data[self.key_field_name][i]
+                formset_data[f"{self.prefix}-{i}-{self.value_field_name}"] = data[self.value_field_name][i]
+            self.data = formset_data
+
+    @property
+    def key_field_name(self):
+        return next(field for field in self.form.base_fields.keys() if field.endswith("_key"))
+
+    @property
+    def value_field_name(self):
+        return next(field for field in self.form.base_fields.keys() if field.endswith("_value"))
+
+    @property
+    def cleaned_data(self):
+        """Pair keys and values into dict"""
+        cleaned_data_raw = super().cleaned_data
+        return {
+            self.key_field_name: [entry[self.key_field_name] for entry in cleaned_data_raw if entry],
+            self.value_field_name: [entry[self.value_field_name] for entry in cleaned_data_raw if entry],
+        }
 
 
 class ColorForm(forms.Form):
@@ -133,18 +151,6 @@ class ColorForm(forms.Form):
         label="set color for", required=False, widget=forms.TextInput(attrs={"class": "form-control"})
     )
     color_value = forms.CharField(label="color", widget=forms.TextInput(attrs={"type": "color"}), required=False)
-
-    def full_clean(self):
-        """Pair keys and values into dict"""
-        self.cleaned_data = {}
-        if hasattr(self.data, "getlist"):  # Check if data is a QueryDict
-            color_keys = self.data.getlist("color_key")
-            color_values = self.data.getlist("color_value")
-            self.cleaned_data = dict(zip(color_keys, color_values))
-        else:  # If data is a regular dictionary
-            self.cleaned_data = self.data
-
-        super().full_clean()
 
 
 class GraphOptionForm(forms.Form):
@@ -290,7 +296,6 @@ class FilterSet:
 class DataFilterSet(FilterSet):
     forms = {
         "order_aggregation_form": OrderAggregationForm,
-        "label_form": LabelForm,
         "unit_form": UnitForm,
     }
 
@@ -300,6 +305,7 @@ class DataFilterSet(FilterSet):
         self.selected_scenarios = selected_scenarios
         scalar_data = ScalarData.objects.filter(scenario__in=selected_scenarios)
         self.bound_forms["scenario_filter"] = ScenarioFilter(data, queryset=scalar_data)
+        self.bound_forms["label_form"] = formset_factory(LabelForm, KeyValueFormset)(data, prefix="labels")
 
     @property
     def queryset(self):
@@ -319,7 +325,8 @@ class DataFilterSet(FilterSet):
 
     @property
     def labels(self):
-        return self.bound_forms["label_form"].cleaned_data
+        labels_raw = self.bound_forms["label_form"].cleaned_data
+        return {key: value for key, value in zip(labels_raw["label_key"], labels_raw["label_value"])}
 
     def get_context_data(self):
         context = super().get_context_data()
@@ -332,18 +339,21 @@ class DataFilterSet(FilterSet):
 
 class GraphFilterSet(FilterSet):
     forms = {
-        "color_form": ColorForm,
         "display_options_form": DisplayOptionForm,
     }
 
     def __init__(self, data: dict | None = None, data_filter_set: DataFilterSet | None = None):
         super().__init__(data)
         self.bound_forms["graph_options_form"] = GraphOptionForm(data, data_filter_set=data_filter_set)
+        self.bound_forms["color_form"] = formset_factory(ColorForm, KeyValueFormset)(data, prefix="colors")
 
     @property
     def plot_options(self):
         options = self.bound_forms["graph_options_form"].cleaned_data
-        options["color_discrete_map"] = self.bound_forms["color_form"].cleaned_data
+        colors_raw = self.bound_forms["color_form"].cleaned_data
+        options["color_discrete_map"] = {
+            key: value for key, value in zip(colors_raw["color_key"], colors_raw["color_value"])
+        }
         return options
 
     def get_forms(self) -> dict[str, "forms.Form"]:
