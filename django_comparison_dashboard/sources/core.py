@@ -52,10 +52,10 @@ class Scenario(abc.ABC):
         return SourceRegistry()[self.source_name]
 
     def is_present(self) -> bool:
-        return models.Scenario.objects.filter(name=self.id, source__name=self.source.name).exists()
+        return models.Result.objects.filter(name=self.id, source__name=self.source.name).exists()
 
-    def get(self) -> models.Scenario:
-        return get_object_or_404(models.Scenario.objects.filter(name=self.id, source__name=self.source.name))
+    def get(self) -> models.Result:
+        return get_object_or_404(models.Result.objects.filter(name=self.id, source__name=self.source.name))
 
     def download(self):
         """Download scenario data, validate data and store in DB if data is valid"""
@@ -74,7 +74,7 @@ class Scenario(abc.ABC):
             Iterable data which shall be stored in DB
         """
         source = models.Source.objects.get_or_create(name=self.source.name)[0]
-        scenario = models.Scenario.objects.get_or_create(name=self.id, source=source)[0]
+        scenario = models.Result.objects.get_or_create(name=self.id, source=source)[0]
         if self.data_type == settings.DataType.Scalar:
             data_model = models.ScalarData
         elif self.data_type == models.TimeseriesData:

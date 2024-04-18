@@ -16,5 +16,5 @@ class ModexSourceTest(TestCase):
         scenario = scenarios[-2]
         scenario.download()
         assert models.Source.objects.get(name="MODEX")
-        assert models.Scenario.objects.get(name=scenario.id, source__name="MODEX")
+        assert models.Result.objects.get(name=scenario.id, source__name="MODEX")
         assert len(models.ScalarData.objects.all()) > 0

@@ -6,15 +6,15 @@ class Source(models.Model):
     name = models.CharField(max_length=255)
 
 
-class Scenario(models.Model):
+class Result(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=255)
-    source = models.ForeignKey(Source, on_delete=models.CASCADE, related_name="scenarios")
+    source = models.ForeignKey(Source, on_delete=models.CASCADE, related_name="results")
 
 
 class ScalarData(models.Model):
     id = models.BigAutoField(primary_key=True)
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, related_name="scalars")
+    result = models.ForeignKey(Result, on_delete=models.CASCADE, related_name="scalars")
     value = models.FloatField()
     year = models.IntegerField()
     region = models.CharField(max_length=255)

@@ -207,9 +207,9 @@ class ScenarioSelectionView(ListView):
     def get_queryset(self):
         if "source" in self.request.GET:
             source = self.request.GET["source"]
-            return models.Scenario.objects.filter(source=source)
+            return models.Result.objects.filter(source=source)
         else:
-            return models.Scenario.objects.filter(source=models.Source.objects.order_by("name").first())
+            return models.Result.objects.filter(source=models.Source.objects.order_by("name").first())
 
     def get_template_names(self):
         if "source" in self.request.GET:
@@ -224,7 +224,7 @@ class ScenarioDetailView(DetailView):
 
     def get_object(self, queryset=None):
         scenario_id = self.request.GET["scenario"]
-        return models.Scenario.objects.get(pk=scenario_id)
+        return models.Result.objects.get(pk=scenario_id)
 
 
 class UploadView(TemplateView):
@@ -248,7 +248,7 @@ class ScenarioFormView(FormView):
     def form_valid(self, form):
         source = self.get_source()
         scenario = source.scenario(**form.cleaned_data)
-        if models.Scenario.objects.filter(source__name=source.name, name=scenario.id).exists():
+        if models.Result.objects.filter(source__name=source.name, name=scenario.id).exists():
             return HttpResponse("Scenario already present in database.")
         scenario.download()
         return HttpResponse(f"Uploaded scenario '{scenario}'.")
