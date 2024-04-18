@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
@@ -15,29 +16,32 @@ class Result(models.Model):
 class ScalarData(models.Model):
     id = models.BigAutoField(primary_key=True)
     result = models.ForeignKey(Result, on_delete=models.CASCADE, related_name="scalars")
+
+    scenario = models.CharField(max_length=255)
+    process = models.CharField(max_length=255)
+    parameter = models.CharField(max_length=255)
     value = models.FloatField()
     year = models.IntegerField()
-    region = models.CharField(max_length=255)
-    input_energy_vector = models.CharField(max_length=255, null=True)
-    output_energy_vector = models.CharField(max_length=255, null=True)
-    parameter_name = models.CharField(max_length=255)
-    technology = models.CharField(max_length=255)
-    technology_type = models.CharField(max_length=255)
+    input_commodity = models.CharField(max_length=255, null=True)
+    output_commodity = models.CharField(max_length=255, null=True)
+    sector = models.CharField(max_length=255)
+    category = models.CharField(max_length=255, null=True)
+    specification = models.CharField(max_length=255, null=True)
+    new = models.BooleanField()
     unit = models.CharField(max_length=255)
-    tags = models.JSONField(max_length=255, null=True)
-    method = models.JSONField(max_length=255, null=True)
-    source = models.CharField(max_length=255, null=True)
-    comment = models.CharField(max_length=255, null=True)
+    groups = ArrayField(models.CharField(max_length=255), null=True)
 
-    filters = (
-        "region",
-        "year",
-        "input_energy_vector",
-        "output_energy_vector",
-        "parameter_name",
-        "technology",
-        "technology_type",
-    )
+    filters = [
+        "scenario",
+        "process",
+        "parameter",
+        "input_commodity",
+        "output_commodity",
+        "sector",
+        "category",
+        "specification",
+        "new",
+    ]
 
 
 class FilterSettings(models.Model):

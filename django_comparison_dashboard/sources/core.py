@@ -1,4 +1,5 @@
 import abc
+import ast
 import logging
 
 import pandas as pd
@@ -74,16 +75,17 @@ class Scenario(abc.ABC):
             Iterable data which shall be stored in DB
         """
         source = models.Source.objects.get_or_create(name=self.source.name)[0]
-        scenario = models.Result.objects.get_or_create(name=self.id, source=source)[0]
+        result = models.Result.objects.get_or_create(name=self.id, source=source)[0]
         if self.data_type == settings.DataType.Scalar:
             data_model = models.ScalarData
         elif self.data_type == models.TimeseriesData:
             data_model = models.TimeseriesData
         else:
             raise TypeError(f"Unknown data type '{self.data_type}'.")
-        data_model.objects.bulk_create(
-            data_model(scenario=scenario, **item) for item in data.to_dict(orient="records")
-        )
+
+        # Convert "groups" column to list
+        data["groups"] = data["groups"].apply(ast.literal_eval)
+        data_model.objects.bulk_create(data_model(result=result, **item) for item in data.to_dict(orient="records"))
 
     def _validate(self, data: pd.DataFrame) -> None:
         """

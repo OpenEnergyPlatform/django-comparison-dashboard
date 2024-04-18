@@ -303,7 +303,7 @@ class DataFilterSet(FilterSet):
         """Get filter set from selected scenarios."""
         super().__init__(data)
         self.selected_scenarios = selected_scenarios
-        scalar_data = ScalarData.objects.filter(scenario__in=selected_scenarios)
+        scalar_data = ScalarData.objects.filter(result__in=selected_scenarios)
         self.bound_forms["scenario_filter"] = ScenarioFilter(data, queryset=scalar_data)
         self.bound_forms["label_form"] = formset_factory(LabelForm, KeyValueFormset)(data, prefix="labels")
 

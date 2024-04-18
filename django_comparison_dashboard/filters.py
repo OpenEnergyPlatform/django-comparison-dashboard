@@ -20,10 +20,13 @@ class ScenarioFilter(django_filters.FilterSet):
     class Meta:
         model = ScalarData
         fields = [
-            "region",
-            "input_energy_vector",
-            "output_energy_vector",
-            "parameter_name",
-            "technology",
-            "technology_type",
+            "scenario",
+            "process",
+            "parameter",
+            "input_commodity",
+            "output_commodity",
+            "sector",
+            "category",
+            "specification",
+            "new",
         ]
