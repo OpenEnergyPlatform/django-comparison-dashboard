@@ -1,12 +1,14 @@
+import itertools
 import math
 import warnings
 from collections import ChainMap
 
+import numpy as np
 import pandas
 from plotly import express as px
 from plotly import graph_objects as go
 
-from .forms import GraphFilterSet
+from .forms import BarGraphFilterSet
 from .settings import (
     COLUMN_JOINER,
     GRAPHS_DEFAULT_LAYOUT,
@@ -60,7 +62,7 @@ def get_scalar_plot(data, options):
         return dot_plot(data, options["options"])
 
 
-def bar_plot(data, filter_set: GraphFilterSet):
+def bar_plot(data, filter_set: BarGraphFilterSet):
     # xaxis_title = options.pop("xaxis_title")
     # yaxis_title = options.pop("yaxis_title")
     # axis_type = options.pop("axis_type")
@@ -325,4 +327,96 @@ def heat_map(data, options):
     fig.update_layout(template=GRAPHS_DEFAULT_TEMPLATE, **GRAPHS_DEFAULT_LAYOUT)
     fig.update_xaxes(GRAPHS_DEFAULT_XAXES_LAYOUT)
     fig.update_yaxes(GRAPHS_DEFAULT_YAXES_LAYOUT)
+    return fig
+
+
+def sankey(data, options):
+    """Return a dict to a plotly sankey diagram"""
+    RESULTS_FILE = "/industry_scratch.csv"
+
+    data = pandas.read_csv(RESULTS_FILE, delimiter=";")
+
+    labels = set(data["process"]) | set(data["input_commodity"]) | set(data["output_commodity"])
+    labels.discard(np.nan)
+    labels = list(labels)
+
+    imports = []
+    primary = []
+    secondary = []
+    others = []
+
+    for label in labels:
+        if "import" in label:
+            imports.append(label)
+        elif label.startswith("pri"):
+            primary.append(label)
+        elif label.startswith("sec"):
+            secondary.append(label)
+        else:
+            others.append(label)
+    labels = imports + primary + secondary + others
+    x = list(
+        itertools.chain(
+            itertools.repeat(0.1, len(imports)),
+            itertools.repeat(0.2, len(primary)),
+            itertools.repeat(None, len(secondary)),
+            itertools.repeat(None, len(others)),
+        )
+    )
+    y = (
+        list(np.linspace(1 / len(imports), 1, len(imports) + 1, endpoint=False))
+        + list(np.linspace(1 / len(primary), 1, len(primary) + 1, endpoint=False))
+        + list(itertools.repeat(None, len(secondary)))
+        + list(itertools.repeat(None, len(others)))
+    )
+
+    source = []
+    target = []
+    value = []
+    label = []
+    # color = []
+    for _, flow in data.iterrows():
+        if not isinstance(flow["input_commodity"], str):
+            source.append(labels.index(flow["process"]))
+            target.append(labels.index(flow["output_commodity"]))
+            label.append(flow["output_commodity"])
+        elif not isinstance(flow["output_commodity"], str):
+            source.append(labels.index(flow["input_commodity"]))
+            target.append(labels.index(flow["process"]))
+            label.append(flow["input_commodity"])
+        else:
+            continue
+
+        value.append(flow["value"])
+
+    fig = go.Figure(
+        data=[
+            go.Sankey(
+                arrangement="fixed",
+                valueformat=".0f",
+                valuesuffix="TWh",
+                # Define nodes
+                node=dict(
+                    pad=15,
+                    thickness=15,
+                    line=dict(color="black", width=0.5),
+                    label=labels,
+                    x=x,
+                    y=y,
+                ),
+                # Add links
+                link=dict(
+                    source=source,
+                    target=target,
+                    value=value,
+                    label=label,
+                ),
+            )
+        ]
+    )
+
+    fig.update_layout(
+        title_text="Industriesektor",
+        font_size=10,
+    )
     return fig

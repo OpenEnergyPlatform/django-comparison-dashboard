@@ -6,7 +6,7 @@ from django_htmx.http import retarget
 
 from . import graphs, models, preprocessing, sources
 from .filters import ScenarioFilter
-from .forms import DataFilterSet, GraphFilterSet
+from .forms import BarGraphFilterSet, DataFilterSet, SankeyGraphFilterSet  # noqa: F401
 from .models import FilterSettings, ScalarData
 
 
@@ -58,7 +58,7 @@ def get_filters(request):
     selected_scenarios = request.GET.getlist("scenario_id")
     filter_setting_names = list(FilterSettings.objects.values("name"))
     filter_set = DataFilterSet(selected_scenarios)
-    graph_filter_set = GraphFilterSet()
+    graph_filter_set = BarGraphFilterSet()
     return render(
         request,
         "django_comparison_dashboard/dashboard.html",
@@ -83,7 +83,7 @@ class ScalarPlotView(TemplateView):
             return retarget(response, "#filters")
         df = preprocessing.get_scalar_data(filter_set).to_dict(orient="records")
 
-        graph_filter_set = GraphFilterSet(self.request.GET, data_filter_set=filter_set)
+        graph_filter_set = BarGraphFilterSet(self.request.GET, data_filter_set=filter_set)
         if not graph_filter_set.is_valid():
             response = render(
                 self.request,
@@ -91,8 +91,7 @@ class ScalarPlotView(TemplateView):
                 context=graph_filter_set.get_context_data(),
             )
             return retarget(response, "#graph_options")
-
-        return render(request, self.template_name, {"chart": graphs.bar_plot(df, graph_filter_set).to_html()})
+        return render(request, self.template_name, {"chart": graphs.sankey(df, graph_filter_set).to_html()})
 
 
 def scalar_data_table(request):
@@ -122,7 +121,7 @@ def save_filter_settings(request):
     if not filter_set.is_valid():
         return HttpResponse("Scenario or Other Form not valid.")
 
-    graph_filter_set = GraphFilterSet(request.POST, data_filter_set=filter_set)
+    graph_filter_set = BarGraphFilterSet(request.POST, data_filter_set=filter_set)
     if not graph_filter_set.is_valid():
         return HttpResponse("Graph or Display Form not valid.")
 
@@ -161,7 +160,7 @@ def load_filter_settings(request):
         filter_settings = FilterSettings.objects.get(name=name)
 
         filter_set = DataFilterSet(selected_scenarios, filter_settings.filter_set)
-        graph_filter_set = GraphFilterSet(filter_settings.graph_filter_set, filter_set)
+        graph_filter_set = BarGraphFilterSet(filter_settings.graph_filter_set, filter_set)
         filter_setting_names = list(FilterSettings.objects.values("name"))
 
         return render(
@@ -174,6 +173,21 @@ def load_filter_settings(request):
     except FilterSettings.DoesNotExist:
         # needs a proper error
         return HttpResponse(status=404)
+
+
+def refresh_graph_filter_set(request):
+    if request.method == "POST":
+        selected_option = request.POST.get("chart_type")
+        form_class_name = f"{selected_option}GraphFilterSet"
+        form_class = globals().get(form_class_name)
+        graph_filter_set = form_class()
+
+    response = render(
+        request,
+        "django_comparison_dashboard/dashboard.html#graph_options",
+        context=graph_filter_set.get_context_data(),
+    )
+    return response
 
 
 def get_chart(request):
@@ -189,12 +203,12 @@ def get_chart(request):
     if not filter_set.is_valid():
         error_type = "filter settings"
         return HttpResponseBadRequest(error_message.format(error_type=error_type))
-    graph_filter_set = GraphFilterSet(request.GET, data_filter_set=filter_set)
+    graph_filter_set = BarGraphFilterSet(request.GET, data_filter_set=filter_set)
     if not graph_filter_set.is_valid():
         error_type = "graph options"
         return HttpResponseBadRequest(error_message.format(error_type=error_type))
     df = preprocessing.get_scalar_data(filter_set).to_dict(orient="records")
-    response = HttpResponse(graphs.bar_plot(df, graph_filter_set).to_html())
+    response = HttpResponse(graphs.sankey(df, graph_filter_set).to_html())
     response["HX-Redirect"] = request.get_full_path_info()
     return response
 

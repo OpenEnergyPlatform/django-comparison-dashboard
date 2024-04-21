@@ -225,6 +225,50 @@ class GraphOptionForm(forms.Form):
         return data
 
 
+class SankeyGraphForm(forms.Form):
+    input = forms.ChoiceField(
+        label="X-Axis",
+        choices=get_available_filters(value=True),
+        # help_text="<span class='helptext' data-toggle='tooltip'
+        # data-placement='top' title='tooltip content'>?</span>",
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    output = forms.ChoiceField(
+        label="Y-Axis", choices=get_available_filters(value=True), widget=forms.Select(attrs={"class": "form-control"})
+    )
+    process = forms.ChoiceField(
+        label="Y-Axis", choices=get_available_filters(value=True), widget=forms.Select(attrs={"class": "form-control"})
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.data_filter_set = kwargs.pop("data_filter_set", None)
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        for key in ("x", "y", "color", "hover_name"):
+            value = cleaned_data[key]
+            if (
+                self.data_filter_set
+                and self.data_filter_set.group_by
+                and value not in self.data_filter_set.group_by + ["value"]
+            ):
+                self.add_error(key, "Please choose a value that was also chosen in Group-By.")
+        return cleaned_data
+
+    def clean_facet_col(self):
+        data = self.cleaned_data["facet_col"]
+        if data == "":
+            return None
+        return data
+
+    def clean_text(self):
+        data = self.cleaned_data["text"]
+        if data == "":
+            return None
+        return data
+
+
 class DisplayOptionForm(forms.Form):
     chart_height = forms.IntegerField(
         label="Chart Height", required=False, widget=forms.NumberInput(attrs={"class": "form-control"})
@@ -261,6 +305,15 @@ class DisplayOptionForm(forms.Form):
     )
     subplot_spacing = forms.IntegerField(
         label="Subplot Spacing", required=False, widget=forms.NumberInput(attrs={"class": "form-control"})
+    )
+
+
+class SankeyDisplayForm(forms.Form):
+    chart_height = forms.IntegerField(
+        label="Font Size", required=False, widget=forms.NumberInput(attrs={"class": "form-control"})
+    )
+    legend_title = forms.CharField(
+        label="Title", required=False, widget=forms.TextInput(attrs={"class": "form-control"})
     )
 
 
@@ -337,7 +390,7 @@ class DataFilterSet(FilterSet):
         return self.bound_forms
 
 
-class GraphFilterSet(FilterSet):
+class BarGraphFilterSet(FilterSet):
     forms = {
         "display_options_form": DisplayOptionForm,
     }
@@ -349,7 +402,32 @@ class GraphFilterSet(FilterSet):
 
     @property
     def plot_options(self):
-        options = self.bound_forms["graph_options_form"].cleaned_data
+        if self.bound_forms["graph_options_form"].is_valid():
+            options = self.bound_forms["graph_options_form"].cleaned_data
+        colors_raw = self.bound_forms["color_form"].cleaned_data
+        options["color_discrete_map"] = {
+            key: value for key, value in zip(colors_raw["color_key"], colors_raw["color_value"])
+        }
+        return options
+
+    def get_forms(self) -> dict[str, "forms.Form"]:
+        return self.bound_forms
+
+
+class SankeyGraphFilterSet(FilterSet):
+    forms = {
+        "display_options_form": SankeyDisplayForm,
+    }
+
+    def __init__(self, data: dict | None = None, data_filter_set: DataFilterSet | None = None):
+        super().__init__(data)
+        self.bound_forms["graph_options_form"] = SankeyGraphForm(data, data_filter_set=data_filter_set)
+        self.bound_forms["color_form"] = formset_factory(ColorForm, KeyValueFormset)(data, prefix="colors")
+
+    @property
+    def plot_options(self):
+        if self.bound_forms["graph_options_form"].is_valid():
+            options = self.bound_forms["graph_options_form"].cleaned_data
         colors_raw = self.bound_forms["color_form"].cleaned_data
         options["color_discrete_map"] = {
             key: value for key, value in zip(colors_raw["color_key"], colors_raw["color_value"])

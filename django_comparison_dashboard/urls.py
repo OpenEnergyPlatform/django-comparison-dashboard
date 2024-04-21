@@ -30,4 +30,5 @@ urlpatterns = [
     path("save/", views.save_filter_settings, name="save"),
     path("save/name", views.save_precheck_name, name="save_name"),
     path("load/", views.load_filter_settings, name="load"),
+    path("refresh_options/", views.refresh_graph_filter_set, name="refresh_options"),
 ]

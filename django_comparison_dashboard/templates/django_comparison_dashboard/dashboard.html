@@ -49,7 +49,7 @@
               <a class="nav-link"
                  id="graph-options-tab"
                  data-bs-toggle="tab"
-                 href="#graph_options">Graph</a>
+                 href="#graph_options_tab">Graph</a>
             </li>
             <li class="nav-item">
               <a class="nav-link"
@@ -88,10 +88,24 @@
                     hx-include="#labels"
                     hx-target="#labels">Remove label</button>
           </div>
-          <div class="tab-pane" id="graph_options" role="tabpanel">
+          <div class="tab-pane" id="graph_options_tab" role="tabpanel">
             <!-- General Graph Options -->
             <h5 class="card-title">General Graph Options</h5>
             {% startpartial graph_options inline=True %}
+            <div hx-post="{% url 'django_comparison_dashboard:refresh_options' %}"
+                 hx-trigger="change"
+                 hx-target="#graph_options_tab"
+                 hx-swap="innerhtml"
+                 hx-include="[name='chart_type']">
+              <input type="radio"
+                     id="chart_type_bar"
+                     name="chart_type"
+                     value="Bar"
+                     checked />
+              <label for="chart_type_bar">Bar Chart</label>
+              <input type="radio" id="chart_type_sankey" name="chart_type" value="Sankey" />
+              <label for="chart_type_sankey">Sankey Chart</label>
+            </div>
             {{ graph_options_form.as_p }}
             <hr />
             <div id="colors">{{ color_form.as_p }}</div>
