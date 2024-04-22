@@ -330,10 +330,10 @@ def heat_map(data, options):
     return fig
 
 
-def sankey(data, options):
-    """Return a dict to a plotly sankey diagram"""
-    RESULTS_FILE = "/home/local/RL-INSTITUT/josefine.hoppe/Downloads/industry_scratch.csv"
+def sankey(data, filter_set: SankeyGraphFilterSet):
+    """Return a dict containing the options for a plotly sankey diagram"""
 
+    RESULTS_FILE = "/industry_scratch.csv"
     data = pandas.read_csv(RESULTS_FILE, delimiter=";")
 
     labels = set(data["process"]) | set(data["input_commodity"]) | set(data["output_commodity"])
@@ -415,9 +415,12 @@ def sankey(data, options):
         ]
     )
 
+    font_size = filter_set.plot_options.get("font_size", 10)
+    title_text = filter_set.plot_options.get("title_text", "Industriesektor")  # maybe needs different default?
+
     fig.update_layout(
-        title_text="Industriesektor",
-        font_size=10,
+        title_text=title_text,
+        font_size=font_size,
     )
     return fig
 
