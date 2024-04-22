@@ -6,7 +6,7 @@ from django_htmx.http import retarget
 
 from . import graphs, models, preprocessing, sources
 from .filters import ScenarioFilter
-from .forms import BarGraphFilterSet, DataFilterSet, SankeyGraphFilterSet  # noqa: F401
+from .forms import BarGraphFilterSet, ChartTypeForm, DataFilterSet, SankeyGraphFilterSet  # noqa: F401
 from .models import FilterSettings, ScalarData
 
 
@@ -44,7 +44,7 @@ class KeyValueFormPartialView(View):
 
 def get_filters(request):
     """
-
+    sets up the diffrent Forms/FilterSets for the dashboard
     Example for incoming request: localhost:8000/dashboard/?scenario_id=5&scenario_id=10
 
     Parameters
@@ -59,12 +59,13 @@ def get_filters(request):
     filter_setting_names = list(FilterSettings.objects.values("name"))
     filter_set = DataFilterSet(selected_scenarios)
     graph_filter_set = BarGraphFilterSet()
+    chart_type_form = ChartTypeForm()
     return render(
         request,
         "django_comparison_dashboard/dashboard.html",
         context=filter_set.get_context_data()
         | graph_filter_set.get_context_data()
-        | {"name_list": filter_setting_names},
+        | {"name_list": filter_setting_names, "chart_type_form": chart_type_form},
     )
 
 
@@ -189,7 +190,7 @@ def refresh_graph_filter_set(request):
     response = render(
         request,
         "django_comparison_dashboard/dashboard.html#graph_options",
-        context=graph_filter_set.get_context_data(),
+        context=graph_filter_set.get_context_data() | {"chart_type_form": ChartTypeForm(request.POST)},
     )
     return response
 

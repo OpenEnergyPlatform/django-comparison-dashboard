@@ -93,15 +93,9 @@
             {% startpartial graph_options inline=True %}
             <h5 class="card-title">General Graph Options</h5>
             <div hx-post="{% url 'django_comparison_dashboard:refresh_options' %}"
-                 hx-trigger="change"
                  hx-target="#graph_options_tab"
                  hx-swap="innerhtml"
-                 hx-include="[name='chart_type']">
-              <input type="radio" id="chart_type_bar" name="chart_type" value="bar" />
-              <label for="chart_type_bar">Bar Chart</label>
-              <input type="radio" id="chart_type_sankey" name="chart_type" value="sankey" />
-              <label for="chart_type_sankey">Sankey Chart</label>
-            </div>
+                 hx-include="[name='chart_type']">{{ chart_type_form.as_p }}</div>
             {{ graph_options_form.as_p }}
             <hr />
             <div id="colors">{{ color_form.as_p }}</div>

@@ -153,6 +153,15 @@ class ColorForm(forms.Form):
     color_value = forms.CharField(label="color", widget=forms.TextInput(attrs={"type": "color"}), required=False)
 
 
+class ChartTypeForm(forms.Form):
+    CHART_CHOICES = [
+        ("bar", "Bar Chart"),
+        ("sankey", "Sankey Chart"),
+    ]
+
+    chart_type = forms.ChoiceField(choices=CHART_CHOICES, widget=forms.RadioSelect, initial="bar")
+
+
 class GraphOptionForm(forms.Form):
     x = forms.ChoiceField(
         label="X-Axis",
