@@ -90,20 +90,16 @@
           </div>
           <div class="tab-pane" id="graph_options_tab" role="tabpanel">
             <!-- General Graph Options -->
-            <h5 class="card-title">General Graph Options</h5>
             {% startpartial graph_options inline=True %}
+            <h5 class="card-title">General Graph Options</h5>
             <div hx-post="{% url 'django_comparison_dashboard:refresh_options' %}"
                  hx-trigger="change"
                  hx-target="#graph_options_tab"
                  hx-swap="innerhtml"
                  hx-include="[name='chart_type']">
-              <input type="radio"
-                     id="chart_type_bar"
-                     name="chart_type"
-                     value="Bar"
-                     checked />
+              <input type="radio" id="chart_type_bar" name="chart_type" value="bar" />
               <label for="chart_type_bar">Bar Chart</label>
-              <input type="radio" id="chart_type_sankey" name="chart_type" value="Sankey" />
+              <input type="radio" id="chart_type_sankey" name="chart_type" value="sankey" />
               <label for="chart_type_sankey">Sankey Chart</label>
             </div>
             {{ graph_options_form.as_p }}
@@ -137,7 +133,7 @@
       <button type="button"
               class="btn btn-primary"
               hx-get="{% url 'django_comparison_dashboard:data_plot' %}"
-              hx-include="#scenario_id, #filters, #o_a_label, #graph_options, #display_options"
+              hx-include="#scenario_id, #filters, #o_a_label, #graph_options_tab, #display_options"
               hx-target="#plot">Make Chart</button>
     </div>
   </div>
@@ -146,7 +142,7 @@
         id="save_settings"
         hx-swap="innerhtml"
         hx-post="{% url 'django_comparison_dashboard:save' %}"
-        hx-include="#filters, #o_a_label, #graph_options, #display_options"
+        hx-include="#filters, #o_a_label, #graph_options_tab, #display_options"
         hx-target="#save_error"
         novalidate
         _="on load hide .alert">

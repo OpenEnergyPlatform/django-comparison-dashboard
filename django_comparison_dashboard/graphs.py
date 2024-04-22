@@ -8,7 +8,7 @@ import pandas
 from plotly import express as px
 from plotly import graph_objects as go
 
-from .forms import BarGraphFilterSet
+from .forms import BarGraphFilterSet, SankeyGraphFilterSet
 from .settings import (
     COLUMN_JOINER,
     GRAPHS_DEFAULT_LAYOUT,
@@ -332,7 +332,7 @@ def heat_map(data, options):
 
 def sankey(data, options):
     """Return a dict to a plotly sankey diagram"""
-    RESULTS_FILE = "/industry_scratch.csv"
+    RESULTS_FILE = "/home/local/RL-INSTITUT/josefine.hoppe/Downloads/industry_scratch.csv"
 
     data = pandas.read_csv(RESULTS_FILE, delimiter=";")
 
@@ -420,3 +420,9 @@ def sankey(data, options):
         font_size=10,
     )
     return fig
+
+
+CHART_DATA = {
+    "bar": {"chart_function": bar_plot, "form_class": BarGraphFilterSet},
+    "sankey": {"chart_function": sankey, "form_class": SankeyGraphFilterSet},
+}

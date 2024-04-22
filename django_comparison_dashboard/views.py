@@ -83,7 +83,10 @@ class ScalarPlotView(TemplateView):
             return retarget(response, "#filters")
         df = preprocessing.get_scalar_data(filter_set).to_dict(orient="records")
 
-        graph_filter_set = BarGraphFilterSet(self.request.GET, data_filter_set=filter_set)
+        selected_chart_type = request.GET.get("chart_type")
+        selected_chart = graphs.CHART_DATA.get(selected_chart_type)
+        form_class = selected_chart["form_class"]
+        graph_filter_set = form_class(self.request.GET, data_filter_set=filter_set)
         if not graph_filter_set.is_valid():
             response = render(
                 self.request,
@@ -91,7 +94,8 @@ class ScalarPlotView(TemplateView):
                 context=graph_filter_set.get_context_data(),
             )
             return retarget(response, "#graph_options")
-        return render(request, self.template_name, {"chart": graphs.sankey(df, graph_filter_set).to_html()})
+        create_chart = selected_chart["chart_function"]
+        return render(request, self.template_name, {"chart": create_chart(df, graph_filter_set).to_html()})
 
 
 def scalar_data_table(request):
@@ -178,9 +182,9 @@ def load_filter_settings(request):
 def refresh_graph_filter_set(request):
     if request.method == "POST":
         selected_option = request.POST.get("chart_type")
-        form_class_name = f"{selected_option}GraphFilterSet"
-        form_class = globals().get(form_class_name)
-        graph_filter_set = form_class()
+        selected_chart = graphs.CHART_DATA.get(selected_option)
+        filter_set_class = selected_chart["form_class"]
+        graph_filter_set = filter_set_class()
 
     response = render(
         request,
@@ -203,12 +207,17 @@ def get_chart(request):
     if not filter_set.is_valid():
         error_type = "filter settings"
         return HttpResponseBadRequest(error_message.format(error_type=error_type))
-    graph_filter_set = BarGraphFilterSet(request.GET, data_filter_set=filter_set)
+
+    selected_chart_type = request.GET.get("chart_type")
+    selected_chart = graphs.CHART_DATA.get(selected_chart_type)
+    form_class = selected_chart["form_class"]
+    graph_filter_set = form_class(request.GET, data_filter_set=filter_set)
     if not graph_filter_set.is_valid():
         error_type = "graph options"
         return HttpResponseBadRequest(error_message.format(error_type=error_type))
     df = preprocessing.get_scalar_data(filter_set).to_dict(orient="records")
-    response = HttpResponse(graphs.sankey(df, graph_filter_set).to_html())
+    create_chart = selected_chart["chart_function"]
+    response = HttpResponse(create_chart(df, graph_filter_set).to_html())
     response["HX-Redirect"] = request.get_full_path_info()
     return response
 
