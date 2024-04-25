@@ -55,11 +55,11 @@
               <a class="nav-link"
                  id="display-options-tab"
                  data-bs-toggle="tab"
-                 href="#display_options">Display</a>
+                 href="#display_options_tab">Display</a>
             </li>
           </ul>
         </div>
-        <div class="card-body">
+        <div class="card-body" hx-ext="multi-swap">
           <div class="tab-content">
             <div class="tab-pane active" id="filters" role="tabpanel">
               <!-- General Filter Selection -->
@@ -88,13 +88,12 @@
                     hx-include="#labels"
                     hx-target="#labels">Remove label</button>
           </div>
+          {% startpartial graph_options inline=True %}
           <div class="tab-pane" id="graph_options_tab" role="tabpanel">
             <!-- General Graph Options -->
-            {% startpartial graph_options inline=True %}
             <h5 class="card-title">General Graph Options</h5>
             <div hx-post="{% url 'django_comparison_dashboard:refresh_options' %}"
-                 hx-target="#graph_options_tab"
-                 hx-swap="innerhtml"
+                 hx-swap="multi:#graph_options_tab,#display_options_tab"
                  hx-include="[name='chart_type']">{{ chart_type_form.as_p }}</div>
             {{ graph_options_form.as_p }}
             <hr />
@@ -109,60 +108,62 @@
                     hx-post="{% url 'django_comparison_dashboard:remove_color' %}"
                     hx-include="#colors"
                     hx-target="#colors">Remove color</button>
-          {% endpartial %}
-        </div>
-        <div class="tab-pane" id="display_options" role="tabpanel">
+          </div>
+        {% endpartial %}
+        {% startpartial display_options inline=True %}
+        <div class="tab-pane" id="display_options_tab" role="tabpanel">
           <!-- Display Options -->
           <h5 class="card-title">Display Options</h5>
           {{ display_options_form.as_p }}
         </div>
-      </div>
-    </div>
-    <div class="card-footer d-flex justify-content-between">
-      <button type="button"
-              class="btn btn-primary"
-              hx-get="{% url 'django_comparison_dashboard:data_table' %}"
-              hx-include="#scenario_id, #filters, #o_a_label"
-              hx-target="#table">Make table</button>
-      <button type="button"
-              class="btn btn-primary"
-              hx-get="{% url 'django_comparison_dashboard:data_plot' %}"
-              hx-include="#scenario_id, #filters, #o_a_label, #graph_options_tab, #display_options"
-              hx-target="#plot">Make Chart</button>
+      {% endpartial %}
     </div>
   </div>
-  <!-- Save Filter Settings -->
-  <form method="post"
-        id="save_settings"
-        hx-swap="innerhtml"
-        hx-post="{% url 'django_comparison_dashboard:save' %}"
-        hx-include="#filters, #o_a_label, #graph_options_tab, #display_options"
-        hx-target="#save_error"
-        novalidate
-        _="on load hide .alert">
-    <div hx-ext='response-targets' class="d-flex">
-      <input type="text"
-        class="form-control flex-grow-1"
-        id="save_name"
-        name="name"
-        label="name"
-        hx-swap="innerhtml"
-        hx-trigger="keyup delay:500ms changed"
-        hx-post="{% url 'django_comparison_dashboard:save_name' %}"
-        hx-target="#save_sucess"
-        {# djlint:off #} hx-target-4*="#save_error" {# djlint:on #}
-        _="on htmx:afterRequest if event.detail.xhr.status === 200 show #save_sucess hide #save_error remove @disabled from #save_button else show #save_error hide #save_sucess add @disabled to #save_button" />
-        <button type="submit" id="save_button" class="btn btn-primary ml-2" disabled>Save Filter Settings</button>
-        <div id="save_error" class="alert alert-warning"></div>
-        <div id="save_sucess" class="alert alert-success"></div>
-      </div>
-    </form>
+  <div class="card-footer d-flex justify-content-between">
+    <button type="button"
+            class="btn btn-primary"
+            hx-get="{% url 'django_comparison_dashboard:data_table' %}"
+            hx-include="#scenario_id, #filters, #o_a_label"
+            hx-target="#table">Make table</button>
+    <button type="button"
+            class="btn btn-primary"
+            hx-get="{% url 'django_comparison_dashboard:data_plot' %}"
+            hx-include="#scenario_id, #filters, #o_a_label, #graph_options_tab, #display_options_tab"
+            hx-target="#plot">Make Chart</button>
   </div>
-  <!-- contains Charts and Table -->
-  <div class="col-8">
-    <div id="plot"></div>
-    <div id="table"></div>
-  </div>
+</div>
+<!-- Save Filter Settings -->
+<form method="post"
+      id="save_settings"
+      hx-swap="innerhtml"
+      hx-post="{% url 'django_comparison_dashboard:save' %}"
+      hx-include="#filters, #o_a_label, #graph_options_tab, #display_options_tab"
+      hx-target="#save_error"
+      novalidate
+      _="on load hide .alert">
+  <div hx-ext='response-targets' class="d-flex">
+    <input type="text"
+      class="form-control flex-grow-1"
+      id="save_name"
+      name="name"
+      label="name"
+      hx-swap="innerhtml"
+      hx-trigger="keyup delay:500ms changed"
+      hx-post="{% url 'django_comparison_dashboard:save_name' %}"
+      hx-target="#save_sucess"
+      {# djlint:off #} hx-target-4*="#save_error" {# djlint:on #}
+      _="on htmx:afterRequest if event.detail.xhr.status === 200 show #save_sucess hide #save_error remove @disabled from #save_button else show #save_error hide #save_sucess add @disabled to #save_button" />
+      <button type="submit" id="save_button" class="btn btn-primary ml-2" disabled>Save Filter Settings</button>
+      <div id="save_error" class="alert alert-warning"></div>
+      <div id="save_sucess" class="alert alert-success"></div>
+    </div>
+  </form>
+</div>
+<!-- contains Charts and Table -->
+<div class="col-8">
+  <div id="plot"></div>
+  <div id="table"></div>
+</div>
 </div>
 </div>
 {% endblock content %}
@@ -175,5 +176,6 @@
   </script>
   <script src="https://unpkg.com/htmx.org@1.9.7"></script>
   <script src='https://unpkg.com/htmx.org/dist/ext/response-targets.js'></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/multi-swap.js"></script>
   <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
 {% endblock javascript %}

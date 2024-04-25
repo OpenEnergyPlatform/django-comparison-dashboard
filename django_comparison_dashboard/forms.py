@@ -235,26 +235,10 @@ class GraphOptionForm(forms.Form):
 
 
 class SankeyGraphForm(forms.Form):
-    input = forms.ChoiceField(
-        label="Input",
-        choices=get_available_filters(value=True),
-        # help_text="<span class='helptext' data-toggle='tooltip'
-        # data-placement='top' title='tooltip content'>?</span>",
-        widget=forms.Select(attrs={"class": "form-control"}),
-    )
-    output = forms.ChoiceField(
-        label="Output", choices=get_available_filters(value=True), widget=forms.Select(attrs={"class": "form-control"})
-    )
     process = forms.ChoiceField(
         label="process",
         choices=get_available_filters(value=True),
         widget=forms.Select(attrs={"class": "form-control"}),
-    )
-    font_size = forms.IntegerField(
-        label="Font Size", required=False, widget=forms.NumberInput(attrs={"class": "form-control"}), initial=10
-    )
-    title_text = forms.CharField(
-        label="Title", required=False, widget=forms.TextInput(attrs={"class": "form-control"})
     )
 
     def __init__(self, *args, **kwargs):

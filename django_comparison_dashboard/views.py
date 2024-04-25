@@ -1,6 +1,7 @@
 from django.forms.formsets import formset_factory
 from django.http.response import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from django_htmx.http import retarget
 
@@ -187,11 +188,12 @@ def refresh_graph_filter_set(request):
         filter_set_class = selected_chart["form_class"]
         graph_filter_set = filter_set_class()
 
-    response = render(
-        request,
+    template_partials = [
         "django_comparison_dashboard/dashboard.html#graph_options",
-        context=graph_filter_set.get_context_data() | {"chart_type_form": ChartTypeForm(request.POST)},
-    )
+        "django_comparison_dashboard/dashboard.html#display_options",
+    ]
+    context = graph_filter_set.get_context_data() | {"chart_type_form": ChartTypeForm(request.POST)}
+    response = HttpResponse(render_to_string(template_name, context) for template_name in template_partials)
     return response
 
 
