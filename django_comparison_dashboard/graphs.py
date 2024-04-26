@@ -331,7 +331,9 @@ def heat_map(data, options):
 
 
 def sankey(data, filter_set: SankeyGraphFilterSet):
-    """Return a dict containing the options for a plotly sankey diagram"""
+    """
+    Return a dict containing the options for a plotly sankey diagram
+    """
 
     RESULTS_FILE = "/industry_scratch.csv"
     data = pandas.read_csv(RESULTS_FILE, delimiter=";")

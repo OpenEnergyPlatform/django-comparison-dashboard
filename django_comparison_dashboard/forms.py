@@ -162,7 +162,7 @@ class ChartTypeForm(forms.Form):
     chart_type = forms.ChoiceField(choices=CHART_CHOICES, widget=forms.RadioSelect, initial="bar")
 
 
-class GraphOptionForm(forms.Form):
+class BarGraphForm(forms.Form):
     x = forms.ChoiceField(
         label="X-Axis",
         choices=get_available_filters(value=True),
@@ -270,7 +270,7 @@ class SankeyGraphForm(forms.Form):
         return data
 
 
-class DisplayOptionForm(forms.Form):
+class BarDisplayForm(forms.Form):
     chart_height = forms.IntegerField(
         label="Chart Height", required=False, widget=forms.NumberInput(attrs={"class": "form-control"})
     )
@@ -393,12 +393,12 @@ class DataFilterSet(FilterSet):
 
 class BarGraphFilterSet(FilterSet):
     forms = {
-        "display_options_form": DisplayOptionForm,
+        "display_options_form": BarDisplayForm,
     }
 
     def __init__(self, data: dict | None = None, data_filter_set: DataFilterSet | None = None):
         super().__init__(data)
-        self.bound_forms["graph_options_form"] = GraphOptionForm(data, data_filter_set=data_filter_set)
+        self.bound_forms["graph_options_form"] = BarGraphForm(data, data_filter_set=data_filter_set)
         self.bound_forms["color_form"] = formset_factory(ColorForm, KeyValueFormset)(data, prefix="colors")
 
     @property

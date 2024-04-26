@@ -182,6 +182,9 @@ def load_filter_settings(request):
 
 
 def refresh_graph_filter_set(request):
+    """
+    called when type of chart is changed and refreshes the correponding graph and display options.
+    """
     if request.method == "POST":
         selected_option = request.POST.get("chart_type")
         selected_chart = graphs.CHART_DATA.get(selected_option)
