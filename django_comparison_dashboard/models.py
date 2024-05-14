@@ -35,6 +35,7 @@ class ScalarData(models.Model):
         "scenario",
         "process",
         "parameter",
+        "groups",
         "input_commodity",
         "output_commodity",
         "sector",
