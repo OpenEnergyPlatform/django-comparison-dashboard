@@ -92,9 +92,11 @@
           <div class="tab-pane" id="graph_options_tab" role="tabpanel">
             <!-- General Graph Options -->
             <h5 class="card-title">General Graph Options</h5>
-            <div hx-post="{% url 'django_comparison_dashboard:refresh_options' %}"
-                 hx-swap="multi:#graph_options_tab,#display_options_tab"
-                 hx-include="[name='chart_type']">{{ chart_type_form.as_p }}</div>
+            <form hx-post="{% url 'django_comparison_dashboard:change_chart_type' %}"
+                  hx-swap="multi:#graph_options_tab,#display_options_tab"
+                  hx-trigger="change">
+              {{ chart_type_form.as_p }}
+            </form>
             {{ graph_options_form.as_p }}
             <hr />
             <div id="colors">{{ color_form.as_p }}</div>
