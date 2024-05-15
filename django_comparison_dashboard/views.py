@@ -185,11 +185,10 @@ def change_chart_type(request):
     """
     called when type of chart is changed and refreshes the corresponding graph and display options.
     """
-    if request.method == "POST":
-        selected_option = request.POST.get("chart_type")
-        selected_chart = graphs.CHART_DATA.get(selected_option)
-        filter_set_class = selected_chart["form_class"]
-        graph_filter_set = filter_set_class()
+    selected_option = request.POST.get("chart_type")
+    selected_chart = graphs.CHART_DATA.get(selected_option)
+    filter_set_class = selected_chart["form_class"]
+    graph_filter_set = filter_set_class()
 
     template_partials = [
         "django_comparison_dashboard/dashboard.html#graph_options",
