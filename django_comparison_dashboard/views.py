@@ -83,7 +83,7 @@ class ScalarPlotView(TemplateView):
                 context=filter_set.get_context_data(),
             )
             return retarget(response, "#filters")
-        df = preprocessing.get_scalar_data(filter_set).to_dict(orient="records")
+        df = preprocessing.get_scalar_data(filter_set)
 
         selected_chart_type = request.GET.get("chart_type")
         selected_chart = graphs.CHART_DATA.get(selected_chart_type)
@@ -220,7 +220,7 @@ def get_chart(request):
     if not graph_filter_set.is_valid():
         error_type = "graph options"
         return HttpResponseBadRequest(error_message.format(error_type=error_type))
-    df = preprocessing.get_scalar_data(filter_set).to_dict(orient="records")
+    df = preprocessing.get_scalar_data(filter_set)
     create_chart = selected_chart["chart_function"]
     response = HttpResponse(create_chart(df, graph_filter_set).to_html())
     response["HX-Redirect"] = request.get_full_path_info()

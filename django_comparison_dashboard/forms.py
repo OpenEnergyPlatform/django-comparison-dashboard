@@ -235,7 +235,7 @@ class BarGraphForm(forms.Form):
 
 
 class SankeyGraphForm(forms.Form):
-    process = forms.ChoiceField(
+    nodes = forms.ChoiceField(
         label="process",
         choices=get_available_filters(value=True),
         widget=forms.Select(attrs={"class": "form-control"}),
@@ -245,17 +245,17 @@ class SankeyGraphForm(forms.Form):
         self.data_filter_set = kwargs.pop("data_filter_set", None)
         super().__init__(*args, **kwargs)
 
-    def clean(self):
-        cleaned_data = super().clean()
-        for key in ("input", "output"):
-            value = cleaned_data[key]
-            if (
-                self.data_filter_set
-                and self.data_filter_set.group_by
-                and value not in self.data_filter_set.group_by + ["value"]
-            ):
-                self.add_error(key, "Please choose a value that was also chosen in Group-By.")
-        return cleaned_data
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     for key in ("input", "output"):
+    #         value = cleaned_data[key]
+    #         if (
+    #             self.data_filter_set
+    #             and self.data_filter_set.group_by
+    #             and value not in self.data_filter_set.group_by + ["value"]
+    #         ):
+    #             self.add_error(key, "Please choose a value that was also chosen in Group-By.")
+    #     return cleaned_data
 
     def clean_facet_col(self):
         data = self.cleaned_data["facet_col"]

@@ -5,6 +5,7 @@ from collections import ChainMap
 
 import numpy as np
 import pandas
+import pandas as pd
 from plotly import express as px
 from plotly import graph_objects as go
 
@@ -62,7 +63,7 @@ def get_scalar_plot(data, options):
         return dot_plot(data, options["options"])
 
 
-def bar_plot(data, filter_set: BarGraphFilterSet):
+def bar_plot(data: pd.DataFrame, filter_set: BarGraphFilterSet):
     # xaxis_title = options.pop("xaxis_title")
     # yaxis_title = options.pop("yaxis_title")
     # axis_type = options.pop("axis_type")
@@ -81,6 +82,7 @@ def bar_plot(data, filter_set: BarGraphFilterSet):
     #     options, GRAPHS_DEFAULT_OPTIONS["scalars"]["bar"].get_defaults(exclude_non_plotly_options=True)
     # )
     # fig_options = {}
+    data = data.to_dict(orient="records")
     try:
         fig = px.bar(data, **filter_set.plot_options)
     except ValueError as ve:
@@ -334,10 +336,6 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
     """
     Return a dict containing the options for a plotly sankey diagram
     """
-
-    RESULTS_FILE = "/industry_scratch.csv"
-    data = pandas.read_csv(RESULTS_FILE, delimiter=";")
-
     labels = set(data["process"]) | set(data["input_commodity"]) | set(data["output_commodity"])
     labels.discard(np.nan)
     labels = list(labels)
@@ -377,12 +375,14 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
     value = []
     label = []
     # color = []
+    # TODO: Better detection of flows
+    # Currently, it is not checked if there is an input or output
     for _, flow in data.iterrows():
-        if not isinstance(flow["input_commodity"], str):
+        if not isinstance(flow["input_commodity"], str) or flow["input_commodity"] == "":
             source.append(labels.index(flow["process"]))
             target.append(labels.index(flow["output_commodity"]))
             label.append(flow["output_commodity"])
-        elif not isinstance(flow["output_commodity"], str):
+        elif not isinstance(flow["output_commodity"], str) or flow["output_commodity"] == "":
             source.append(labels.index(flow["input_commodity"]))
             target.append(labels.index(flow["process"]))
             label.append(flow["input_commodity"])
