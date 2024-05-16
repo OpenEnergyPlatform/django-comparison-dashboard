@@ -11,6 +11,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 
 ### Changed
 - output format (including support for groups column containing lists)
+- combine table and chart creation button
 
 ## [0.4.1] - 2024-03-05
 ### Added

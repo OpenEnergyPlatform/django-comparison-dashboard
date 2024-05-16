@@ -1,5 +1,10 @@
-{{ chart|safe }}
-<button type="button"
-        class="btn btn-primary"
-        hx-get="{% url 'django_comparison_dashboard:data_chart' %}"
-        hx-include="#scenario_id, #filters, #o_a_label, #graph_options_tab, #display_options_tab">Embed Chart</button>
+<div id="plot">
+  {{ chart|safe }}
+  <button type="button"
+          class="btn btn-primary"
+          hx-get="{% url 'django_comparison_dashboard:data_chart' %}"
+          hx-include="#scenario_id, #filters, #o_a_label, #graph_options_tab, #display_options_tab">
+    Embed Chart
+  </button>
+</div>
+<div id="table">{{ table|safe }}</div>

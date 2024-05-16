@@ -70,7 +70,7 @@ def get_filters(request):
     )
 
 
-class ScalarPlotView(TemplateView):
+class ScalarView(TemplateView):
     template_name = "django_comparison_dashboard/partials/plot.html"
 
     def get(self, request, *args, **kwargs):
@@ -97,21 +97,8 @@ class ScalarPlotView(TemplateView):
             )
             return retarget(response, "#graph_options")
         create_chart = selected_chart["chart_function"]
-        return render(request, self.template_name, {"chart": create_chart(df, graph_filter_set).to_html()})
-
-
-def scalar_data_table(request):
-    selected_scenarios = request.GET.getlist("scenario_id")
-    filter_set = DataFilterSet(selected_scenarios, request.GET)
-    if not filter_set.is_valid():
-        response = render(
-            request,
-            "django_comparison_dashboard/dashboard.html#filters",
-            context=filter_set.get_context_data(),
-        )
-        return retarget(response, "#filters")
-    df = preprocessing.get_scalar_data(filter_set)
-    return HttpResponse(df.to_html())
+        context = {"chart": create_chart(df, graph_filter_set).to_html(), "table": df.to_html()}
+        return render(request, self.template_name, context)
 
 
 def save_filter_settings(request):

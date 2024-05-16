@@ -122,18 +122,6 @@
       {% endpartial %}
     </div>
   </div>
-  <div class="card-footer d-flex justify-content-between">
-    <button type="button"
-            class="btn btn-primary"
-            hx-get="{% url 'django_comparison_dashboard:data_table' %}"
-            hx-include="#scenario_id, #filters, #o_a_label"
-            hx-target="#table">Make table</button>
-    <button type="button"
-            class="btn btn-primary"
-            hx-get="{% url 'django_comparison_dashboard:data_plot' %}"
-            hx-include="#scenario_id, #filters, #o_a_label, #graph_options_tab, #display_options_tab"
-            hx-target="#plot">Make Chart</button>
-  </div>
 </div>
 <!-- Save Filter Settings -->
 <form method="post"
@@ -164,6 +152,14 @@
 </div>
 <!-- contains Charts and Table -->
 <div class="col-8">
+  <div>
+    <button type="button"
+            class="btn btn-primary"
+            hx-ext="multi-swap"
+            hx-get="{% url 'django_comparison_dashboard:render_data' %}"
+            hx-include="#scenario_id, #filters, #o_a_label, #graph_options_tab, #display_options_tab"
+            hx-swap="multi:#table,#plot">Render chart and table</button>
+  </div>
   <div id="plot"></div>
   <div id="table"></div>
 </div>
