@@ -7,6 +7,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 ## [Unreleased]
 ### Added
 - sankey charts
+- datatables support for dashboard table
 
 ### Changed
 - output format (including support for groups column containing lists)
