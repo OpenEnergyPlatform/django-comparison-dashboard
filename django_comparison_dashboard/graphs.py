@@ -1,4 +1,3 @@
-import itertools
 import math
 import warnings
 from collections import ChainMap
@@ -335,40 +334,21 @@ def heat_map(data, options):
 def sankey(data, filter_set: SankeyGraphFilterSet):
     """
     Return a dict containing the options for a plotly sankey diagram
+
+    Nodes can be set via graph options, input and output commodities
     """
-    labels = set(data["process"]) | set(data["input_commodity"]) | set(data["output_commodity"])
+    process_column = filter_set.cleaned_data["nodes"]
+    inflow_column = filter_set.cleaned_data["inflow"]
+    outflow_column = filter_set.cleaned_data["outflow"]
+
+    # Convert list columns into string
+    data[[process_column, inflow_column, outflow_column]] = data[[process_column, inflow_column, outflow_column]].map(
+        lambda x: "/".join(x) if isinstance(x, (list, frozenset)) else x
+    )
+
+    labels = set(data[process_column]) | set(data[inflow_column]) | set(data[outflow_column])
     labels.discard(np.nan)
     labels = list(labels)
-
-    imports = []
-    primary = []
-    secondary = []
-    others = []
-
-    for label in labels:
-        if "import" in label:
-            imports.append(label)
-        elif label.startswith("pri"):
-            primary.append(label)
-        elif label.startswith("sec"):
-            secondary.append(label)
-        else:
-            others.append(label)
-    labels = imports + primary + secondary + others
-    x = list(
-        itertools.chain(
-            itertools.repeat(0.1, len(imports)),
-            itertools.repeat(0.2, len(primary)),
-            itertools.repeat(None, len(secondary)),
-            itertools.repeat(None, len(others)),
-        )
-    )
-    y = (
-        list(np.linspace(1 / len(imports), 1, len(imports) + 1, endpoint=False))
-        + list(np.linspace(1 / len(primary), 1, len(primary) + 1, endpoint=False))
-        + list(itertools.repeat(None, len(secondary)))
-        + list(itertools.repeat(None, len(others)))
-    )
 
     source = []
     target = []
@@ -378,14 +358,14 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
     # TODO: Better detection of flows
     # Currently, it is not checked if there is an input or output
     for _, flow in data.iterrows():
-        if not isinstance(flow["input_commodity"], str) or flow["input_commodity"] == "":
-            source.append(labels.index(flow["process"]))
-            target.append(labels.index(flow["output_commodity"]))
-            label.append(flow["output_commodity"])
-        elif not isinstance(flow["output_commodity"], str) or flow["output_commodity"] == "":
-            source.append(labels.index(flow["input_commodity"]))
-            target.append(labels.index(flow["process"]))
-            label.append(flow["input_commodity"])
+        if not isinstance(flow[inflow_column], str) or flow[inflow_column] == "":
+            source.append(labels.index(flow[process_column]))
+            target.append(labels.index(flow[outflow_column]))
+            label.append(flow[outflow_column])
+        elif not isinstance(flow[outflow_column], str) or flow[outflow_column] == "":
+            source.append(labels.index(flow[inflow_column]))
+            target.append(labels.index(flow[process_column]))
+            label.append(flow[inflow_column])
         else:
             continue
 
@@ -403,8 +383,6 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
                     thickness=15,
                     line=dict(color="black", width=0.5),
                     label=labels,
-                    x=x,
-                    y=y,
                 ),
                 # Add links
                 link=dict(
@@ -418,8 +396,7 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
     )
 
     font_size = filter_set.plot_options.get("font_size", 10)
-    title_text = filter_set.plot_options.get("title_text", "Industriesektor")  # maybe needs different default?
-
+    title_text = filter_set.plot_options.get("title_text", "Flows")
     fig.update_layout(
         title_text=title_text,
         font_size=font_size,

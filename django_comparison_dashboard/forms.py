@@ -236,8 +236,18 @@ class BarGraphForm(forms.Form):
 
 class SankeyGraphForm(forms.Form):
     nodes = forms.ChoiceField(
-        label="process",
-        choices=get_available_filters(value=True),
+        label="Node",
+        choices=get_available_filters(),
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    inflow = forms.ChoiceField(
+        label="Inflow",
+        choices=get_available_filters(),
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    outflow = forms.ChoiceField(
+        label="Outflow",
+        choices=get_available_filters(),
         widget=forms.Select(attrs={"class": "form-control"}),
     )
 
