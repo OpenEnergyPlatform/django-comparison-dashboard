@@ -341,11 +341,6 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
     inflow_column = filter_set.cleaned_data["inflow"]
     outflow_column = filter_set.cleaned_data["outflow"]
 
-    # Convert list columns into string
-    data[[process_column, inflow_column, outflow_column]] = data[[process_column, inflow_column, outflow_column]].map(
-        lambda x: "/".join(x) if isinstance(x, (list, frozenset)) else x
-    )
-
     labels = set(data[process_column]) | set(data[inflow_column]) | set(data[outflow_column])
     labels.discard(np.nan)
     labels = list(labels)

@@ -42,26 +42,17 @@ define_energy_model_units()
 
 
 def get_scalar_data(filter_set: DataFilterSet) -> pd.DataFrame:
-    if filter_set.order_by or filter_set.group_by:
-        # looks like: {'order_by': ['region'], 'group_by': ['year'], 'normalize': False}
-        if filter_set.group_by:
-            queryset = filter_set.queryset.values(*(filter_set.group_by + ["unit"])).annotate(value=Sum("value"))
-        else:
-            queryset = filter_set.queryset.values()
-        df = pd.DataFrame(queryset)
-        # Following preprocessing steps cannot be done in DB
-        df = apply_labels_in_df(df, filter_set.labels)
-        df = convert_units_in_df(df, filter_set.units)
-        df = aggregate_df(df, filter_set.group_by)
-        df = df.sort_values(filter_set.order_by)
-        # Groupby has to be redone after unit conversion, and if orderby is provided it will also be applied here
-        return df
+    if filter_set.group_by:
+        queryset = filter_set.queryset.values(*(filter_set.group_by + ["unit"])).annotate(value=Sum("value"))
+    else:
+        queryset = filter_set.queryset.values()
 
-    queryset = filter_set.queryset.values()
-    df = pd.DataFrame(queryset)
     # Following preprocessing steps cannot be done in DB
+    df = pd.DataFrame(queryset)
+    df = convert_list_columns(df)
     df = apply_labels_in_df(df, filter_set.labels)
     df = convert_units_in_df(df, filter_set.units)
+    df = aggregate_df(df, filter_set.group_by)
     df = df.sort_values(filter_set.order_by)
     return df
 
@@ -142,6 +133,25 @@ def convert_units_in_df(df: pd.DataFrame, units: list[str]) -> pd.DataFrame:
 
     for unit_ in units:
         df = df.apply(convert_units, axis=1, convert_to=unit_)
+    return df
+
+
+def convert_list_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Convert columns containing list into joined strings
+
+    Parameters
+    ----------
+    df: pd.DataFrame
+        check list columns in dataframe
+
+    Returns
+    -------
+    pd.DataFrame
+        Cleaned dataframe containing joined strings instead of lists
+    """
+    list_columns = [column for column in df.columns if isinstance(df[column][0], list)]
+    df[list_columns] = df[list_columns].map(lambda x: "/".join(x) if isinstance(x, (list, frozenset)) else x)
     return df
 
 
