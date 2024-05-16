@@ -73,6 +73,11 @@ def aggregate_df(df: pd.DataFrame, groupby: list[str]) -> pd.DataFrame:
     if groupby:
         if "series" in df and len(df["series"].apply(len).unique()) > 1:
             raise PreprocessingError("Different ts lengths at aggregation found.")
+
+        # Columns containing list have to be converted as they are unhashable
+        list_columns = [column for column in df.columns if isinstance(df[column][0], list)]
+        df[list_columns] = df[list_columns].map(frozenset)
+
         df = df.groupby(groupby + ["unit"]).aggregate("sum").reset_index()
         keep_columns = groupby + ["unit", "value", "series"]
         df = df[df.columns.intersection(keep_columns)]
