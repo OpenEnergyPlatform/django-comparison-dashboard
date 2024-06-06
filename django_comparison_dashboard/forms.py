@@ -239,16 +239,19 @@ class SankeyGraphForm(forms.Form):
         label="Node",
         choices=get_available_filters(),
         widget=forms.Select(attrs={"class": "form-control"}),
+        initial="process",
     )
     inflow = forms.ChoiceField(
         label="Inflow",
         choices=get_available_filters(),
         widget=forms.Select(attrs={"class": "form-control"}),
+        initial="input_commodity",
     )
     outflow = forms.ChoiceField(
         label="Outflow",
         choices=get_available_filters(),
         widget=forms.Select(attrs={"class": "form-control"}),
+        initial="output_commodity",
     )
 
     def __init__(self, *args, **kwargs):
@@ -431,6 +434,14 @@ class SankeyGraphFilterSet(FilterSet):
     }
 
     def __init__(self, data: dict | None = None, data_filter_set: DataFilterSet | None = None):
+        initial_data = {
+            "nodes": "default_node_choice",
+            "inflow": "default_inflow_choice",
+            "outflow": "default_outflow_choice",
+        }
+        if data:
+            # Merge initial_data with the incoming data
+            initial_data.update(data)
         super().__init__(data)
         self.bound_forms["graph_options_form"] = SankeyGraphForm(data, data_filter_set=data_filter_set)
         self.bound_forms["color_form"] = formset_factory(ColorForm, KeyValueFormset)(data, prefix="colors")
