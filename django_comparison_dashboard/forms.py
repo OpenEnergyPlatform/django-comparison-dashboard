@@ -60,13 +60,13 @@ class OrderAggregationForm(forms.Form):
         label="Order-By",
         choices=get_available_filters,
         required=False,
-        widget=forms.SelectMultiple(attrs={"class": "form-control"}),
+        widget=forms.SelectMultiple(attrs={"class": "ui fluid search dropdown"}),
     )
     group_by = forms.MultipleChoiceField(
         label="Group-By",
         choices=get_available_filters,
         required=False,
-        widget=forms.SelectMultiple(attrs={"class": "form-control"}),
+        widget=forms.SelectMultiple(attrs={"class": "ui fluid search dropdown"}),
     )
     normalize = forms.BooleanField(
         label="Normalize Data", required=False, widget=forms.CheckboxInput(attrs={"class": "form-check-input"})
@@ -78,19 +78,19 @@ class UnitForm(forms.Form):
         label="Energy",
         initial="GWh",
         choices=(("kWh", "kWh"), ("MWh", "MWh"), ("GWh", "GWh"), ("TWh", "TWh")),
-        widget=forms.Select(attrs={"class": "form-control"}),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
     power = forms.ChoiceField(
         label="Power",
         initial="GW",
         choices=(("kW", "kW"), ("MW", "MW"), ("GW", "GW"), ("TW", "TW")),
-        widget=forms.Select(attrs={"class": "form-control"}),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
     power_per_hour = forms.ChoiceField(
         label="Power per Hour",
         initial="MW/h",
         choices=(("kW/h", "kW/h"), ("MW/h", "MW/h"), ("GW/h", "GW/h"), ("TW/h", "TW/h")),
-        widget=forms.Select(attrs={"class": "form-control"}),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
     mass = forms.ChoiceField(
         label="Mass",
@@ -168,41 +168,43 @@ class BarGraphForm(forms.Form):
         choices=get_available_filters(value=True),
         # help_text="<span class='helptext' data-toggle='tooltip'
         # data-placement='top' title='tooltip content'>?</span>",
-        widget=forms.Select(attrs={"class": "form-control"}),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
     y = forms.ChoiceField(
-        label="Y-Axis", choices=get_available_filters(value=True), widget=forms.Select(attrs={"class": "form-control"})
+        label="Y-Axis",
+        choices=get_available_filters(value=True),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
     text = forms.ChoiceField(
         label="Text",
         choices=get_available_filters(value=True, empty=True),
         required=False,
-        widget=forms.Select(attrs={"class": "form-control"}),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
     color = forms.ChoiceField(
-        label="Color", choices=get_available_filters, widget=forms.Select(attrs={"class": "form-control"})
+        label="Color", choices=get_available_filters, widget=forms.Select(attrs={"class": "ui fluid dropdown"})
     )
     hover_name = forms.ChoiceField(
-        label="Hover", choices=get_available_filters, widget=forms.Select(attrs={"class": "form-control"})
+        label="Hover", choices=get_available_filters, widget=forms.Select(attrs={"class": "ui fluid dropdown"})
     )
     orientation = forms.ChoiceField(
         label="Orientation",
         choices=(("v", "vertical"), ("h", "horizontal")),
-        widget=forms.Select(attrs={"class": "form-control"}),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
     barmode = forms.ChoiceField(
         label="Mode",
         choices=(("relative", "relative"), ("group", "group"), ("overlay", "overlay")),
-        widget=forms.Select(attrs={"class": "form-control"}),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
     facet_col = forms.ChoiceField(
         label="Subplots",
         choices=get_available_filters(empty=True),
         required=False,
-        widget=forms.Select(attrs={"class": "form-control"}),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
     facet_col_wrap = forms.IntegerField(
-        label="Subplots per Row", widget=forms.NumberInput(attrs={"class": "form-control"}), initial=1
+        label="Subplots per Row", widget=forms.NumberInput(attrs={"class": "ui fluid dropdown"}), initial=1
     )
 
     def __init__(self, *args, **kwargs):
@@ -238,34 +240,22 @@ class SankeyGraphForm(forms.Form):
     nodes = forms.ChoiceField(
         label="Node",
         choices=get_available_filters(),
-        widget=forms.Select(attrs={"class": "form-control"}),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
     inflow = forms.ChoiceField(
         label="Inflow",
         choices=get_available_filters(),
-        widget=forms.Select(attrs={"class": "form-control"}),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
     outflow = forms.ChoiceField(
         label="Outflow",
         choices=get_available_filters(),
-        widget=forms.Select(attrs={"class": "form-control"}),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
 
     def __init__(self, *args, **kwargs):
         self.data_filter_set = kwargs.pop("data_filter_set", None)
         super().__init__(*args, **kwargs)
-
-    # def clean(self):
-    #     cleaned_data = super().clean()
-    #     for key in ("input", "output"):
-    #         value = cleaned_data[key]
-    #         if (
-    #             self.data_filter_set
-    #             and self.data_filter_set.group_by
-    #             and value not in self.data_filter_set.group_by + ["value"]
-    #         ):
-    #             self.add_error(key, "Please choose a value that was also chosen in Group-By.")
-    #     return cleaned_data
 
     def clean_facet_col(self):
         data = self.cleaned_data["facet_col"]

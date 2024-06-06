@@ -173,11 +173,9 @@
       $('[data-toggle="tooltip"]').tooltip();
     });
   </script>
-  <script src="https://unpkg.com/htmx.org@1.9.7"></script>
-  <script src='https://unpkg.com/htmx.org/dist/ext/response-targets.js'></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
   <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/multi-swap.js"></script>
   <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
-  <script src="{% static "vendors/jquery/jquery.min.js" %}"></script>
   <script src="{% static "vendors/datatables/dataTables.js" %}"></script>
   <script src="{% static "vendors/json-viewer/jquery.json-viewer.js" %}"></script>
   <script src="{% static "js/tables.js" %}"></script>
@@ -187,3 +185,10 @@
   <link rel="stylesheet" href="{% static "vendors/datatables/dataTables.css" %}" />
   <link rel="stylesheet" href="{% static "vendors/json-viewer/jquery.json-viewer.css" %}" />
 {% endblock css %}
+{% block inline_javascript %}
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      $('.ui.dropdown').dropdown();
+    });
+  </script>
+{% endblock inline_javascript %}

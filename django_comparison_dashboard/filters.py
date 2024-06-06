@@ -18,7 +18,7 @@ class ScenarioFilter(django_filters.FilterSet):
             field_instance = django_filters.MultipleChoiceFilter(
                 field_name=field,
                 choices=choices,
-                widget=forms.SelectMultiple(attrs={"class": "form-control"}),
+                widget=forms.SelectMultiple(attrs={"class": "ui fluid search dropdown"}),
                 lookup_expr="overlap" if isinstance(getattr(ScalarData, field).field, ArrayField) else None,
                 method=self.filter_array_fields if isinstance(getattr(ScalarData, field).field, ArrayField) else None,
             )
