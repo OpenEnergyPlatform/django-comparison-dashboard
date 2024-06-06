@@ -258,18 +258,6 @@ class SankeyGraphForm(forms.Form):
         self.data_filter_set = kwargs.pop("data_filter_set", None)
         super().__init__(*args, **kwargs)
 
-    # def clean(self):
-    #     cleaned_data = super().clean()
-    #     for key in ("input", "output"):
-    #         value = cleaned_data[key]
-    #         if (
-    #             self.data_filter_set
-    #             and self.data_filter_set.group_by
-    #             and value not in self.data_filter_set.group_by + ["value"]
-    #         ):
-    #             self.add_error(key, "Please choose a value that was also chosen in Group-By.")
-    #     return cleaned_data
-
     def clean_facet_col(self):
         data = self.cleaned_data["facet_col"]
         if data == "":
@@ -434,14 +422,6 @@ class SankeyGraphFilterSet(FilterSet):
     }
 
     def __init__(self, data: dict | None = None, data_filter_set: DataFilterSet | None = None):
-        initial_data = {
-            "nodes": "default_node_choice",
-            "inflow": "default_inflow_choice",
-            "outflow": "default_outflow_choice",
-        }
-        if data:
-            # Merge initial_data with the incoming data
-            initial_data.update(data)
         super().__init__(data)
         self.bound_forms["graph_options_form"] = SankeyGraphForm(data, data_filter_set=data_filter_set)
         self.bound_forms["color_form"] = formset_factory(ColorForm, KeyValueFormset)(data, prefix="colors")
