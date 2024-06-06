@@ -241,16 +241,19 @@ class SankeyGraphForm(forms.Form):
         label="Node",
         choices=get_available_filters(),
         widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
+        initial="process",
     )
     inflow = forms.ChoiceField(
         label="Inflow",
         choices=get_available_filters(),
         widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
+        initial="input_commodity",
     )
     outflow = forms.ChoiceField(
         label="Outflow",
         choices=get_available_filters(),
         widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
+        initial="output_commodity",
     )
 
     def __init__(self, *args, **kwargs):
