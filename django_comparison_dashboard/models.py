@@ -30,6 +30,8 @@ class ScalarData(models.Model):
     new = models.BooleanField()
     unit = models.CharField(max_length=255)
     groups = ArrayField(models.CharField(max_length=255), null=True)
+    input_groups = ArrayField(models.CharField(max_length=255), null=True)
+    output_groups = ArrayField(models.CharField(max_length=255), null=True)
 
     filters = [
         "scenario",
@@ -38,6 +40,8 @@ class ScalarData(models.Model):
         "groups",
         "input_commodity",
         "output_commodity",
+        "input_groups",
+        "output_groups",
         "sector",
         "category",
         "specification",
