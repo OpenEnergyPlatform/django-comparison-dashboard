@@ -114,13 +114,18 @@ def save_filter_settings(request):
     if not filter_set.is_valid():
         return HttpResponse("Scenario or Other Form not valid.")
 
-    graph_filter_set = BarGraphFilterSet(request.POST, data_filter_set=filter_set)
+    selected_chart_type = request.POST.get("chart_type")
+    selected_chart = graphs.CHART_DATA.get(selected_chart_type)
+    form_class = selected_chart["form_class"]
+    graph_filter_set = form_class(request.POST, data_filter_set=filter_set)
     if not graph_filter_set.is_valid():
         return HttpResponse("Graph or Display Form not valid.")
 
     else:
         # Create an instance of FilterSettings and assign the form data
-        fs = FilterSettings(filter_set=filter_set.cleaned_data, graph_filter_set=graph_filter_set.cleaned_data)
+        graph_filters = graph_filter_set.cleaned_data
+        graph_filters["chart_type"] = selected_chart_type
+        fs = FilterSettings(filter_set=filter_set.cleaned_data, graph_filter_set=graph_filters)
         fs.save()
         filter_settings = NamedFilterSettings(name=name, filter_settings=fs)
         filter_settings.save()
@@ -151,7 +156,11 @@ def load_filter_settings(request):
         filter_settings = NamedFilterSettings.objects.get(name=name).filter_settings
 
         filter_set = DataFilterSet(selected_scenarios, filter_settings.filter_set)
-        graph_filter_set = BarGraphFilterSet(filter_settings.graph_filter_set, filter_set)
+
+        selected_chart_type = filter_settings.graph_filter_set.pop("chart_type")
+        selected_chart = graphs.CHART_DATA.get(selected_chart_type)
+        form_class = selected_chart["form_class"]
+        graph_filter_set = form_class(filter_settings.graph_filter_set, data_filter_set=filter_set)
         filter_setting_names = list(NamedFilterSettings.objects.values("name"))
 
         return render(
@@ -159,7 +168,10 @@ def load_filter_settings(request):
             "django_comparison_dashboard/dashboard.html",
             context=filter_set.get_context_data()
             | graph_filter_set.get_context_data()
-            | {"name_list": filter_setting_names},
+            | {
+                "name_list": filter_setting_names,
+                "chart_type_form": ChartTypeForm({"chart_type": selected_chart_type}),
+            },
         )
     except NamedFilterSettings.DoesNotExist:
         # needs a proper error
