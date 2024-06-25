@@ -8,7 +8,7 @@ from django_htmx.http import retarget
 from . import graphs, models, preprocessing, sources
 from .filters import ScenarioFilter
 from .forms import BarGraphFilterSet, ChartTypeForm, DataFilterSet, SankeyGraphFilterSet  # noqa: F401
-from .models import FilterSettings, ScalarData
+from .models import FilterSettings, NamedFilterSettings, ScalarData
 
 
 class DashboardView(TemplateView):
@@ -57,7 +57,7 @@ def get_filters(request):
 
     """
     selected_scenarios = request.GET.getlist("scenario_id")
-    filter_setting_names = list(FilterSettings.objects.values("name"))
+    filter_setting_names = list(NamedFilterSettings.objects.values("name"))
     filter_set = DataFilterSet(selected_scenarios)
     graph_filter_set = BarGraphFilterSet()
     chart_type_form = ChartTypeForm()
@@ -103,10 +103,10 @@ class ScalarView(TemplateView):
 
 def save_filter_settings(request):
     name = request.POST.get("name")
-    name_list = list(FilterSettings.objects.values("name"))
+    name_list = list(NamedFilterSettings.objects.values("name"))
     if name == "":
         return HttpResponse("Please enter a name.")
-    if FilterSettings.objects.filter(name=name).exists():
+    if NamedFilterSettings.objects.filter(name=name).exists():
         return HttpResponse("Name already exists.")
 
     selected_scenarios = request.POST.getlist("scenario_id")
@@ -120,11 +120,9 @@ def save_filter_settings(request):
 
     else:
         # Create an instance of FilterSettings and assign the form data
-        filter_settings = FilterSettings(
-            name=name,
-            filter_set=filter_set.cleaned_data,
-            graph_filter_set=graph_filter_set.cleaned_data,
-        )
+        fs = FilterSettings(filter_set=filter_set.cleaned_data, graph_filter_set=graph_filter_set.cleaned_data)
+        fs.save()
+        filter_settings = NamedFilterSettings(name=name, filter_settings=fs)
         filter_settings.save()
 
         response = render(
@@ -139,7 +137,7 @@ def save_precheck_name(request):
     name = request.POST.get("name")
     if name == "":
         return HttpResponse("Please enter a name.", status=400)
-    if FilterSettings.objects.filter(name=name).exists():
+    if NamedFilterSettings.objects.filter(name=name).exists():
         return HttpResponse("This name already exits.", status=400)
     else:
         return HttpResponse("Your input is correct.", status=200)
@@ -150,11 +148,11 @@ def load_filter_settings(request):
     name = request.GET.get("name")
     try:
         # need to check the name and if it is in the database
-        filter_settings = FilterSettings.objects.get(name=name)
+        filter_settings = NamedFilterSettings.objects.get(name=name).filter_settings
 
         filter_set = DataFilterSet(selected_scenarios, filter_settings.filter_set)
         graph_filter_set = BarGraphFilterSet(filter_settings.graph_filter_set, filter_set)
-        filter_setting_names = list(FilterSettings.objects.values("name"))
+        filter_setting_names = list(NamedFilterSettings.objects.values("name"))
 
         return render(
             request,
@@ -163,7 +161,7 @@ def load_filter_settings(request):
             | graph_filter_set.get_context_data()
             | {"name_list": filter_setting_names},
         )
-    except FilterSettings.DoesNotExist:
+    except NamedFilterSettings.DoesNotExist:
         # needs a proper error
         return HttpResponse(status=404)
 

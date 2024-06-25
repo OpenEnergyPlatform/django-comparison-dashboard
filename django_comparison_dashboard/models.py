@@ -46,6 +46,10 @@ class ScalarData(models.Model):
 
 
 class FilterSettings(models.Model):
-    name = models.CharField(max_length=255, unique=True)
     filter_set = models.JSONField()
     graph_filter_set = models.JSONField()
+
+
+class NamedFilterSettings(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    filter_settings = models.ForeignKey(FilterSettings, on_delete=models.DO_NOTHING)
