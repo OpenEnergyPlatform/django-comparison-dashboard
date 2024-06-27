@@ -7,7 +7,7 @@ from django_htmx.http import retarget
 
 from . import graphs, models, preprocessing, sources
 from .filters import ScenarioFilter
-from .forms import BarGraphFilterSet, ChartTypeForm, DataFilterSet, SankeyGraphFilterSet  # noqa: F401
+from .forms import BarGraphFilterSet, LineGraphFilterSet, ChartTypeForm, DataFilterSet, SankeyGraphFilterSet  # noqa: F401
 from .models import FilterSettings, ScalarData
 
 
@@ -65,8 +65,8 @@ def get_filters(request):
         request,
         "django_comparison_dashboard/dashboard.html",
         context=filter_set.get_context_data()
-        | graph_filter_set.get_context_data()
-        | {"name_list": filter_setting_names, "chart_type_form": chart_type_form},
+                | graph_filter_set.get_context_data()
+                | {"name_list": filter_setting_names, "chart_type_form": chart_type_form},
     )
 
 
@@ -160,8 +160,8 @@ def load_filter_settings(request):
             request,
             "django_comparison_dashboard/dashboard.html",
             context=filter_set.get_context_data()
-            | graph_filter_set.get_context_data()
-            | {"name_list": filter_setting_names},
+                    | graph_filter_set.get_context_data()
+                    | {"name_list": filter_setting_names},
         )
     except FilterSettings.DoesNotExist:
         # needs a proper error
