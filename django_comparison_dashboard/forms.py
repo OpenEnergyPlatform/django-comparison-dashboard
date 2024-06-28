@@ -464,5 +464,5 @@ class SankeyGraphFilterSet(PlotFilterSet):
     plot_form = SankeyGraphForm
 
 
-class LineGraphFilterSet(FilterSet):
+class LineGraphFilterSet(PlotFilterSet):
     plot_form = LineGraphForm
