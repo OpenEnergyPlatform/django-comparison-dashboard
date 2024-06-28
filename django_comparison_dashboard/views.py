@@ -6,20 +6,9 @@ from django.views.generic import DetailView, FormView, ListView, TemplateView, V
 from django_htmx.http import retarget
 
 from . import graphs, models, preprocessing, sources
-from .filters import ScenarioFilter
 from .forms import ChartTypeForm, DataFilterSet  # noqa: F401
 from .helpers import save_filters
-from .models import NamedFilterSettings, ScalarData
-
-
-class DashboardView(TemplateView):
-    template_name = "django_comparison_dashboard/dashboard.html"
-
-
-def index(request):
-    filter_list = ScalarData.objects.all()
-    scenario_filter = ScenarioFilter(request.GET, queryset=filter_list)
-    return render(request, "django_comparison_dashboard/dashboard.html", {"scenario_filter": scenario_filter})
+from .models import NamedFilterSettings
 
 
 class KeyValueFormPartialView(View):
