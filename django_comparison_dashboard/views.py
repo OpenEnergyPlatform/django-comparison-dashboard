@@ -1,5 +1,5 @@
 from django.forms.formsets import formset_factory
-from django.http.response import HttpResponse, HttpResponseBadRequest
+from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
@@ -72,10 +72,24 @@ def get_filters(request):
 
 class ScalarView(TemplateView):
     template_name = "django_comparison_dashboard/partials/plot.html"
+    embedded = False
 
     def get(self, request, *args, **kwargs):
         selected_scenarios = self.request.GET.getlist("scenario_id")
-        filter_set = DataFilterSet(selected_scenarios, self.request.GET)
+
+        if "parameters_id" in request.GET:
+            # Get form parameters from DB
+            parameters = models.FilterSettings.objects.get(pk=request.GET["parameters_id"])
+            filter_parameters = parameters.filter_set
+            selected_chart_type = parameters.graph_filter_set.pop("chart_type")
+            graph_parameters = parameters.graph_filter_set
+        else:
+            # Get form parameters from request as usual
+            filter_parameters = request.GET
+            selected_chart_type = request.GET.get("chart_type")
+            graph_parameters = request.GET
+
+        filter_set = DataFilterSet(selected_scenarios, filter_parameters)
         if not filter_set.is_valid():
             response = render(
                 self.request,
@@ -85,10 +99,9 @@ class ScalarView(TemplateView):
             return retarget(response, "#filters")
         df = preprocessing.get_scalar_data(filter_set)
 
-        selected_chart_type = request.GET.get("chart_type")
         selected_chart = graphs.CHART_DATA.get(selected_chart_type)
         form_class = selected_chart["form_class"]
-        graph_filter_set = form_class(self.request.GET, data_filter_set=filter_set)
+        graph_filter_set = form_class(graph_parameters, data_filter_set=filter_set)
         if not graph_filter_set.is_valid():
             response = render(
                 self.request,
@@ -96,9 +109,35 @@ class ScalarView(TemplateView):
                 context=graph_filter_set.get_context_data(),
             )
             return retarget(response, "#graph_options")
-        create_chart = selected_chart["chart_function"]
-        context = {"chart": create_chart(df, graph_filter_set).to_html(), "table": df.to_html()}
-        return render(request, self.template_name, context)
+        chart_function = selected_chart["chart_function"]
+        chart = chart_function(df, graph_filter_set).to_html()
+
+        # Check if chart shall be returned in embedded mode
+        if "parameters_id" not in request.GET:
+            # Store parameters in DB and change query to include "parameters_id" instead of parameter query
+            graph_parameters = graph_filter_set.cleaned_data
+            graph_parameters["chart_type"] = selected_chart_type
+            filter_settings = models.FilterSettings(
+                filter_set=filter_set.cleaned_data, graph_filter_set=graph_parameters
+            )
+            filter_settings.save()
+            parameter_id = filter_settings.id
+        else:
+            parameter_id = request.GET["parameters_id"]
+        url = (
+            f"{request.path}?"
+            f"{'&'.join(f'scenario_id={scenario_id}' for scenario_id in selected_scenarios)}"
+            f"&parameters_id={parameter_id}"
+        )
+
+        if self.embedded:
+            response = HttpResponse(chart)
+            response["HX-Redirect"] = url
+        else:
+            context = {"chart": chart, "table": df.to_html()}
+            response = render(request, self.template_name, context)
+            response["HX-Replace-Url"] = url
+        return response
 
 
 def save_filter_settings(request):
@@ -193,34 +232,6 @@ def change_chart_type(request):
     ]
     context = graph_filter_set.get_context_data() | {"chart_type_form": ChartTypeForm(request.POST)}
     response = HttpResponse(render_to_string(template_name, context) for template_name in template_partials)
-    return response
-
-
-def get_chart(request):
-    # TODO: Merge view ScalarPlotView, check if "single" chart is requested
-    selected_scenarios = request.GET.getlist("scenario_id")
-    filter_set = DataFilterSet(selected_scenarios, request.GET)
-    error_message = (
-        "Could not render chart due to invalid {error_type}. "
-        "This might occur, if {error_type} have been updated/changed. "
-        "Please check {error_type} or regenerate chart URL from "
-        "dashboard."
-    )
-    if not filter_set.is_valid():
-        error_type = "filter settings"
-        return HttpResponseBadRequest(error_message.format(error_type=error_type))
-
-    selected_chart_type = request.GET.get("chart_type")
-    selected_chart = graphs.CHART_DATA.get(selected_chart_type)
-    form_class = selected_chart["form_class"]
-    graph_filter_set = form_class(request.GET, data_filter_set=filter_set)
-    if not graph_filter_set.is_valid():
-        error_type = "graph options"
-        return HttpResponseBadRequest(error_message.format(error_type=error_type))
-    df = preprocessing.get_scalar_data(filter_set)
-    create_chart = selected_chart["chart_function"]
-    response = HttpResponse(create_chart(df, graph_filter_set).to_html())
-    response["HX-Redirect"] = request.get_full_path_info()
     return response
 
 
