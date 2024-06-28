@@ -1,0 +1,23 @@
+scenario;process;parameter;sector;category;specification;new;groups;input_commodity;output_commodity;input_groups;output_groups;year;unit;value
+O1;x2x_import_coal;flow;;;;0;"[""import"", ""fossil""]";;coal;;"[""primary"", ""fossil""]";2020;MWh;150
+O1;x2x_import_gas;flow;;;;0;"[""import"", ""fossil""]";;gas;;"[""primary"", ""fossil""]";2020;MWh;400
+O1;x2x_import_h2;flow;;;;0;"[""import""]";;h2;;"[""renewable""]";2020;MWh;120
+O1;x2x_import_coke;flow;;;;0;"[""import""]";;coke;;"[""industry""]";2020;MWh;140
+O1;pow_combustion_coal;flow;;;;0;"[""combustion""]";coal;;"[""primary"", ""fossil""]";;2020;MWh;100
+O1;pow_combustion_coal;flow;;;;0;"[""combustion""]";;electricity;;"[""secondary""]";2020;MWh;80
+O1;pow_combustion_gas;flow;;;;0;"[""combustion""]";gas;;"[""primary"", ""fossil""]";;2020;MWh;200
+O1;pow_combustion_gas;flow;;;;0;"[""combustion""]";;electricity;;"[""secondary""]";2020;MWh;180
+O1;ind_steel_0;flow;;;;0;"[""industry""]";electricity;;"[""secondary""]";;2020;MWh;160
+O1;ind_steel_0;flow;;;;0;"[""industry""]";coal;;"[""primary"", ""fossil""]";;2020;MWh;25
+O1;ind_steel_0;flow;;;;0;"[""industry""]";gas;;"[""primary"", ""fossil""]";;2020;MWh;120
+O1;ind_steel_0;flow;;;;0;"[""industry""]";h2;;"[""renewable""]";;2020;MWh;60
+O1;ind_steel_0;flow;;;;0;"[""industry""]";coke;;"[""industry""]";;2020;MWh;70
+O1;ind_steel_0;flow;;;;0;"[""industry""]";;steel;;"[""exo""]";2020;MWh;140
+O1;ind_steel_1;flow;;;;1;"[""industry""]";electricity;;"[""secondary""]";;2020;MWh;100
+O1;ind_steel_1;flow;;;;1;"[""industry""]";coal;;"[""primary"", ""fossil""]";;2020;MWh;25
+O1;ind_steel_1;flow;;;;1;"[""industry""]";gas;;"[""primary"", ""fossil""]";;2020;MWh;80
+O1;ind_steel_1;flow;;;;1;"[""industry""]";h2;;"[""renewable""]";;2020;MWh;60
+O1;ind_steel_1;flow;;;;1;"[""industry""]";coke;;"[""industry""]";;2020;MWh;70
+O1;ind_steel_1;flow;;;;1;"[""industry""]";;steel;;"[""exo""]";2020;MWh;130
+O1;pow_combustion_coal;capacity;;;;0;"[""combustion""]";;;;;2020;MW;100
+O1;pow_combustion_gas;capacity;;;;0;"[""combustion""]";;;;;2020;MW;150

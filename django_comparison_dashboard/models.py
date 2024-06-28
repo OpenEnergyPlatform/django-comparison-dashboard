@@ -22,22 +22,22 @@ class ScalarData(models.Model):
     parameter = models.CharField(max_length=255)
     value = models.FloatField()
     year = models.IntegerField()
-    input_commodity = models.CharField(max_length=255, null=True)
-    output_commodity = models.CharField(max_length=255, null=True)
     sector = models.CharField(max_length=255)
     category = models.CharField(max_length=255, null=True)
     specification = models.CharField(max_length=255, null=True)
     new = models.BooleanField()
     unit = models.CharField(max_length=255)
     groups = ArrayField(models.CharField(max_length=255), null=True)
+    input_groups = ArrayField(models.CharField(max_length=255), null=True)
+    output_groups = ArrayField(models.CharField(max_length=255), null=True)
 
     filters = [
         "scenario",
         "process",
         "parameter",
         "groups",
-        "input_commodity",
-        "output_commodity",
+        "input_groups",
+        "output_groups",
         "sector",
         "category",
         "specification",
@@ -47,6 +47,10 @@ class ScalarData(models.Model):
 
 
 class FilterSettings(models.Model):
-    name = models.CharField(max_length=255, unique=True)
     filter_set = models.JSONField()
     graph_filter_set = models.JSONField()
+
+
+class NamedFilterSettings(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    filter_settings = models.ForeignKey(FilterSettings, on_delete=models.DO_NOTHING)

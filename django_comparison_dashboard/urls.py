@@ -5,11 +5,9 @@ from . import forms, views
 app_name = "django_comparison_dashboard"
 
 urlpatterns = [
-    path("index/", views.index, name="index"),
-    path("filters/", views.get_filters, name="filters"),
     path("dashboard/", views.get_filters, name="dashboard"),
     path("scalars/", views.ScalarView.as_view(), name="render_data"),
-    path("scalars/chart/", views.get_chart, name="data_chart"),
+    path("scalars/chart/", views.ScalarView.as_view(embedded=True), name="data_chart"),
     path("scenarios/", views.ScenarioSelectionView.as_view(), name="scenarios"),
     path("scenario_detail/", views.ScenarioDetailView.as_view(), name="scenario_detail"),
     path("upload/", views.UploadView.as_view(), name="upload"),

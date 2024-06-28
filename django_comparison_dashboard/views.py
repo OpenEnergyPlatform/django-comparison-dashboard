@@ -1,5 +1,5 @@
 from django.forms.formsets import formset_factory
-from django.http.response import HttpResponse, HttpResponseBadRequest
+from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
@@ -7,8 +7,9 @@ from django_htmx.http import retarget
 
 from . import graphs, models, preprocessing, sources
 from .filters import ScenarioFilter
-from .forms import BarGraphFilterSet, LineGraphFilterSet, ChartTypeForm, DataFilterSet, SankeyGraphFilterSet  # noqa: F401
-from .models import FilterSettings, ScalarData
+from .forms import ChartTypeForm, DataFilterSet  # noqa: F401
+from .helpers import save_filters
+from .models import NamedFilterSettings, ScalarData
 
 
 class DashboardView(TemplateView):
@@ -57,25 +58,39 @@ def get_filters(request):
 
     """
     selected_scenarios = request.GET.getlist("scenario_id")
-    filter_setting_names = list(FilterSettings.objects.values("name"))
+    filter_setting_names = list(NamedFilterSettings.objects.values("name"))
     filter_set = DataFilterSet(selected_scenarios)
-    graph_filter_set = BarGraphFilterSet()
+    graph_filter_set = graphs.CHART_DATA["bar"]["form_class"]()
     chart_type_form = ChartTypeForm()
     return render(
         request,
         "django_comparison_dashboard/dashboard.html",
         context=filter_set.get_context_data()
-                | graph_filter_set.get_context_data()
-                | {"name_list": filter_setting_names, "chart_type_form": chart_type_form},
+        | graph_filter_set.get_context_data()
+        | {"name_list": filter_setting_names, "chart_type_form": chart_type_form},
     )
 
 
 class ScalarView(TemplateView):
     template_name = "django_comparison_dashboard/partials/plot.html"
+    embedded = False
 
     def get(self, request, *args, **kwargs):
         selected_scenarios = self.request.GET.getlist("scenario_id")
-        filter_set = DataFilterSet(selected_scenarios, self.request.GET)
+
+        if "parameters_id" in request.GET:
+            # Get form parameters from DB
+            parameters = models.FilterSettings.objects.get(pk=request.GET["parameters_id"])
+            filter_parameters = parameters.filter_set
+            selected_chart_type = parameters.graph_filter_set.pop("chart_type")
+            graph_parameters = parameters.graph_filter_set
+        else:
+            # Get form parameters from request as usual
+            filter_parameters = request.GET
+            selected_chart_type = request.GET.get("chart_type")
+            graph_parameters = request.GET
+
+        filter_set = DataFilterSet(selected_scenarios, filter_parameters)
         if not filter_set.is_valid():
             response = render(
                 self.request,
@@ -85,10 +100,9 @@ class ScalarView(TemplateView):
             return retarget(response, "#filters")
         df = preprocessing.get_scalar_data(filter_set)
 
-        selected_chart_type = request.GET.get("chart_type")
         selected_chart = graphs.CHART_DATA.get(selected_chart_type)
         form_class = selected_chart["form_class"]
-        graph_filter_set = form_class(self.request.GET, data_filter_set=filter_set)
+        graph_filter_set = form_class(graph_parameters, data_filter_set=filter_set)
         if not graph_filter_set.is_valid():
             response = render(
                 self.request,
@@ -96,50 +110,53 @@ class ScalarView(TemplateView):
                 context=graph_filter_set.get_context_data(),
             )
             return retarget(response, "#graph_options")
-        create_chart = selected_chart["chart_function"]
-        context = {"chart": create_chart(df, graph_filter_set).to_html(), "table": df.to_html()}
-        return render(request, self.template_name, context)
+        chart_function = selected_chart["chart_function"]
+        chart = chart_function(df, graph_filter_set).to_html()
+
+        # Check if chart shall be returned in embedded mode
+        if "parameters_id" not in request.GET:
+            # Store parameters in DB and change query to include "parameters_id" instead of parameter query
+            parameter_id = save_filters(request.GET)
+        else:
+            parameter_id = request.GET["parameters_id"]
+        url = (
+            f"{request.path}?"
+            f"{'&'.join(f'scenario_id={scenario_id}' for scenario_id in selected_scenarios)}"
+            f"&parameters_id={parameter_id}"
+        )
+
+        if self.embedded:
+            response = HttpResponse(chart)
+            response["HX-Redirect"] = url
+        else:
+            context = {"chart": chart, "table": df.to_html()}
+            response = render(request, self.template_name, context)
+            response["HX-Replace-Url"] = url
+        return response
 
 
 def save_filter_settings(request):
     name = request.POST.get("name")
-    name_list = list(FilterSettings.objects.values("name"))
     if name == "":
         return HttpResponse("Please enter a name.")
-    if FilterSettings.objects.filter(name=name).exists():
+    if NamedFilterSettings.objects.filter(name=name).exists():
         return HttpResponse("Name already exists.")
 
-    selected_scenarios = request.POST.getlist("scenario_id")
-    filter_set = DataFilterSet(selected_scenarios, request.POST)
-    if not filter_set.is_valid():
-        return HttpResponse("Scenario or Other Form not valid.")
+    save_filters(request.POST, name=name)
 
-    graph_filter_set = BarGraphFilterSet(request.POST, data_filter_set=filter_set)
-    if not graph_filter_set.is_valid():
-        return HttpResponse("Graph or Display Form not valid.")
-
-    else:
-        # Create an instance of FilterSettings and assign the form data
-        filter_settings = FilterSettings(
-            name=name,
-            filter_set=filter_set.cleaned_data,
-            graph_filter_set=graph_filter_set.cleaned_data,
-        )
-        filter_settings.save()
-
-        response = render(
-            request,
-            "django_comparison_dashboard/dashboard.html#load_settings",
-            {"name_list": name_list},
-        )
-        return retarget(response, "#load_settings")
+    response = render(
+        request,
+        "django_comparison_dashboard/dashboard.html#load_settings",
+        {"name_list": list(NamedFilterSettings.objects.values("name"))},
+    )
+    return retarget(response, "#load_settings")
 
 
 def save_precheck_name(request):
     name = request.POST.get("name")
     if name == "":
         return HttpResponse("Please enter a name.", status=400)
-    if FilterSettings.objects.filter(name=name).exists():
+    if NamedFilterSettings.objects.filter(name=name).exists():
         return HttpResponse("This name already exits.", status=400)
     else:
         return HttpResponse("Your input is correct.", status=200)
@@ -150,20 +167,27 @@ def load_filter_settings(request):
     name = request.GET.get("name")
     try:
         # need to check the name and if it is in the database
-        filter_settings = FilterSettings.objects.get(name=name)
+        filter_settings = NamedFilterSettings.objects.get(name=name).filter_settings
 
         filter_set = DataFilterSet(selected_scenarios, filter_settings.filter_set)
-        graph_filter_set = BarGraphFilterSet(filter_settings.graph_filter_set, filter_set)
-        filter_setting_names = list(FilterSettings.objects.values("name"))
+
+        selected_chart_type = filter_settings.graph_filter_set.pop("chart_type")
+        selected_chart = graphs.CHART_DATA.get(selected_chart_type)
+        form_class = selected_chart["form_class"]
+        graph_filter_set = form_class(filter_settings.graph_filter_set, data_filter_set=filter_set)
+        filter_setting_names = list(NamedFilterSettings.objects.values("name"))
 
         return render(
             request,
             "django_comparison_dashboard/dashboard.html",
             context=filter_set.get_context_data()
-                    | graph_filter_set.get_context_data()
-                    | {"name_list": filter_setting_names},
+            | graph_filter_set.get_context_data()
+            | {
+                "name_list": filter_setting_names,
+                "chart_type_form": ChartTypeForm({"chart_type": selected_chart_type}),
+            },
         )
-    except FilterSettings.DoesNotExist:
+    except NamedFilterSettings.DoesNotExist:
         # needs a proper error
         return HttpResponse(status=404)
 
@@ -183,34 +207,6 @@ def change_chart_type(request):
     ]
     context = graph_filter_set.get_context_data() | {"chart_type_form": ChartTypeForm(request.POST)}
     response = HttpResponse(render_to_string(template_name, context) for template_name in template_partials)
-    return response
-
-
-def get_chart(request):
-    # TODO: Merge view ScalarPlotView, check if "single" chart is requested
-    selected_scenarios = request.GET.getlist("scenario_id")
-    filter_set = DataFilterSet(selected_scenarios, request.GET)
-    error_message = (
-        "Could not render chart due to invalid {error_type}. "
-        "This might occur, if {error_type} have been updated/changed. "
-        "Please check {error_type} or regenerate chart URL from "
-        "dashboard."
-    )
-    if not filter_set.is_valid():
-        error_type = "filter settings"
-        return HttpResponseBadRequest(error_message.format(error_type=error_type))
-
-    selected_chart_type = request.GET.get("chart_type")
-    selected_chart = graphs.CHART_DATA.get(selected_chart_type)
-    form_class = selected_chart["form_class"]
-    graph_filter_set = form_class(request.GET, data_filter_set=filter_set)
-    if not graph_filter_set.is_valid():
-        error_type = "graph options"
-        return HttpResponseBadRequest(error_message.format(error_type=error_type))
-    df = preprocessing.get_scalar_data(filter_set)
-    create_chart = selected_chart["chart_function"]
-    response = HttpResponse(create_chart(df, graph_filter_set).to_html())
-    response["HX-Redirect"] = request.get_full_path_info()
     return response
 
 

@@ -5,6 +5,7 @@ import logging
 import pandas as pd
 import pandera
 import pandera.io
+from django.contrib.postgres.fields import ArrayField
 from django.shortcuts import get_object_or_404
 
 from django_comparison_dashboard import forms, models, settings
@@ -74,6 +75,14 @@ class Scenario(abc.ABC):
         data: dict | pd.DataFrame
             Iterable data which shall be stored in DB
         """
+
+        def parse_array(raw_string):
+            """Tries to parse lists from array fields"""
+            try:
+                return ast.literal_eval(raw_string)
+            except SyntaxError:
+                return []
+
         source = models.Source.objects.get_or_create(name=self.source.name)[0]
         result = models.Result.objects.get_or_create(name=self.id, source=source)[0]
         if self.data_type == settings.DataType.Scalar:
@@ -83,8 +92,10 @@ class Scenario(abc.ABC):
         else:
             raise TypeError(f"Unknown data type '{self.data_type}'.")
 
-        # Convert "groups" column to list
-        data["groups"] = data["groups"].apply(ast.literal_eval)
+        # Convert data for array fields into list:
+        for field in data_model._meta.fields:
+            if isinstance(field, ArrayField):
+                data[field.column] = data[field.column].apply(parse_array)
         data_model.objects.bulk_create(data_model(result=result, **item) for item in data.to_dict(orient="records"))
 
     def _validate(self, data: pd.DataFrame) -> None:
