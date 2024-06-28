@@ -16,7 +16,7 @@ def migrate_filter_settings(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("django_comparison_dashboard", "0008_filtersettings"),
+        ("django_comparison_dashboard", "0009_filtersettings"),
     ]
 
     operations = [

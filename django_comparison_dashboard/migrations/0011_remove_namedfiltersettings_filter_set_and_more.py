@@ -6,7 +6,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("django_comparison_dashboard", "0009_namedfiltersettings_filter_settings"),
+        ("django_comparison_dashboard", "0010_namedfiltersettings_filter_settings"),
     ]
 
     operations = [

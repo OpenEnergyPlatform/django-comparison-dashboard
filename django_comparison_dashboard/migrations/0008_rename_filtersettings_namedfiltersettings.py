@@ -5,7 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("django_comparison_dashboard", "0006_rename_input_energy_vector_scalardata_input_commodity_and_more"),
+        ("django_comparison_dashboard", "0007_scalardata_input_groups_scalardata_output_groups"),
     ]
 
     operations = [

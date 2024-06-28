@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("django_comparison_dashboard", "0007_rename_filtersettings_namedfiltersettings"),
+        ("django_comparison_dashboard", "0008_rename_filtersettings_namedfiltersettings"),
     ]
 
     operations = [
