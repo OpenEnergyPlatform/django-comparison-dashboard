@@ -8,7 +8,8 @@ from django_htmx.http import retarget
 from . import graphs, models, preprocessing, sources
 from .filters import ScenarioFilter
 from .forms import ChartTypeForm, DataFilterSet  # noqa: F401
-from .models import FilterSettings, NamedFilterSettings, ScalarData
+from .helpers import save_filters
+from .models import NamedFilterSettings, ScalarData
 
 
 class DashboardView(TemplateView):
@@ -115,13 +116,7 @@ class ScalarView(TemplateView):
         # Check if chart shall be returned in embedded mode
         if "parameters_id" not in request.GET:
             # Store parameters in DB and change query to include "parameters_id" instead of parameter query
-            graph_parameters = graph_filter_set.cleaned_data
-            graph_parameters["chart_type"] = selected_chart_type
-            filter_settings = models.FilterSettings(
-                filter_set=filter_set.cleaned_data, graph_filter_set=graph_parameters
-            )
-            filter_settings.save()
-            parameter_id = filter_settings.id
+            parameter_id = save_filters(request.GET)
         else:
             parameter_id = request.GET["parameters_id"]
         url = (
@@ -142,39 +137,19 @@ class ScalarView(TemplateView):
 
 def save_filter_settings(request):
     name = request.POST.get("name")
-    name_list = list(NamedFilterSettings.objects.values("name"))
     if name == "":
         return HttpResponse("Please enter a name.")
     if NamedFilterSettings.objects.filter(name=name).exists():
         return HttpResponse("Name already exists.")
 
-    selected_scenarios = request.POST.getlist("scenario_id")
-    filter_set = DataFilterSet(selected_scenarios, request.POST)
-    if not filter_set.is_valid():
-        return HttpResponse("Scenario or Other Form not valid.")
+    save_filters(request.POST, name=name)
 
-    selected_chart_type = request.POST.get("chart_type")
-    selected_chart = graphs.CHART_DATA.get(selected_chart_type)
-    form_class = selected_chart["form_class"]
-    graph_filter_set = form_class(request.POST, data_filter_set=filter_set)
-    if not graph_filter_set.is_valid():
-        return HttpResponse("Graph or Display Form not valid.")
-
-    else:
-        # Create an instance of FilterSettings and assign the form data
-        graph_filters = graph_filter_set.cleaned_data
-        graph_filters["chart_type"] = selected_chart_type
-        fs = FilterSettings(filter_set=filter_set.cleaned_data, graph_filter_set=graph_filters)
-        fs.save()
-        filter_settings = NamedFilterSettings(name=name, filter_settings=fs)
-        filter_settings.save()
-
-        response = render(
-            request,
-            "django_comparison_dashboard/dashboard.html#load_settings",
-            {"name_list": name_list},
-        )
-        return retarget(response, "#load_settings")
+    response = render(
+        request,
+        "django_comparison_dashboard/dashboard.html#load_settings",
+        {"name_list": list(NamedFilterSettings.objects.values("name"))},
+    )
+    return retarget(response, "#load_settings")
 
 
 def save_precheck_name(request):
