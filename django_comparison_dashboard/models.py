@@ -22,8 +22,6 @@ class ScalarData(models.Model):
     parameter = models.CharField(max_length=255)
     value = models.FloatField()
     year = models.IntegerField()
-    input_commodity = models.CharField(max_length=255, null=True)
-    output_commodity = models.CharField(max_length=255, null=True)
     sector = models.CharField(max_length=255)
     category = models.CharField(max_length=255, null=True)
     specification = models.CharField(max_length=255, null=True)
@@ -38,8 +36,6 @@ class ScalarData(models.Model):
         "process",
         "parameter",
         "groups",
-        "input_commodity",
-        "output_commodity",
         "input_groups",
         "output_groups",
         "sector",
