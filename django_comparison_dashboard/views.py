@@ -7,7 +7,7 @@ from django_htmx.http import retarget
 
 from . import graphs, models, preprocessing, sources
 from .filters import ScenarioFilter
-from .forms import BarGraphFilterSet, ChartTypeForm, DataFilterSet, SankeyGraphFilterSet  # noqa: F401
+from .forms import ChartTypeForm, DataFilterSet  # noqa: F401
 from .models import FilterSettings, NamedFilterSettings, ScalarData
 
 
@@ -59,7 +59,7 @@ def get_filters(request):
     selected_scenarios = request.GET.getlist("scenario_id")
     filter_setting_names = list(NamedFilterSettings.objects.values("name"))
     filter_set = DataFilterSet(selected_scenarios)
-    graph_filter_set = BarGraphFilterSet()
+    graph_filter_set = graphs.CHART_DATA["bar"]["form_class"]()
     chart_type_form = ChartTypeForm()
     return render(
         request,
