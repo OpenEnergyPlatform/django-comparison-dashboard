@@ -344,7 +344,7 @@ class DisplayForm(forms.Form):
     legend_title = forms.CharField(
         label="Legend Title", required=False, widget=forms.TextInput(attrs={"class": "form-control"})
     )
-    bar_gap = forms.IntegerField(
+    bar_gap = forms.FloatField(
         label="Bar Gap", required=False, widget=forms.NumberInput(attrs={"class": "form-control"})
     )
     margin_left = forms.IntegerField(
@@ -454,6 +454,10 @@ class PlotFilterSet(FilterSet):
             key: value for key, value in zip(colors_raw["color_key"], colors_raw["color_value"])
         }
         return options
+
+    @property
+    def display_options(self):
+        return self.bound_forms["display_options_form"].cleaned_data
 
 
 class BarGraphFilterSet(PlotFilterSet):

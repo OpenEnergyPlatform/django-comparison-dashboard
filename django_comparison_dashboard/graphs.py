@@ -1,13 +1,17 @@
 import math
 
 import numpy as np
-import pandas
 import pandas as pd
 from plotly import express as px
 from plotly import graph_objects as go
 
-from .forms import BarGraphFilterSet, LineGraphFilterSet, SankeyGraphFilterSet
-from .settings import GRAPHS_DEFAULT_LAYOUT, GRAPHS_DEFAULT_TEMPLATE
+from .forms import BarGraphFilterSet, LineGraphFilterSet, PlotFilterSet, SankeyGraphFilterSet
+from .settings import (
+    GRAPHS_DEFAULT_LAYOUT,
+    GRAPHS_DEFAULT_TEMPLATE,
+    GRAPHS_DEFAULT_XAXES_LAYOUT,
+    GRAPHS_DEFAULT_YAXES_LAYOUT,
+)
 
 
 class PlottingError(Exception):
@@ -24,38 +28,106 @@ def get_empty_fig():
     return empty_fig
 
 
-def add_unit_to_label(label, data):
-    if isinstance(data.columns, pandas.MultiIndex):
-        units = data.columns.get_level_values("unit").unique()
-    else:
-        units = data["unit"].unique()
+def get_unit_from_data(data: pd.DataFrame) -> str | None:
+    """
+    Return unit from data if unit is unique, otherwise return None.
+    Parameters
+    ----------
+    data: pd.DataFrame
+        Dat containing unit column
+
+    Returns
+    -------
+    str | None
+        Unit of given value column if unit is unique, otherwise None.
+    """
+    units = data["unit"].unique()
     if len(units) == 1:
-        return f"{label} [{units[0]}]"
-    return label
+        return units[0]
+    return None
+
+
+def adapt_plot_figure(figure: go.Figure, filter_set: PlotFilterSet, data: pd.DataFrame) -> go.Figure:
+    """
+    Adapt display options to given figure
+
+    Parameters
+    ----------
+    figure: go.Figure
+        adapt options to this figure
+    filter_set: PlotFilterSet
+        Options from PlotFilterSet
+    data: pd.DataFrame
+        Data set to extract unit and other stuff from
+
+    Returns
+    -------
+    go.Figure
+        adapted figure
+    """
+    options = filter_set.display_options
+
+    # Add simple layout fields
+    layout = {
+        "showlegend": options.pop("show_legend"),
+        "legend_title": options.pop("legend_title"),
+        "bargap": options.pop("bar_gap"),
+        "margin_l": options.pop("margin_left"),
+        "margin_r": options.pop("margin_right"),
+        "margin_t": options.pop("margin_top"),
+        "margin_b": options.pop("margin_bottom"),
+    }
+
+    # Add x/y-Axis title
+    xaxis_title = options.pop("x_title")
+    yaxis_title = options.pop("y_title")
+    value_axis = (
+        "x" if "orientation" in filter_set.plot_options and filter_set.plot_options["orientation"] == "h" else "y"
+    )
+    unit = get_unit_from_data(data)
+    if value_axis == "x" and not xaxis_title:
+        layout["xaxis_title"] = (
+            filter_set.plot_options["x"] if unit is None else f"{filter_set.plot_options['x']} [{unit}]"
+        )
+    if value_axis == "y" and not yaxis_title:
+        layout["yaxis_title"] = (
+            filter_set.plot_options["y"] if unit is None else f"{filter_set.plot_options['y']} [{unit}]"
+        )
+    if xaxis_title:
+        figure.update_xaxes(title=xaxis_title)
+    if yaxis_title:
+        figure.update_yaxes(row=1, col=1, title=yaxis_title)
+
+    # Add subplot titles
+    subplot_title = options.pop("subplot_title")
+    if subplot_title:
+        if "," in subplot_title and len(subplot_title.split(",")) == len(figure.layout.annotations):
+            label_iter = iter(subplot_title.split(","))
+            figure.for_each_annotation(lambda a: a.update(text=next(label_iter)))
+        else:
+            figure.for_each_annotation(lambda a: a.update(text=f"{subplot_title} {a.text.split('=')[-1]}"))
+    else:
+        figure.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+
+    # Move legend above plot in subplots:
+    if filter_set.plot_options["facet_col"]:
+        figure.update_layout(legend={"orientation": "h", "yanchor": "bottom", "y": 1.06, "xanchor": "right", "x": 1})
+
+    # Remove padding between stacked bars:
+    figure.update_traces(marker={"line": {"width": 0}})
+
+    # Update default layouts:
+    figure.update_layout(template=GRAPHS_DEFAULT_TEMPLATE, **layout, **GRAPHS_DEFAULT_LAYOUT)
+    figure.update_xaxes(GRAPHS_DEFAULT_XAXES_LAYOUT)
+    figure.update_yaxes(GRAPHS_DEFAULT_YAXES_LAYOUT)
+
+    return figure
 
 
 def bar_plot(data: pd.DataFrame, filter_set: BarGraphFilterSet):
-    # xaxis_title = options.pop("xaxis_title")
-    # yaxis_title = options.pop("yaxis_title")
-    # axis_type = options.pop("axis_type")
-    # layout = {
-    #     "showlegend": "showlegend" in options.pop("showlegend"),
-    #     "legend_title": options.pop("legend_title"),
-    #     "bargap": options.pop("bargap"),
-    #     "margin_l": options.pop("margin_l"),
-    #     "margin_r": options.pop("margin_r"),
-    #     "margin_t": options.pop("margin_t"),
-    #     "margin_b": options.pop("margin_b"),
-    # }
-    # subplot_label = options.pop("subplot_label")
-
-    # fig_options = ChainMap(
-    #     options, GRAPHS_DEFAULT_OPTIONS["scalars"]["bar"].get_defaults(exclude_non_plotly_options=True)
-    # )
-    # fig_options = {}
-    data = data.to_dict(orient="records")
+    data_json = data.to_dict(orient="records")
     try:
-        fig = px.bar(data, **filter_set.plot_options)
+        fig = px.bar(data_json, **filter_set.plot_options)
     except ValueError as ve:
         if str(ve) == "nan is not in list":
             raise PlottingError(
@@ -65,58 +137,13 @@ def bar_plot(data: pd.DataFrame, filter_set: BarGraphFilterSet):
         else:
             raise PlottingError(f"Scalar plot error: {ve}")
 
-    return fig
-
-    # # Plot Labels:
-    # if subplot_label:
-    #     if "," in subplot_label and len(subplot_label.split(",")) == len(fig.layout.annotations):
-    #         label_iter = iter(subplot_label.split(","))
-    #         fig.for_each_annotation(lambda a: a.update(text=next(label_iter)))
-    #     else:
-    #         fig.for_each_annotation(lambda a: a.update(text=f"{subplot_label} {a.text.split('=')[-1]}"))
-    # else:
-    #     fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
-    #
-    # value_axis = "x" if fig_options["orientation"] == "h" else "y"
-    # if value_axis == "x" and not xaxis_title:
-    #     layout["xaxis_title"] = add_unit_to_label(fig_options["x"], data)
-    # if value_axis == "y" and not yaxis_title:
-    #     layout["yaxis_title"] = add_unit_to_label(fig_options["y"], data)
-    # if xaxis_title:
-    #     fig.update_xaxes(title=xaxis_title)
-    # if yaxis_title:
-    #     fig.update_yaxes(row=1, col=1, title=yaxis_title)
-    #
-    # # Axis Type:
-    # axis = {"type": axis_type}
-    # if axis_type == "log":
-    #     max_value = max(data["value"])
-    #     axis["range"] = get_logarithmic_range(max_value)
-    # if value_axis == "x":
-    #     fig.update_xaxes(**axis)
-    # else:
-    #     fig.update_yaxes(**axis)
-    #
-    # # Move legend above plot in subplots:
-    # if fig_options["facet_col"]:
-    #     fig.update_layout(legend={"orientation": "h", "yanchor": "bottom", "y": 1.06, "xanchor": "right", "x": 1})
-    #
-    # # Remove padding between stacked bars:
-    # fig.update_traces(marker={"line": {"width": 0}})
-    #
-    # try:
-    #     fig.update_layout(template=GRAPHS_DEFAULT_TEMPLATE, **layout, **GRAPHS_DEFAULT_LAYOUT)
-    # except ValueError as ve:
-    #     raise PlottingError(f"Scalar layout error: {ve}")
-    # fig.update_xaxes(GRAPHS_DEFAULT_XAXES_LAYOUT)
-    # fig.update_yaxes(GRAPHS_DEFAULT_YAXES_LAYOUT)
-    # return fig
+    return adapt_plot_figure(fig, filter_set, data)
 
 
 def line_plot(data, filter_set: LineGraphFilterSet):
-    data = data.to_dict(orient="records")
+    data_json = data.to_dict(orient="records")
     try:
-        fig = px.line(data, **filter_set.plot_options)
+        fig = px.line(data_json, **filter_set.plot_options)
     except ValueError as ve:
         if str(ve) == "nan is not in list":
             raise PlottingError(
@@ -126,45 +153,7 @@ def line_plot(data, filter_set: LineGraphFilterSet):
         else:
             raise PlottingError(f"Scalar plot error: {ve}")
 
-    return fig
-
-    # xaxis_title = options.pop("xaxis_title") or "Timeindex"
-    # yaxis_title = options.pop("yaxis_title") or add_unit_to_label("", data)
-    # legend_title = options.pop("legend_title")
-    #
-    # fig_options = ChainMap(
-    #     options, GRAPHS_DEFAULT_OPTIONS["timeseries"]["line"].get_defaults(exclude_non_plotly_options=True)
-    # )
-    # data = trim_timeseries(data)
-    # data.columns = [COLUMN_JOINER.join(map(str, column)) for column in data.columns]
-    # fig_options["y"] = [column for column in data.columns]
-    # try:
-    #     fig = px.line(data.reset_index(), x="index", **fig_options)
-    # except ValueError as ve:
-    #     raise PlottingError(f"Timeseries plot error: {ve}")
-    # fig.update_xaxes(
-    #     rangeslider_visible=True,
-    #     rangeselector={
-    #         "buttons": [
-    #             {"count": 1, "label": "1d", "step": "day", "stepmode": "backward"},
-    #             {"count": 7, "label": "1w", "step": "day", "stepmode": "backward"},
-    #             {"count": 1, "label": "1m", "step": "month", "stepmode": "backward"},
-    #             {"count": 6, "label": "6m", "step": "month", "stepmode": "backward"},
-    #             {"step": "all"},
-    #         ]
-    #     },
-    # )
-    #
-    # fig.update_layout(
-    #     yaxis_title=yaxis_title,
-    #     xaxis_title=xaxis_title,
-    #     legend_title=legend_title,
-    #     template=GRAPHS_DEFAULT_TEMPLATE,
-    #     **GRAPHS_DEFAULT_LAYOUT,
-    # )
-    # fig.update_xaxes(GRAPHS_DEFAULT_XAXES_LAYOUT)
-    # fig.update_yaxes(GRAPHS_DEFAULT_YAXES_LAYOUT)
-    # return fig
+    return adapt_plot_figure(fig, filter_set, data)
 
 
 def sankey(data, filter_set: SankeyGraphFilterSet):
