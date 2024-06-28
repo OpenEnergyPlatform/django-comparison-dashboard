@@ -39,8 +39,6 @@
         {"name": "specification", "description": "It describes a considered property of an element in the energy system.", "type": "string", "unit": null},
         {"name": "new", "description": "Free classification with key-value pairs", "type": "boolean", "unit": null},
         {"name": "groups", "description": "Free classification with key-value pairs", "type": "array", "unit": null},
-        {"name": "input_commodity", "description": "It describes any type of energy or energy carrier (e.g. electricity, heat, solar radiation, natural gas, ...) that enters a technology.", "type": "string", "unit": null},
-        {"name": "output_commodity", "description": "It describes any type of energy or energy carrier (e.g. electricity, heat, hydrogen, LNG, CO2, ...) that exits a technology.", "type": "string", "unit": null},
         {"name": "input_groups", "description": "Free classification with key-value pairs", "type": "array", "unit": null},
         {"name": "output_groups", "description": "Free classification with key-value pairs", "type": "array", "unit": null},
         {"name": "year", "description": "Year", "type": "integer", "unit": null},
