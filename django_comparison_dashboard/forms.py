@@ -157,6 +157,7 @@ class ChartTypeForm(forms.Form):
     CHART_CHOICES = [
         ("bar", "Bar Chart"),
         ("sankey", "Sankey Chart"),
+        ("line", "Line Chart"),
     ]
 
     chart_type = forms.ChoiceField(choices=CHART_CHOICES, widget=forms.RadioSelect, initial="bar")
@@ -272,6 +273,55 @@ class SankeyGraphForm(forms.Form):
             return None
         return data
 
+class LineGraphForm(forms.Form):
+    x = forms.ChoiceField(
+        label="X-Axis",
+        choices=get_available_filters(value=True),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
+    )
+    y = forms.ChoiceField(
+        label="Y-Axis",
+        choices=get_available_filters(value=True),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
+    )
+    text = forms.ChoiceField(
+        label="Text",
+        choices=get_available_filters(value=True, empty=True),
+        required=False,
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
+    )
+    color = forms.ChoiceField(
+        label="Color", choices=get_available_filters, widget=forms.Select(attrs={"class": "ui fluid dropdown"})
+    )
+    hover_name = forms.ChoiceField(
+        label="Hover", choices=get_available_filters, widget=forms.Select(attrs={"class": "ui fluid dropdown"})
+    )
+
+    facet_col = forms.ChoiceField(
+        label="Subplots",
+        choices=get_available_filters(empty=True),
+        required=False,
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
+    )
+    facet_col_wrap = forms.IntegerField(
+        label="Subplots per Row", widget=forms.NumberInput(attrs={"class": "ui fluid dropdown"}), initial=1
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.data_filter_set = kwargs.pop("data_filter_set", None)
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        for key in ("x", "y", "color", "hover_name"):
+            value = cleaned_data[key]
+            if (
+                self.data_filter_set
+                and self.data_filter_set.group_by
+                and value not in self.data_filter_set.group_by + ["value"]
+            ):
+                self.add_error(key, "Please choose a value that was also chosen in Group-By.")
+        return cleaned_data
 
 class BarDisplayForm(forms.Form):
     chart_height = forms.IntegerField(
@@ -311,6 +361,22 @@ class BarDisplayForm(forms.Form):
         label="Subplot Spacing", required=False, widget=forms.NumberInput(attrs={"class": "form-control"})
     )
 
+class LineDisplayForm(forms.Form):
+    chart_height = forms.IntegerField(
+        label="Chart Height", required=False, widget=forms.NumberInput(attrs={"class": "form-control"})
+    )
+    x_title = forms.CharField(
+        label="X-Axis Title", required=False, widget=forms.TextInput(attrs={"class": "form-control"})
+    )
+    y_title = forms.CharField(
+        label="Y-Axis Title", required=False, widget=forms.TextInput(attrs={"class": "form-control"})
+    )
+    show_legend = forms.BooleanField(
+        label="Show Legend", required=False, widget=forms.CheckboxInput(attrs={"class": "form-check-input"})
+    )
+    legend_title = forms.CharField(
+        label="Legend Title", required=False, widget=forms.TextInput(attrs={"class": "form-control"})
+    )
 
 class SankeyDisplayForm(forms.Form):
     font_size = forms.IntegerField(
@@ -426,6 +492,29 @@ class SankeyGraphFilterSet(FilterSet):
     def __init__(self, data: dict | None = None, data_filter_set: DataFilterSet | None = None):
         super().__init__(data)
         self.bound_forms["graph_options_form"] = SankeyGraphForm(data, data_filter_set=data_filter_set)
+        self.bound_forms["color_form"] = formset_factory(ColorForm, KeyValueFormset)(data, prefix="colors")
+
+    @property
+    def plot_options(self):
+        if self.bound_forms["graph_options_form"].is_valid():
+            options = self.bound_forms["graph_options_form"].cleaned_data
+        colors_raw = self.bound_forms["color_form"].cleaned_data
+        options["color_discrete_map"] = {
+            key: value for key, value in zip(colors_raw["color_key"], colors_raw["color_value"])
+        }
+        return options
+
+    def get_forms(self) -> dict[str, "forms.Form"]:
+        return self.bound_forms
+
+class LineGraphFilterSet(FilterSet):
+    forms = {
+        "display_options_form": LineDisplayForm,
+    }
+
+    def __init__(self, data: dict | None = None, data_filter_set: DataFilterSet | None = None):
+        super().__init__(data)
+        self.bound_forms["graph_options_form"] = LineGraphForm(data, data_filter_set=data_filter_set)
         self.bound_forms["color_form"] = formset_factory(ColorForm, KeyValueFormset)(data, prefix="colors")
 
     @property

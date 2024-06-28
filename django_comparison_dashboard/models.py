@@ -42,6 +42,7 @@ class ScalarData(models.Model):
         "category",
         "specification",
         "new",
+        "year",
     ]
 
 

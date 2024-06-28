@@ -8,7 +8,7 @@ import pandas as pd
 from plotly import express as px
 from plotly import graph_objects as go
 
-from .forms import BarGraphFilterSet, SankeyGraphFilterSet
+from .forms import BarGraphFilterSet, SankeyGraphFilterSet, LineGraphFilterSet
 from .settings import (
     COLUMN_JOINER,
     GRAPHS_DEFAULT_LAYOUT,
@@ -223,7 +223,22 @@ def get_timeseries_plot(data, options):
         return heat_map(data, options["options"])
 
 
-def line_plot(data, options):
+def line_plot(data, filter_set: LineGraphFilterSet):
+
+    data = data.to_dict(orient="records")
+    try:
+        fig = px.line(data, **filter_set.plot_options)
+    except ValueError as ve:
+        if str(ve) == "nan is not in list":
+            raise PlottingError(
+                f"Scalar plot error: {ve} "
+                + "(This might occur due to 'nan' values in data. Please check data via 'Show data')",
+            )
+        else:
+            raise PlottingError(f"Scalar plot error: {ve}")
+
+    return fig
+
     xaxis_title = options.pop("xaxis_title") or "Timeindex"
     yaxis_title = options.pop("yaxis_title") or add_unit_to_label("", data)
     legend_title = options.pop("legend_title")
@@ -402,4 +417,5 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
 CHART_DATA = {
     "bar": {"chart_function": bar_plot, "form_class": BarGraphFilterSet},
     "sankey": {"chart_function": sankey, "form_class": SankeyGraphFilterSet},
+    "line": {"chart_function": line_plot, "form_class": LineGraphFilterSet},
 }
