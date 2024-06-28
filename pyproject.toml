@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-comparison-dashboard"
-version = "2.1.0"
+version = "2.1.1"
 description = "Django app to compare scenarios in a dashboard"
 authors = ["Hendrik Huyskens <hendrik.huyskens@rl-institut.de>"]
 license = "MIT"
@@ -12,7 +12,7 @@ python = "^3.10"
 plotly = "^5.16.1"
 units = "^0.7"
 jmespath = "^1.0.1"
-pandas = "^2.1.0"
+pandas = "^2.1.1"
 requests = "^2.31.0"
 django-appconf = "^1.0.5"
 django-template-partials = "^23.4"
