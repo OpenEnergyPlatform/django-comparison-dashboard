@@ -43,6 +43,12 @@ class CSVSourceUploadForm(DataSourceUploadForm):
     csv_file = forms.FileField()
 
 
+class DatabusSourceUploadForm(forms.Form):
+    """Default upload form for a data source"""
+
+    scenario_id = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}))
+
+
 # left hand side filters for used for data selection
 
 

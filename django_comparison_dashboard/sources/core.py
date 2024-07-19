@@ -78,6 +78,8 @@ class Scenario(abc.ABC):
 
         def parse_array(raw_string):
             """Tries to parse lists from array fields"""
+            if raw_string is None:
+                return []
             try:
                 return ast.literal_eval(raw_string)
             except SyntaxError:

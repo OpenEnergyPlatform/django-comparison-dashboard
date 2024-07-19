@@ -269,7 +269,10 @@ class ScenarioFormView(FormView):
         return source
 
     def get_form_class(self):
-        return self.get_source().form
+        form = self.get_source().form
+        if scenario_list := self.get_source().list_scenarios():
+            form.base_fields["scenario_id"].choices = [(scenario.id, scenario.id) for scenario in scenario_list]
+        return form
 
     def form_valid(self, form):
         source = self.get_source()
