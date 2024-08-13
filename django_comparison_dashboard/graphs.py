@@ -201,7 +201,7 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
 
     # Map colors to links based on their source node with reduced opacity (alpha = 0.5)
     link_colors = [
-        f'rgba({int(color_dict[labels[src]][1:3], 16)}, {int(color_dict[labels[src]][3:5], 16)}, {int(color_dict[labels[src]][5:7], 16)}, 0.25)'
+        f'rgba{(*hex_to_rgb(color_dict[label]), 16)}'
         if labels[src] in color_dict else
         f'rgba({random.randint(0, 255)}, {random.randint(0, 255)}, {random.randint(0, 255)}, 0.25)'
         for src in source
