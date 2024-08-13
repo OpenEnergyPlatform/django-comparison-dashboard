@@ -193,7 +193,7 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
         value.append(flow["value"])
 
     node_colors = [
-        f'rgba({int(color_dict[label][1:3], 16)}, {int(color_dict[label][3:5], 16)}, {int(color_dict[label][5:7], 16)}, 0.75)'
+        f'rgba{(*hex_to_rgb(color_dict[label]), 16)}'
         if label in color_dict else
         f'rgba({random.randint(0, 255)}, {random.randint(0, 255)}, {random.randint(0, 255)}, 0.75)'
         for label in labels
@@ -247,6 +247,13 @@ CHART_DATA = {
     "sankey": {"chart_function": sankey, "form_class": SankeyGraphFilterSet},
     "line": {"chart_function": line_plot, "form_class": LineGraphFilterSet},
 }
+
+def hex_to_rgb(hex_color: str) -> tuple:
+    hex_color = hex_color.lstrip("#")
+    if len(hex_color) == 3:
+        hex_color = hex_color * 2
+    return int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+
 # Define the color dictionary
 color_dict = {
     "pri_solar_radiation": "#FFC000",
