@@ -256,6 +256,9 @@ class SankeyGraphForm(forms.Form):
         widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
         initial="output_commodity",
     )
+    color = forms.ChoiceField(
+        label="Color", choices=get_available_filters, widget=forms.Select(attrs={"class": "ui fluid dropdown"})
+    )
 
     def __init__(self, *args, **kwargs):
         self.data_filter_set = kwargs.pop("data_filter_set", None)
