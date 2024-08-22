@@ -207,13 +207,13 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
         f'rgba({random.randint(0, 255)}, {random.randint(0, 255)}, {random.randint(0, 255)}, 0.25)'
         for src in source
     ]
-
+    unit = get_unit_from_data(data)
     fig = go.Figure(
         data=[
             go.Sankey(
                 arrangement="fixed",
                 valueformat=".0f",
-                valuesuffix="TWh",
+                valuesuffix=unit,
                 # Define nodes
                 node=dict(
                     pad=15,
