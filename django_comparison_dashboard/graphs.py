@@ -165,13 +165,13 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
     Nodes can be set via graph options, input and output commodities
     """
 
-    def get_color(lookup_key: str) -> str:
+    def get_color(lookup_key: str, opacity: float = 0.75) -> str:
         """Return color for given key."""
         if lookup_key in colors:
-            return f"rgba{(*hex_to_rgb(colors[lookup_key]), 0.75)}"
+            return f"rgba{(*hex_to_rgb(colors[lookup_key]), opacity)}"
         if lookup_key in COLOR_DICT:
-            return f"rgba{(*hex_to_rgb(COLOR_DICT[label]), 0.75)}"
-        return f"rgba({random.randint(0, 255)}, {random.randint(0, 255)}, {random.randint(0, 255)}, 0.75)"
+            return f"rgba{(*hex_to_rgb(COLOR_DICT[label]), opacity)}"
+        return f"rgba({random.randint(0, 255)}, {random.randint(0, 255)}, {random.randint(0, 255)}, {opacity})"
 
     process_column = filter_set.cleaned_data["nodes"]
     inflow_column = filter_set.cleaned_data["inflow"]
@@ -207,7 +207,7 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
     node_colors = [get_color(label) for label in labels]
 
     # Map colors to links based on their source node with reduced opacity
-    link_colors = [get_color(labels[src]) for src in source]
+    link_colors = [get_color(labels[src], opacity=0.25) for src in source]
     unit = get_unit_from_data(data)
     fig = go.Figure(
         data=[
