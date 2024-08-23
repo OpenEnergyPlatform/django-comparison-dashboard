@@ -170,7 +170,7 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
         if lookup_key in colors:
             return f"rgba{(*hex_to_rgb(colors[lookup_key]), opacity)}"
         if lookup_key in COLOR_DICT:
-            return f"rgba{(*hex_to_rgb(COLOR_DICT[label]), opacity)}"
+            return f"rgba{(*hex_to_rgb(COLOR_DICT[lookup_key]), opacity)}"
         return f"rgba({random.randint(0, 255)}, {random.randint(0, 255)}, {random.randint(0, 255)}, {opacity})"
 
     process_column = filter_set.cleaned_data["nodes"]
