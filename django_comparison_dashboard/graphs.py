@@ -1,4 +1,5 @@
 import math
+import random
 
 import numpy as np
 import pandas as pd
@@ -7,6 +8,7 @@ from plotly import graph_objects as go
 
 from .forms import BarGraphFilterSet, LineGraphFilterSet, PlotFilterSet, SankeyGraphFilterSet
 from .settings import (
+    COLOR_DICT,
     GRAPHS_DEFAULT_LAYOUT,
     GRAPHS_DEFAULT_TEMPLATE,
     GRAPHS_DEFAULT_XAXES_LAYOUT,
@@ -162,6 +164,15 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
 
     Nodes can be set via graph options, input and output commodities
     """
+
+    def get_color(lookup_key: str, opacity: float = 0.75) -> str:
+        """Return color for given key."""
+        if lookup_key in colors:
+            return f"rgba{(*hex_to_rgb(colors[lookup_key]), opacity)}"
+        if lookup_key in COLOR_DICT:
+            return f"rgba{(*hex_to_rgb(COLOR_DICT[lookup_key]), opacity)}"
+        return f"rgba({random.randint(0, 255)}, {random.randint(0, 255)}, {random.randint(0, 255)}, {opacity})"
+
     process_column = filter_set.cleaned_data["nodes"]
     inflow_column = filter_set.cleaned_data["inflow"]
     outflow_column = filter_set.cleaned_data["outflow"]
@@ -191,36 +202,39 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
 
         value.append(flow["value"])
 
+    colors_raw = filter_set.bound_forms["color_form"].cleaned_data
+    colors = {key: value for key, value in zip(colors_raw["color_key"], colors_raw["color_value"])}
+    node_colors = [get_color(label) for label in labels]
+
+    # Map colors to links based on their source node with reduced opacity
+    link_colors = [get_color(labels[src], opacity=0.25) for src in source]
+    unit = get_unit_from_data(data)
     fig = go.Figure(
         data=[
             go.Sankey(
                 arrangement="fixed",
                 valueformat=".0f",
-                valuesuffix="TWh",
+                valuesuffix=unit,
                 # Define nodes
                 node=dict(
                     pad=15,
                     thickness=15,
                     line=dict(color="black", width=0.5),
                     label=labels,
+                    color=node_colors,
                 ),
                 # Add links
-                link=dict(
-                    source=source,
-                    target=target,
-                    value=value,
-                    label=label,
-                ),
+                link=dict(source=source, target=target, value=value, label=label, color=link_colors),
             )
         ]
     )
 
-    font_size = filter_set.plot_options.get("font_size", 10)
-    title_text = filter_set.plot_options.get("title_text", "Flows")
-    fig.update_layout(
-        title_text=title_text,
-        font_size=font_size,
-    )
+    # font_size = filter_set.plot_options.get("font_size", 10)
+    # title_text = filter_set.plot_options.get("title_text", "Flows")
+    # fig.update_layout(
+    #     title_text=title_text,
+    #     font_size=font_size,
+    # )
     return fig
 
 
@@ -229,3 +243,10 @@ CHART_DATA = {
     "sankey": {"chart_function": sankey, "form_class": SankeyGraphFilterSet},
     "line": {"chart_function": line_plot, "form_class": LineGraphFilterSet},
 }
+
+
+def hex_to_rgb(hex_color: str) -> tuple:
+    hex_color = hex_color.lstrip("#")
+    if len(hex_color) == 3:
+        hex_color = hex_color * 2
+    return int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)

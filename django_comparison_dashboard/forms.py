@@ -369,6 +369,7 @@ class FilterSet:
 
     def __init__(self, data: dict | None = None):
         self.bound_forms = {form_name: form(data) for form_name, form in self.forms.items()}
+        self._cleaned_data = None
 
     def is_valid(self) -> bool:
         for form in self.get_forms().values():
@@ -384,12 +385,15 @@ class FilterSet:
 
     @property
     def cleaned_data(self) -> dict:
+        if self._cleaned_data:
+            return self._cleaned_data
         data = {}
         for form in self.bound_forms.values():
             if isinstance(form, ScenarioFilter):
                 data |= form.form.cleaned_data
                 continue
             data |= form.cleaned_data
+        self._cleaned_data = data
         return data
 
 

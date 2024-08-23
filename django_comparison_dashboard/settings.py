@@ -9,7 +9,7 @@ USE_DUMMY_DATA = os.environ.get("USE_DUMMY_DATA", "False") == "True"
 SKIP_TS = os.environ.get("SKIP_TS", "False") == "True"
 
 DATAPACKAGE_PATH = pathlib.Path(__file__).parent / "datamodel" / "datapackage.json"
-
+COLOR_DICT_PATH = pathlib.Path(__file__).parent / "datamodel" / "color_dict.json"
 
 class DataType(IntEnum):
     Scalar = 0
@@ -63,3 +63,10 @@ GRAPHS_DEFAULT_YAXES_LAYOUT = {
     "tickcolor": GRID_COLOR,
     "tickfont": {"size": 14},
 }
+
+# Load the color dictionary from the JSON file
+if os.path.exists(COLOR_DICT_PATH):
+    with open(COLOR_DICT_PATH, 'r', encoding='UTF-8') as color_file:
+        COLOR_DICT = json.load(color_file)
+else:
+    COLOR_DICT = {}
