@@ -11,6 +11,12 @@ from .helpers import save_filters
 from .models import NamedFilterSettings
 
 
+class FormProcessingError(Exception):
+    def __init__(self, response, message="Form processing failed"):
+        self.response = response
+        super().__init__(message)
+
+
 class KeyValueFormPartialView(View):
     prefix = ""
     form = None
@@ -31,6 +37,50 @@ class KeyValueFormPartialView(View):
         formset = formset_factory(self.form)
         form = formset(form_data, prefix=self.prefix)
         return HttpResponse(form.as_p())
+
+
+def get_chart_and_table_from_request(request) -> tuple:
+    """Render chart and data table from request."""
+    selected_scenarios = request.GET.getlist("scenario_id")
+
+    if "parameters_id" in request.GET:
+        # Get form parameters from DB
+        parameters = models.FilterSettings.objects.get(pk=request.GET["parameters_id"])
+        filter_parameters = parameters.filter_set
+        selected_chart_type = parameters.graph_filter_set.pop("chart_type")
+        graph_parameters = parameters.graph_filter_set
+    else:
+        # Get form parameters from request as usual
+        filter_parameters = request.GET
+        selected_chart_type = request.GET.get("chart_type")
+        graph_parameters = request.GET
+
+    filter_set = DataFilterSet(selected_scenarios, filter_parameters)
+    if not filter_set.is_valid():
+        response = render(
+            request,
+            "django_comparison_dashboard/dashboard.html#filters",
+            context=filter_set.get_context_data(),
+        )
+        response = retarget(response, "#filters")
+        raise FormProcessingError(response, message="Filter set not valid.")
+    df = preprocessing.get_scalar_data(filter_set)
+
+    selected_chart = graphs.CHART_DATA.get(selected_chart_type)
+    form_class = selected_chart["form_class"]
+    graph_filter_set = form_class(graph_parameters, data_filter_set=filter_set)
+    if not graph_filter_set.is_valid():
+        response = render(
+            request,
+            "django_comparison_dashboard/dashboard.html#graph_options",
+            context=graph_filter_set.get_context_data(),
+        )
+        response = retarget(response, "#graph_options")
+        raise FormProcessingError(response, message="Graph filter set not valid.")
+    chart_function = selected_chart["chart_function"]
+    chart = chart_function(df, graph_filter_set).to_html()
+    table = df.to_html()
+    return chart, table
 
 
 class DashboardView(TemplateView):
@@ -61,42 +111,10 @@ class ScalarView(TemplateView):
     embedded = False
 
     def get(self, request, *args, **kwargs):
-        selected_scenarios = self.request.GET.getlist("scenario_id")
-
-        if "parameters_id" in request.GET:
-            # Get form parameters from DB
-            parameters = models.FilterSettings.objects.get(pk=request.GET["parameters_id"])
-            filter_parameters = parameters.filter_set
-            selected_chart_type = parameters.graph_filter_set.pop("chart_type")
-            graph_parameters = parameters.graph_filter_set
-        else:
-            # Get form parameters from request as usual
-            filter_parameters = request.GET
-            selected_chart_type = request.GET.get("chart_type")
-            graph_parameters = request.GET
-
-        filter_set = DataFilterSet(selected_scenarios, filter_parameters)
-        if not filter_set.is_valid():
-            response = render(
-                self.request,
-                "django_comparison_dashboard/dashboard.html#filters",
-                context=filter_set.get_context_data(),
-            )
-            return retarget(response, "#filters")
-        df = preprocessing.get_scalar_data(filter_set)
-
-        selected_chart = graphs.CHART_DATA.get(selected_chart_type)
-        form_class = selected_chart["form_class"]
-        graph_filter_set = form_class(graph_parameters, data_filter_set=filter_set)
-        if not graph_filter_set.is_valid():
-            response = render(
-                self.request,
-                "django_comparison_dashboard/dashboard.html#graph_options",
-                context=graph_filter_set.get_context_data(),
-            )
-            return retarget(response, "#graph_options")
-        chart_function = selected_chart["chart_function"]
-        chart = chart_function(df, graph_filter_set).to_html()
+        try:
+            chart, table = get_chart_and_table_from_request(request)
+        except FormProcessingError as e:
+            return e.response
 
         # Check if chart shall be returned in embedded mode
         if "parameters_id" not in request.GET:
@@ -104,6 +122,8 @@ class ScalarView(TemplateView):
             parameter_id = save_filters(request.GET)
         else:
             parameter_id = request.GET["parameters_id"]
+
+        selected_scenarios = request.GET.getlist("scenario_id")
         url = (
             f"{request.path}?"
             f"{'&'.join(f'scenario_id={scenario_id}' for scenario_id in selected_scenarios)}"
@@ -114,7 +134,7 @@ class ScalarView(TemplateView):
             response = HttpResponse(chart)
             response["HX-Redirect"] = url
         else:
-            context = {"chart": chart, "table": df.to_html()}
+            context = {"chart": chart, "table": table}
             response = render(request, self.template_name, context)
         return response
 
