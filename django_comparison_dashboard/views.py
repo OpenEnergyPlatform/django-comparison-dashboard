@@ -33,31 +33,27 @@ class KeyValueFormPartialView(View):
         return HttpResponse(form.as_p())
 
 
-def get_filters(request):
+class DashboardView(TemplateView):
     """
-    sets up the diffrent Forms/FilterSets for the dashboard
+    Initializes dashboard
+
+    Including filters and chart/table if parameters are given.
     Example for incoming request: localhost:8000/dashboard/?scenario_id=5&scenario_id=10
-
-    Parameters
-    ----------
-    request
-
-    Returns
-    -------
-
     """
-    selected_scenarios = request.GET.getlist("scenario_id")
-    filter_setting_names = list(NamedFilterSettings.objects.values("name"))
-    filter_set = DataFilterSet(selected_scenarios)
-    graph_filter_set = graphs.CHART_DATA["bar"]["form_class"]()
-    chart_type_form = ChartTypeForm()
-    return render(
-        request,
-        "django_comparison_dashboard/dashboard.html",
-        context=filter_set.get_context_data()
-        | graph_filter_set.get_context_data()
-        | {"name_list": filter_setting_names, "chart_type_form": chart_type_form},
-    )
+
+    template_name = "django_comparison_dashboard/dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        selected_scenarios = self.request.GET.getlist("scenario_id")
+        filter_setting_names = list(NamedFilterSettings.objects.values("name"))
+        filter_set = DataFilterSet(selected_scenarios)
+        graph_filter_set = graphs.CHART_DATA["bar"]["form_class"]()
+        chart_type_form = ChartTypeForm()
+        return (
+            filter_set.get_context_data()
+            | graph_filter_set.get_context_data()
+            | {"name_list": filter_setting_names, "chart_type_form": chart_type_form}
+        )
 
 
 class ScalarView(TemplateView):
@@ -120,7 +116,6 @@ class ScalarView(TemplateView):
         else:
             context = {"chart": chart, "table": df.to_html()}
             response = render(request, self.template_name, context)
-            response["HX-Replace-Url"] = url
         return response
 
 
