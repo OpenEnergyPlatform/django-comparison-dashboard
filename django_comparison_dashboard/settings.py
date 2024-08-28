@@ -3,13 +3,14 @@ import os
 import pathlib
 from enum import IntEnum
 
-VERSION = "2.1.1"
+VERSION = "2.2.0"
 
 USE_DUMMY_DATA = os.environ.get("USE_DUMMY_DATA", "False") == "True"
 SKIP_TS = os.environ.get("SKIP_TS", "False") == "True"
 
 DATAPACKAGE_PATH = pathlib.Path(__file__).parent / "datamodel" / "datapackage.json"
 COLOR_DICT_PATH = pathlib.Path(__file__).parent / "datamodel" / "color_dict.json"
+
 
 class DataType(IntEnum):
     Scalar = 0
@@ -66,7 +67,7 @@ GRAPHS_DEFAULT_YAXES_LAYOUT = {
 
 # Load the color dictionary from the JSON file
 if os.path.exists(COLOR_DICT_PATH):
-    with open(COLOR_DICT_PATH, 'r', encoding='UTF-8') as color_file:
+    with open(COLOR_DICT_PATH, encoding="UTF-8") as color_file:
         COLOR_DICT = json.load(color_file)
 else:
     COLOR_DICT = {}
