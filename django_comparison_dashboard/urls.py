@@ -5,7 +5,7 @@ from . import forms, views
 app_name = "django_comparison_dashboard"
 
 urlpatterns = [
-    path("dashboard/", views.get_filters, name="dashboard"),
+    path("dashboard/", views.DashboardView.as_view(), name="dashboard"),
     path("scalars/", views.ScalarView.as_view(), name="render_data"),
     path("scalars/chart/", views.ScalarView.as_view(embedded=True), name="data_chart"),
     path("scenarios/", views.ScenarioSelectionView.as_view(), name="scenarios"),
