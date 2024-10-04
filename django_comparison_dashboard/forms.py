@@ -77,7 +77,7 @@ class UnitForm(forms.Form):
     energy = forms.ChoiceField(
         label="Energy",
         initial="GWh",
-        choices=(("kWh", "kWh"), ("MWh", "MWh"), ("GWh", "GWh"), ("TWh", "TWh")),
+        choices=(("kWh", "kWh"), ("MWh", "MWh"), ("GWh", "GWh"), ("TWh", "TWh"), ("GJ", "GJ"), ("TJ", "TJ"), ("PJ", "PJ")),
         widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
     power = forms.ChoiceField(
@@ -90,6 +90,12 @@ class UnitForm(forms.Form):
         label="Power per Hour",
         initial="MW/h",
         choices=(("kW/h", "kW/h"), ("MW/h", "MW/h"), ("GW/h", "GW/h"), ("TW/h", "TW/h")),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
+    )
+    costs = forms.ChoiceField(
+        label="Costs",
+        initial="MEUR",
+        choices=(("TEUR", "TEUR"), ("MEUR", "MEUR"), ("BEUR", "BEUR")),
         widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
     mass = forms.ChoiceField(
@@ -261,18 +267,6 @@ class SankeyGraphForm(forms.Form):
         self.data_filter_set = kwargs.pop("data_filter_set", None)
         super().__init__(*args, **kwargs)
 
-    def clean_facet_col(self):
-        data = self.cleaned_data["facet_col"]
-        if data == "":
-            return None
-        return data
-
-    def clean_text(self):
-        data = self.cleaned_data["text"]
-        if data == "":
-            return None
-        return data
-
 
 class LineGraphForm(forms.Form):
     x = forms.ChoiceField(
@@ -323,6 +317,18 @@ class LineGraphForm(forms.Form):
             ):
                 self.add_error(key, "Please choose a value that was also chosen in Group-By.")
         return cleaned_data
+
+    def clean_facet_col(self):
+        data = self.cleaned_data["facet_col"]
+        if data == "":
+            return None
+        return data
+
+    def clean_text(self):
+        data = self.cleaned_data["text"]
+        if data == "":
+            return None
+        return data
 
 
 class DisplayForm(forms.Form):
