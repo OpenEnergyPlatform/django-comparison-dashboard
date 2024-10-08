@@ -6,10 +6,6 @@
 {% block content %}
   <div class="container">
     <!-- Scenario Selection Forms -->
-    <div class="row align-center">
-      <p class="lead mb-3 ml-0">Welcome to the SEDOS Dashboard</p>
-      <hr />
-    </div>
     <!-- Content with Filter / Presentation Tab and Charts -->
     <div class="row align-center">
       <div class="col-4">
@@ -150,7 +146,7 @@
     </div>
   </form>
 </div>
-<!-- contains Charts and Table -->
+<!-- contains Charts and Table with Tabbed Interface -->
 <div class="col-8">
   <div>
     <button type="button"
@@ -160,8 +156,28 @@
             hx-include="#scenario_id, #filters, #o_a_label, #graph_options_tab, #display_options_tab"
             hx-swap="multi:#table,#plot">Render chart and table</button>
   </div>
-  <div id="plot"></div>
-  <div id="table"></div>
+  <div class="card mt-3" style="margin-top: 0;">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs" id="chartTableTab" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="plot-tab" data-bs-toggle="tab" href="#plot" role="tab">Chart</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="table-tab" data-bs-toggle="tab" href="#table" role="tab">Table</a>
+        </li>
+      </ul>
+    </div>
+    <div class="card-body">
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="plot" role="tabpanel">
+          <div id="plot-content" class="mb-3" style="height: calc(100vh - 250px); overflow-y: auto;"></div>
+        </div>
+        <div class="tab-pane fade" id="table" role="tabpanel">
+          <div id="table-content" style="max-height: 300px; overflow-y: auto;"></div> <!-- Added max-height to decrease table size and allow scrolling -->
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 </div>
 </div>
