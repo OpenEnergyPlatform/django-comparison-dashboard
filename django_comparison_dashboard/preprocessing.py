@@ -20,11 +20,19 @@ def define_energy_model_units():
     scaled_unit("GW", "MW", 1e3)
     scaled_unit("TW", "GW", 1e3)
 
+    scaled_unit("GJ", "J", 1e9)
+    scaled_unit("TJ", "GJ", 1e3)
+    scaled_unit("PJ", "TJ", 1e3)
+
     scaled_unit("a", "day", 365)
 
     scaled_unit("kt", "t", 1e3)
     scaled_unit("Mt", "kt", 1e3)
     scaled_unit("Gt", "Mt", 1e3)
+
+    scaled_unit("TEUR", "EUR", 1e3)
+    scaled_unit("MEUR", "TEUR", 1e3)
+    scaled_unit("BEUR", "MEUR", 1e3)
 
     NamedComposedUnit("kWh", unit("kW") * unit("h"))
     NamedComposedUnit("MWh", unit("MW") * unit("h"))
