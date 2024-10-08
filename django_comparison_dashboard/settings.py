@@ -37,8 +37,9 @@ GRID_COLOR = "lightgray"
 GRAPHS_DEFAULT_TEMPLATE = "plotly_white"
 GRAPHS_DEFAULT_LAYOUT = {
     "legend": {
-        "font": {"size": 14},
-    }
+        "font": {"size": 14}
+    },
+    "height": 700,
 }
 GRAPHS_DEFAULT_XAXES_LAYOUT = {
     "autorange": True,
