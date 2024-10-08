@@ -200,9 +200,15 @@
   {{ block.super }}
   <link rel="stylesheet" href="{% static "vendors/datatables/dataTables.css" %}" />
   <link rel="stylesheet" href="{% static "vendors/json-viewer/jquery.json-viewer.css" %}" />
-    <style>
+  <style>
     .card-header {
       padding: 0.5rem;  /* Reduce padding of the card header */
+    }
+    .tab-pane {
+      font-size: 1rem;
+    }
+    .tab-content {
+      font-size: 1rem;
     }
   </style>
 {% endblock css %}
