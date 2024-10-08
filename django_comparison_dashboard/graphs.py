@@ -98,7 +98,10 @@ def adapt_plot_figure(figure: go.Figure, filter_set: PlotFilterSet, data: pd.Dat
     if xaxis_title:
         figure.update_xaxes(title=xaxis_title)
     if yaxis_title:
-        figure.update_yaxes(title=yaxis_title)
+        n_cols = filter_set.plot_options["facet_col_wrap"]
+        n_rows = int(len(figure.layout.annotations)/n_cols)
+        for r in range(1, n_rows + 1):
+            figure.update_yaxes(row=r, col=1, title=yaxis_title)
 
     # Add subplot titles
     subplot_title = options.pop("subplot_title")
