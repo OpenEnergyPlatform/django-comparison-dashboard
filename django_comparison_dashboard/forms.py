@@ -216,7 +216,7 @@ class BarGraphForm(forms.Form):
         label="Subplots",
         choices=get_available_filters(empty=True),
         required=False,
-        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown clearable"}),
     )
     facet_col_wrap = forms.IntegerField(
         label="Subplots per Row", widget=forms.NumberInput(attrs={"class": "ui fluid dropdown"}), initial=1
