@@ -1,6 +1,7 @@
 import django_filters
 from django import forms
 from django.contrib.postgres.fields import ArrayField
+from django.db.models import Q
 
 from .models import ScalarData
 
@@ -15,6 +16,7 @@ class ScenarioFilter(django_filters.FilterSet):
                 choices = {(item, item) for sublist in qs.all() for item in sublist}
             else:
                 choices = [(choice, choice) for choice in qs.all()]
+
             field_instance = django_filters.MultipleChoiceFilter(
                 field_name=field,
                 choices=choices,
@@ -26,7 +28,11 @@ class ScenarioFilter(django_filters.FilterSet):
 
     @staticmethod
     def filter_array_fields(queryset, name, value):
-        return queryset.filter(**{f"{name}__overlap": value})
+        # This allows input or output group values to be None
+        if name in ("input_groups", "output_groups"):
+            return queryset.filter(Q(**{f"{name}__overlap": value}) | Q(**{f"{name}__exact": []}))
+        # This checks if value is present in list
+        return queryset.filter(Q(**{f"{name}__overlap": value}))
 
     class Meta:
         model = ScalarData
