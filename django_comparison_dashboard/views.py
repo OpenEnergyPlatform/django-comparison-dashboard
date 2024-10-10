@@ -3,6 +3,7 @@ from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
+from django_energysystem_viewer.views import get_excel_data
 from django_htmx.http import retarget
 
 from . import graphs, models, preprocessing, sources
@@ -94,6 +95,8 @@ class DashboardView(TemplateView):
     template_name = "django_comparison_dashboard/dashboard.html"
 
     def get_context_data(self, **kwargs):
+        abbreviations = get_excel_data("SEDOS-structure-all", "abbreviations")
+        abbreviation_list = abbreviations["abbreviations"].unique()
         selected_scenarios = self.request.GET.getlist("scenario_id")
         filter_setting_names = list(NamedFilterSettings.objects.values("name"))
         filter_set = DataFilterSet(selected_scenarios)
@@ -102,7 +105,12 @@ class DashboardView(TemplateView):
         return (
             filter_set.get_context_data()
             | graph_filter_set.get_context_data()
-            | {"name_list": filter_setting_names, "chart_type_form": chart_type_form}
+            | {
+                "name_list": filter_setting_names,
+                "chart_type_form": chart_type_form,
+                "abbreviation_list": abbreviation_list,
+                "structure_name": "SEDOS-structure-all",
+            }
         )
 
 
