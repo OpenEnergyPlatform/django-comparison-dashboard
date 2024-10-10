@@ -121,8 +121,12 @@ class ScalarView(TemplateView):
     def get(self, request, *args, **kwargs):
         try:
             chart, table = get_chart_and_table_from_request(request)
-        except FormProcessingError as e:
-            return e.response
+        except:  # noqa: E722
+            return render(
+                request,
+                "django_comparison_dashboard/partials/error.html",
+                context={"requested_url": request.get_full_path()},
+            )
 
         # Check if chart shall be returned in embedded mode
         if "parameters_id" not in request.GET:

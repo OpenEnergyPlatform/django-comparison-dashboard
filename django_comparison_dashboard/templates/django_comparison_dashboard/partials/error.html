@@ -1,0 +1,19 @@
+<div id="plot">
+  <div class="alert alert-danger">An error occurred!</div>
+  <button class="btn btn-primary"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#collapseUrl"
+          aria-expanded="false"
+          aria-controls="collapseUrl">See detailed information</button>
+  <div class="collapse" id="collapseUrl">
+    <div class="card card-body">
+      Error occurred while processing following URL:
+      <pre><code>
+        {{ requested_url }}
+      </code></pre>
+      You can send this URL to Admin, so that error can be investigated.
+    </div>
+  </div>
+</div>
+<div id="table"></div>

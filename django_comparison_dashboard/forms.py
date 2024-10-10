@@ -77,7 +77,15 @@ class UnitForm(forms.Form):
     energy = forms.ChoiceField(
         label="Energy",
         initial="GWh",
-        choices=(("kWh", "kWh"), ("MWh", "MWh"), ("GWh", "GWh"), ("TWh", "TWh"), ("GJ", "GJ"), ("TJ", "TJ"), ("PJ", "PJ")),
+        choices=(
+            ("kWh", "kWh"),
+            ("MWh", "MWh"),
+            ("GWh", "GWh"),
+            ("TWh", "TWh"),
+            ("GJ", "GJ"),
+            ("TJ", "TJ"),
+            ("PJ", "PJ"),
+        ),
         widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
     )
     power = forms.ChoiceField(
@@ -186,7 +194,7 @@ class BarGraphForm(forms.Form):
         label="Text",
         choices=get_available_filters(value=True, empty=True),
         required=False,
-        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown clearable"}),
     )
     color = forms.ChoiceField(
         label="Color", choices=get_available_filters, widget=forms.Select(attrs={"class": "ui fluid dropdown"})
@@ -208,7 +216,7 @@ class BarGraphForm(forms.Form):
         label="Subplots",
         choices=get_available_filters(empty=True),
         required=False,
-        widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
+        widget=forms.Select(attrs={"class": "ui fluid dropdown clearable"}),
     )
     facet_col_wrap = forms.IntegerField(
         label="Subplots per Row", widget=forms.NumberInput(attrs={"class": "ui fluid dropdown"}), initial=1
