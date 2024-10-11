@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project tries to adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- abbreviations in nav bar
+- error message if chart/table creation fails
+
+### Changed
+- implemented tabs to separate chart and data table
+- streamlined plot options
+- do not filter None values in input/output groups
+
+### Fixed
+- x/y axis titles
+
 ## [2.2.0] - 2024-08-28
 ### Added
 - sankey colors from user input and/or predefined color mapping
