@@ -83,6 +83,9 @@ def adapt_plot_figure(figure: go.Figure, filter_set: PlotFilterSet, data: pd.Dat
     # Add x/y-Axis title
     xaxis_title = options.pop("x_title")
     yaxis_title = options.pop("y_title")
+    n_cols = filter_set.plot_options["facet_col_wrap"]
+    n_rows = int(len(figure.layout.annotations) / n_cols)
+
     value_axis = (
         "x" if "orientation" in filter_set.plot_options and filter_set.plot_options["orientation"] == "h" else "y"
     )
@@ -91,17 +94,22 @@ def adapt_plot_figure(figure: go.Figure, filter_set: PlotFilterSet, data: pd.Dat
         layout["xaxis_title"] = (
             filter_set.plot_options["x"] if unit is None else f"{filter_set.plot_options['x']} [{unit}]"
         )
-    if value_axis == "y" and not yaxis_title:
-        layout["yaxis_title"] = (
-            filter_set.plot_options["y"] if unit is None else f"{filter_set.plot_options['y']} [{unit}]"
-        )
-    if xaxis_title:
-        figure.update_xaxes(title=xaxis_title)
-    if yaxis_title:
-        n_cols = filter_set.plot_options["facet_col_wrap"]
-        n_rows = int(len(figure.layout.annotations)/n_cols)
-        for r in range(1, n_rows + 1):
-            figure.update_yaxes(row=r, col=1, title=yaxis_title)
+    if value_axis == "x":
+        xaxis_title_value = xaxis_title or (
+            f"{filter_set.plot_options['x']} [{unit}]" if unit else filter_set.plot_options["x"])
+        if filter_set.plot_options["facet_col"] and n_cols > 1:
+            for c in range(1, n_cols + 1):
+                figure.update_xaxes(row=1, col=c, title=xaxis_title_value)
+        else:
+            figure.update_xaxes(row=1, col=1, title=xaxis_title_value)
+    if value_axis == "y":
+        yaxis_title_value = yaxis_title or (
+            f"{filter_set.plot_options['y']} [{unit}]" if unit else filter_set.plot_options["y"])
+        if filter_set.plot_options["facet_col"] and n_rows > 1:
+            for r in range(1, n_rows + 1):
+                figure.update_yaxes(row=r, col=1, title=yaxis_title_value)
+        else:
+            figure.update_yaxes(row=1, col=1, title=yaxis_title_value)
 
     # Add subplot titles
     subplot_title = options.pop("subplot_title")
