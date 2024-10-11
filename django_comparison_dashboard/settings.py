@@ -3,7 +3,7 @@ import os
 import pathlib
 from enum import IntEnum
 
-VERSION = "2.2.0"
+VERSION = "2.3.0"
 
 USE_DUMMY_DATA = os.environ.get("USE_DUMMY_DATA", "False") == "True"
 SKIP_TS = os.environ.get("SKIP_TS", "False") == "True"
@@ -36,9 +36,7 @@ GRID_COLOR = "lightgray"
 
 GRAPHS_DEFAULT_TEMPLATE = "plotly_white"
 GRAPHS_DEFAULT_LAYOUT = {
-    "legend": {
-        "font": {"size": 14}
-    },
+    "legend": {"font": {"size": 14}},
     "height": 700,
 }
 GRAPHS_DEFAULT_XAXES_LAYOUT = {
