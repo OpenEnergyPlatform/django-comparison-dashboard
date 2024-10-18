@@ -172,7 +172,14 @@
             hx-ext="multi-swap"
             hx-get="{% url 'django_comparison_dashboard:render_data' %}"
             hx-include="#scenario_id, #filters, #o_a_label, #graph_options_tab, #display_options_tab"
-            hx-swap="multi:#table,#plot">Render chart and table</button>
+            hx-swap="multi:#table,#plot">
+            <svg width="16" height="13" viewBox="0 0 16 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 12L6 4.5L10 8.5L15 0.5" stroke="white"/>
+            </svg>
+            <span class="ms-2">
+              Render chart and table
+            </span>
+          </button>
   </div>
   <div class="card mt-3"
     {# djlint:off #}
@@ -184,17 +191,41 @@
           role="tablist">
         <li class="nav-item">
           <a class="nav-link active"
-             id="plot-tab"
-             data-bs-toggle="tab"
-             href="#plot"
-             role="tab">Chart</a>
+            id="plot-tab"
+            data-bs-toggle="tab"
+            href="#plot"
+            role="tab">
+            <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+              <line x1="1.5" y1="6" x2="1.5" y2="16" stroke="currentColor"/>
+              <line x1="13.5" y1="3" x2="13.5" y2="16" stroke="currentColor"/>
+              <line x1="5.5" y1="-9.56187e-09" x2="5.5" y2="16" stroke="currentColor"/>
+              <line x1="15" y1="15.5" y2="15.5" stroke="currentColor"/>
+              <line x1="9.5" y1="10" x2="9.5" y2="16" stroke="currentColor"/>
+            </svg>
+            <span class="ms-2">
+              Chart
+            </span>
+          </a>
         </li>
         <li class="nav-item">
           <a class="nav-link"
              id="table-tab"
              data-bs-toggle="tab"
              href="#table"
-             role="tab">Table</a>
+             role="tab">
+             <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+              <line x1="16" y1="15.5" y2="15.5" stroke="currentColor"/>
+              <line x1="16" y1="0.5" y2="0.5" stroke="currentColor"/>
+              <line x1="0.5" y1="16" x2="0.5" y2="-5.96244e-09" stroke="currentColor"/>
+              <line x1="5.5" y1="16" x2="5.5" y2="-5.96244e-09" stroke="currentColor"/>
+              <line x1="15.5" y1="15" x2="15.5" y2="-1" stroke="currentColor"/>
+              <line x1="16" y1="5.5" y2="5.5" stroke="currentColor"/>
+              <line x1="16" y1="10.5" y2="10.5" stroke="currentColor"/>
+            </svg>
+             <span class="ms-2">
+              Table
+             </span>
+            </a>
         </li>
       </ul>
     </div>
