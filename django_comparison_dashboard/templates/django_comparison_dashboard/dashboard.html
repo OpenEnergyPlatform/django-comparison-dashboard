@@ -4,27 +4,43 @@
 {% load partials %}
 
 {% block content %}
-  <div class="container">
+  <div class="container diagrams">
     <!-- Scenario Selection Forms -->
     <!-- Content with Filter / Presentation Tab and Charts -->
-    <div class="row align-center">
-      <div class="col-3">
+    <h1 class="d-flex align-items-center">
+      <svg width="32" height="32" viewBox="0 0 134 134" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="67" cy="67" r="66" fill="#D7ECFA"/>
+        <line x1="39" y1="106" x2="39" y2="95" stroke="black" stroke-width="8"/>
+        <line x1="39" y1="87" x2="39" y2="69" stroke="black" stroke-width="8"/>
+        <line x1="63" y1="106" x2="63" y2="82" stroke="black" stroke-width="8"/>
+        <line x1="63" y1="73" x2="63" y2="51" stroke="black" stroke-width="8"/>
+        <line x1="87" y1="106" x2="87" y2="69" stroke="black" stroke-width="8"/>
+        <line x1="87" y1="60" x2="87" y2="26" stroke="black" stroke-width="8"/>
+      </svg>
+      <span class="ms-3">
+        Model Results
+      </span>
+    </h1>
+    <div class="diagrams__content">
+      <div class="diagrams__filters">
         <!-- Load Filter Settings -->
         {% startpartial load_settings inline=True %}
-        <form method="get"
-              action="{% url 'django_comparison_dashboard:load' %}"
-              class="d-flex">
-          <select class="form-control flex-grow-1"
-                  id="load_name"
-                  name="name"
-                  label="name">
-            {% for name in name_list %}<option value="{{ name.name }}">{{ name.name }}</option>{% endfor %}
-          </select>
-          {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
-          <input type="submit"
-                 class="btn btn-primary ml-2"
-                 value="Load Filter Settings" />
-        </form>
+        <div class="diagrams__settings">
+          <form method="get"
+            action="{% url 'django_comparison_dashboard:load' %}"
+            class="d-flex">
+            <select class="form-control flex-grow-1"
+                    id="load_name"
+                    name="name"
+                    label="name">
+              {% for name in name_list %}<option value="{{ name.name }}">{{ name.name }}</option>{% endfor %}
+            </select>
+            {% for scenario in scenarios %}<input type="hidden" name="scenario_id" value="{{ scenario }}" />{% endfor %}
+            <input type="submit"
+                  class="btn button button--secondary ms-2"
+                  value="Load Filter Settings" />
+          </form>
+        </div>
       {% endpartial %}
       <!-- contains Filters in different Tabs -->
       <div class="card">
@@ -73,13 +89,13 @@
             <hr />
             {{ unit_form.as_p }}
             <hr />
-            <div id="labels">{{ label_form.as_p }}</div>
+            <div id="labels" class="pb-3">{{ label_form.as_p }}</div>
             <button type="button"
-                    class="btn btn-primary"
+                    class="btn button button--secondary"
                     hx-post="{% url 'django_comparison_dashboard:add_label' %}"
                     hx-include="#labels"
                     hx-target="#labels">Add label</button>
-            <button class="close btn btn-primary"
+            <button class="close btn button button--link"
                     aria-label="Remove label"
                     hx-post="{% url 'django_comparison_dashboard:remove_label' %}"
                     hx-include="#labels"
@@ -96,13 +112,13 @@
             </form>
             {{ graph_options_form.as_p }}
             <hr />
-            <div id="colors">{{ color_form.as_p }}</div>
+            <div id="colors" class="pb-3">{{ color_form.as_p }}</div>
             <button type="button"
-                    class="btn btn-primary"
+                    class="btn button button--secondary"
                     hx-post="{% url 'django_comparison_dashboard:add_color' %}"
                     hx-include="#colors"
                     hx-target="#colors">Add color</button>
-            <button class="close btn btn-primary"
+            <button class="close btn button button--link"
                     aria-label="Remove color"
                     hx-post="{% url 'django_comparison_dashboard:remove_color' %}"
                     hx-include="#colors"
@@ -120,7 +136,8 @@
   </div>
 </div>
 <!-- Save Filter Settings -->
-<form method="post"
+  <div class="diagrams__save">
+    <form method="post"
       id="save_settings"
       hx-swap="innerhtml"
       hx-post="{% url 'django_comparison_dashboard:save' %}"
@@ -128,33 +145,41 @@
       hx-target="#save_error"
       novalidate
       _="on load hide .alert">
-  <div hx-ext='response-targets' class="d-flex">
-    <input type="text"
-      class="form-control flex-grow-1"
-      id="save_name"
-      name="name"
-      label="name"
-      hx-swap="innerhtml"
-      hx-trigger="keyup delay:500ms changed"
-      hx-post="{% url 'django_comparison_dashboard:save_name' %}"
-      hx-target="#save_sucess"
-      {# djlint:off #} hx-target-4*="#save_error" {# djlint:on #}
-      _="on htmx:afterRequest if event.detail.xhr.status === 200 show #save_sucess hide #save_error remove @disabled from #save_button else show #save_error hide #save_sucess add @disabled to #save_button" />
-      <button type="submit" id="save_button" class="btn btn-primary ml-2" disabled>Save Filter Settings</button>
-      <div id="save_error" class="alert alert-warning"></div>
-      <div id="save_sucess" class="alert alert-success"></div>
-    </div>
-  </form>
+    <div hx-ext='response-targets' class="d-flex">
+      <input type="text"
+        class="form-control"
+        id="save_name"
+        name="name"
+        label="name"
+        hx-swap="innerhtml"
+        hx-trigger="keyup delay:500ms changed"
+        hx-post="{% url 'django_comparison_dashboard:save_name' %}"
+        hx-target="#save_sucess"
+        {# djlint:off #} hx-target-4*="#save_error" {# djlint:on #}
+        _="on htmx:afterRequest if event.detail.xhr.status === 200 show #save_sucess hide #save_error remove @disabled from #save_button else show #save_error hide #save_sucess add @disabled to #save_button" />
+        <button type="submit" id="save_button" class="btn button button--secondary ms-2" disabled>Save Filter Settings</button>
+        <div id="save_error" class="alert alert-warning"></div>
+        <div id="save_sucess" class="alert alert-success"></div>
+      </div>
+    </form>
+  </div>
 </div>
 <!-- contains Charts and Table with Tabbed Interface -->
-<div class="col-9">
+<div class="diagrams__graph">
   <div>
     <button type="button"
-            class="btn btn-primary"
+            class="btn button button--primary"
             hx-ext="multi-swap"
             hx-get="{% url 'django_comparison_dashboard:render_data' %}"
             hx-include="#scenario_id, #filters, #o_a_label, #graph_options_tab, #display_options_tab"
-            hx-swap="multi:#table,#plot">Render chart and table</button>
+            hx-swap="multi:#table,#plot">
+            <svg width="16" height="13" viewBox="0 0 16 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 12L6 4.5L10 8.5L15 0.5" stroke="white"/>
+            </svg>
+            <span class="ms-2">
+              Render chart and table
+            </span>
+          </button>
   </div>
   <div class="card mt-3"
     {# djlint:off #}
@@ -166,17 +191,41 @@
           role="tablist">
         <li class="nav-item">
           <a class="nav-link active"
-             id="plot-tab"
-             data-bs-toggle="tab"
-             href="#plot"
-             role="tab">Chart</a>
+            id="plot-tab"
+            data-bs-toggle="tab"
+            href="#plot"
+            role="tab">
+            <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+              <line x1="1.5" y1="6" x2="1.5" y2="16" stroke="currentColor"/>
+              <line x1="13.5" y1="3" x2="13.5" y2="16" stroke="currentColor"/>
+              <line x1="5.5" y1="-9.56187e-09" x2="5.5" y2="16" stroke="currentColor"/>
+              <line x1="15" y1="15.5" y2="15.5" stroke="currentColor"/>
+              <line x1="9.5" y1="10" x2="9.5" y2="16" stroke="currentColor"/>
+            </svg>
+            <span class="ms-2">
+              Chart
+            </span>
+          </a>
         </li>
         <li class="nav-item">
           <a class="nav-link"
              id="table-tab"
              data-bs-toggle="tab"
              href="#table"
-             role="tab">Table</a>
+             role="tab">
+             <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+              <line x1="16" y1="15.5" y2="15.5" stroke="currentColor"/>
+              <line x1="16" y1="0.5" y2="0.5" stroke="currentColor"/>
+              <line x1="0.5" y1="16" x2="0.5" y2="-5.96244e-09" stroke="currentColor"/>
+              <line x1="5.5" y1="16" x2="5.5" y2="-5.96244e-09" stroke="currentColor"/>
+              <line x1="15.5" y1="15" x2="15.5" y2="-1" stroke="currentColor"/>
+              <line x1="16" y1="5.5" y2="5.5" stroke="currentColor"/>
+              <line x1="16" y1="10.5" y2="10.5" stroke="currentColor"/>
+            </svg>
+             <span class="ms-2">
+              Table
+             </span>
+            </a>
         </li>
       </ul>
     </div>
