@@ -56,7 +56,7 @@ def get_chart_and_table_from_request(request) -> tuple:
         selected_chart_type = request.GET.get("chart_type")
         graph_parameters = request.GET
 
-    filter_set = DataFilterSet(selected_scenarios, filter_parameters)
+    filter_set = DataFilterSet(selected_scenarios, selected_chart_type, filter_parameters)
     if not filter_set.is_valid():
         response = render(
             request,
@@ -99,7 +99,8 @@ class DashboardView(TemplateView):
         abbreviation_list = abbreviations["abbreviations"].unique()
         selected_scenarios = self.request.GET.getlist("scenario_id")
         filter_setting_names = list(NamedFilterSettings.objects.values("name"))
-        filter_set = DataFilterSet(selected_scenarios)
+        chart_type = self.request.GET.get("chart_type", "bar")
+        filter_set = DataFilterSet(selected_scenarios, chart_type)
         graph_filter_set = graphs.CHART_DATA["bar"]["form_class"]()
         chart_type_form = ChartTypeForm()
         return (
@@ -184,10 +185,8 @@ def load_filter_settings(request):
     try:
         # need to check the name and if it is in the database
         filter_settings = NamedFilterSettings.objects.get(name=name).filter_settings
-
-        filter_set = DataFilterSet(selected_scenarios, filter_settings.filter_set)
-
         selected_chart_type = filter_settings.graph_filter_set.pop("chart_type")
+        filter_set = DataFilterSet(selected_scenarios, selected_chart_type, filter_settings.filter_set)
         selected_chart = graphs.CHART_DATA.get(selected_chart_type)
         form_class = selected_chart["form_class"]
         graph_filter_set = form_class(filter_settings.graph_filter_set, data_filter_set=filter_set)

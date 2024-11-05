@@ -262,13 +262,13 @@ class SankeyGraphForm(forms.Form):
         label="Inflow",
         choices=get_available_filters(),
         widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
-        initial="input_commodity",
+        initial="input_groups",
     )
     outflow = forms.ChoiceField(
         label="Outflow",
         choices=get_available_filters(),
         widget=forms.Select(attrs={"class": "ui fluid dropdown"}),
-        initial="output_commodity",
+        initial="output_groups",
     )
 
     def __init__(self, *args, **kwargs):
@@ -417,12 +417,12 @@ class DataFilterSet(FilterSet):
         "unit_form": UnitForm,
     }
 
-    def __init__(self, selected_scenarios: list[int], data: dict | None = None):
+    def __init__(self, selected_scenarios: list[int], chart_type: str, data: dict | None = None):
         """Get filter set from selected scenarios."""
         super().__init__(data)
         self.selected_scenarios = selected_scenarios
         scalar_data = ScalarData.objects.filter(result__in=selected_scenarios)
-        self.bound_forms["scenario_filter"] = ScenarioFilter(data, queryset=scalar_data)
+        self.bound_forms["scenario_filter"] = ScenarioFilter(chart_type, data, queryset=scalar_data)
         self.bound_forms["label_form"] = formset_factory(LabelForm, KeyValueFormset)(data, prefix="labels")
 
     @property
