@@ -134,6 +134,13 @@ def adapt_plot_figure(figure: go.Figure, filter_set: PlotFilterSet, data: pd.Dat
     figure.update_xaxes(GRAPHS_DEFAULT_XAXES_LAYOUT)
     figure.update_yaxes(GRAPHS_DEFAULT_YAXES_LAYOUT)
 
+    # Update x-ticks to available years if years are selected
+    selected_years = sorted(list(data.year.unique()))
+    if filter_set.plot_options["x"] == "year":
+        figure.update_xaxes(tickvals=selected_years)
+    elif filter_set.plot_options["y"] == "year":
+        figure.update_yaxes(tickvals=selected_years)
+
     return figure
 
 
