@@ -7,8 +7,10 @@ from .models import ScalarData
 
 
 class ScenarioFilter(django_filters.FilterSet):
-    def __init__(self, data=None, *args, **kwargs):
+    def __init__(self, chart_type: str, data=None, *args, **kwargs):
         super().__init__(data, *args, **kwargs)
+
+        self.chart_type = chart_type
 
         for field in ScalarData.filters:
             qs = self.queryset.order_by().values_list(field, flat=True).distinct()
@@ -26,10 +28,9 @@ class ScenarioFilter(django_filters.FilterSet):
             )
             self.filters[field] = field_instance
 
-    @staticmethod
-    def filter_array_fields(queryset, name, value):
+    def filter_array_fields(self, queryset, name, value):
         # This allows input or output group values to be None
-        if name in ("input_groups", "output_groups"):
+        if name in ("input_groups", "output_groups") and self.chart_type == "sankey":
             return queryset.filter(Q(**{f"{name}__overlap": value}) | Q(**{f"{name}__exact": []}))
         # This checks if value is present in list
         return queryset.filter(Q(**{f"{name}__overlap": value}))
