@@ -1,3 +1,4 @@
+from io import StringIO
 from django.forms.formsets import formset_factory
 from django.http.response import HttpResponse
 from django.shortcuts import render
@@ -40,7 +41,7 @@ class KeyValueFormPartialView(View):
         return HttpResponse(form.as_p())
 
 
-def get_chart_and_table_from_request(request) -> tuple:
+def get_chart_and_table_from_request(request, as_html=True) -> tuple:
     """Render chart and data table from request."""
     selected_scenarios = request.GET.getlist("scenario_id")
 
@@ -79,8 +80,12 @@ def get_chart_and_table_from_request(request) -> tuple:
         response = retarget(response, "#graph_options")
         raise FormProcessingError(response, message="Graph filter set not valid.")
     chart_function = selected_chart["chart_function"]
-    chart = chart_function(df, graph_filter_set).to_html(config = {'toImageButtonOptions': {'format': 'svg'}})
-    table = df.to_html()
+    chart = chart_function(df, graph_filter_set)
+    if as_html:
+        table = df.to_html()
+        chart = chart.to_html(config = {'toImageButtonOptions': {'format': 'svg'}})
+    else:
+        table = df
     return chart, table
 
 
@@ -129,9 +134,17 @@ class ScalarView(TemplateView):
                 context={"requested_url": request.get_full_path()},
             )
 
-        # Check if chart shall be returned in embedded mode
+        if request.GET.get("download") == "true":
+            chart, table = get_chart_and_table_from_request(request, as_html=False)
+            csv_buffer = StringIO()
+            table.to_csv(csv_buffer, index=False)
+            response = HttpResponse(content_type="text/csv")
+            response["Content-Disposition"] = 'attachment; filename="data.csv"'
+            response.write(csv_buffer.getvalue())
+            csv_buffer.close()
+            return response
+
         if "parameters_id" not in request.GET:
-            # Store parameters in DB and change query to include "parameters_id" instead of parameter query
             parameter_id = save_filters(request.GET)
         else:
             parameter_id = request.GET["parameters_id"]
