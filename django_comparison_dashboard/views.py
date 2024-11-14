@@ -79,7 +79,7 @@ def get_chart_and_table_from_request(request) -> tuple:
         response = retarget(response, "#graph_options")
         raise FormProcessingError(response, message="Graph filter set not valid.")
     chart_function = selected_chart["chart_function"]
-    chart = chart_function(df, graph_filter_set).to_html()
+    chart = chart_function(df, graph_filter_set).to_html(config = {'toImageButtonOptions': {'format': 'svg'}})
     table = df.to_html()
     return chart, table
 
