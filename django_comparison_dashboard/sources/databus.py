@@ -9,7 +9,7 @@ from django_comparison_dashboard import forms, settings
 from django_comparison_dashboard.sources import core
 
 DATABUS_ENDPOINT = "https://databus.openenergyplatform.org/sparql"
-DATABUS_COLLECTION_URL = "https://databus.openenergyplatform.org/henhuy/collections/sedos_results"
+DATABUS_COLLECTION_URL = "https://databus.openenergyplatform.org/sedos-project/collections/sedos_results"
 
 
 class DatabusScenario(core.Scenario):
