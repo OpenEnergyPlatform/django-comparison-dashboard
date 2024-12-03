@@ -19,6 +19,9 @@ class ScenarioFilter(django_filters.FilterSet):
             else:
                 choices = [(choice, choice) for choice in qs.all()]
 
+            if "group" in field:
+                choices = list(choices) + [("Filter all", "Filter all")]
+
             field_instance = django_filters.MultipleChoiceFilter(
                 field_name=field,
                 choices=choices,

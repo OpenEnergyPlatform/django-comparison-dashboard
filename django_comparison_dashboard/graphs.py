@@ -96,7 +96,8 @@ def adapt_plot_figure(figure: go.Figure, filter_set: PlotFilterSet, data: pd.Dat
         )
     if value_axis == "x":
         xaxis_title_value = xaxis_title or (
-            f"{filter_set.plot_options['x']} [{unit}]" if unit else filter_set.plot_options["x"])
+            f"{filter_set.plot_options['x']} [{unit}]" if unit else filter_set.plot_options["x"]
+        )
         if filter_set.plot_options["facet_col"] and n_cols > 1:
             for c in range(1, n_cols + 1):
                 figure.update_xaxes(row=1, col=c, title=xaxis_title_value)
@@ -104,7 +105,8 @@ def adapt_plot_figure(figure: go.Figure, filter_set: PlotFilterSet, data: pd.Dat
             figure.update_xaxes(row=1, col=1, title=xaxis_title_value)
     if value_axis == "y":
         yaxis_title_value = yaxis_title or (
-            f"{filter_set.plot_options['y']} [{unit}]" if unit else filter_set.plot_options["y"])
+            f"{filter_set.plot_options['y']} [{unit}]" if unit else filter_set.plot_options["y"]
+        )
         if filter_set.plot_options["facet_col"] and n_rows > 1:
             for r in range(1, n_rows + 1):
                 figure.update_yaxes(row=r, col=1, title=yaxis_title_value)
@@ -191,9 +193,6 @@ def sankey(data, filter_set: SankeyGraphFilterSet):
             return f"rgba{(*hex_to_rgb(COLOR_DICT[lookup_key]), opacity)}"
         return f"rgba({random.randint(0, 255)}, {random.randint(0, 255)}, {random.randint(0, 255)}, {opacity})"
 
-    dummy_rows = create_dummy_rows(data)
-    data = pd.concat([data, dummy_rows], ignore_index=True)
-
     process_column = filter_set.cleaned_data["nodes"]
     inflow_column = filter_set.cleaned_data["inflow"]
     outflow_column = filter_set.cleaned_data["outflow"]
@@ -271,40 +270,3 @@ def hex_to_rgb(hex_color: str) -> tuple:
     if len(hex_color) == 3:
         hex_color = hex_color * 2
     return int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
-
-def create_dummy_rows(data):
-    """
-    Create dummy rows for compact vizualization of the sankey diagram if required.
-
-    Parameters
-    ----------
-    data : pd.DataFrame
-        The input data frame.
-    Returns
-    -------
-    pd.DataFrame
-        A data frame containing additional dummy rows.
-    """
-    dummy_row = data.iloc[-1, :].copy()
-    id = dummy_row['id']
-    dummy_row_in = dummy_row.copy()
-    dummy_row_in['id'] = id + 1
-    dummy_row_in['input_groups'] = 'no_input'
-    dummy_row_in['output_groups'] = ''
-    dummy_row_in['parameter'] = 'flow_volume'
-    dummy_row_in['process'] = ''
-    dummy_row_in['year'] = '2021'
-    dummy_row_in['unit'] = 'MWh'
-    dummy_row_in['value'] = 0
-
-    dummy_row_out = dummy_row.copy()
-    dummy_row_out['id'] = id + 2
-    dummy_row_out['input_groups'] = 'no_output'
-    dummy_row_out['output_groups'] = 'no_output'
-    dummy_row_in['parameter'] = 'flow_volume'
-    dummy_row_in['process'] = ''
-    dummy_row_in['year'] = '2021'
-    dummy_row_in['unit'] = 'MWh'
-    dummy_row_in['value'] = 0
-
-    return pd.DataFrame([dummy_row_in, dummy_row_out])
