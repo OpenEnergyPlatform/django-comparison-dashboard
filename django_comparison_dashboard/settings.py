@@ -3,7 +3,7 @@ import os
 import pathlib
 from enum import IntEnum
 
-VERSION = "2.5.0"
+VERSION = "2.5.1"
 
 USE_DUMMY_DATA = os.environ.get("USE_DUMMY_DATA", "False") == "True"
 SKIP_TS = os.environ.get("SKIP_TS", "False") == "True"
