@@ -186,4 +186,4 @@ def apply_labels_in_df(df: pd.DataFrame, labels: dict[str, str]) -> pd.DataFrame
         except TypeError:
             return value
 
-    return df.applymap(apply_label, labels=labels)
+    return df.map(apply_label, labels=labels)
