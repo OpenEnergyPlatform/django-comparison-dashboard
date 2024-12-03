@@ -1,4 +1,5 @@
 from io import StringIO
+
 from django.forms.formsets import formset_factory
 from django.http.response import HttpResponse
 from django.shortcuts import render
@@ -83,7 +84,7 @@ def get_chart_and_table_from_request(request, as_html=True) -> tuple:
     chart = chart_function(df, graph_filter_set)
     if as_html:
         table = df.to_html()
-        chart = chart.to_html(config = {'toImageButtonOptions': {'format': 'svg'}})
+        chart = chart.to_html(config={"toImageButtonOptions": {"format": "svg"}})
     else:
         table = df
     return chart, table
@@ -283,7 +284,11 @@ class ScenarioFormView(FormView):
 
     def get_form_class(self):
         form = self.get_source().form
-        if scenario_list := self.get_source().list_scenarios():
+        try:
+            scenario_list = self.get_source().list_scenarios()
+        except NotImplementedError:
+            scenario_list = []
+        if scenario_list:
             form.base_fields["scenario_id"].choices = [(scenario.id, scenario.id) for scenario in scenario_list]
         return form
 
