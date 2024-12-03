@@ -7,6 +7,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 ## [Unreleased]
 ### Added
 - databus source to import SEDOS results from databus
+- option to filter all groups in groups, input_groups or output_groups
 
 ### Fixed
 - filter None values in input/output groups in case of none-sankey graphs
