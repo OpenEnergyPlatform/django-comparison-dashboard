@@ -166,20 +166,28 @@
 </div>
 <!-- contains Charts and Table with Tabbed Interface -->
 <div class="diagrams__graph">
-  <div>
+  <div class="d-flex">
     <button type="button"
             class="btn button button--primary"
             hx-ext="multi-swap"
             hx-get="{% url 'django_comparison_dashboard:render_data' %}"
             hx-include="#scenario_id, #filters, #o_a_label, #graph_options_tab, #display_options_tab"
             hx-swap="multi:#table,#plot">
-            <svg width="16" height="13" viewBox="0 0 16 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 12L6 4.5L10 8.5L15 0.5" stroke="white"/>
-            </svg>
-            <span class="ms-2">
-              Render chart and table
-            </span>
-          </button>
+      <svg width="16" height="13" viewBox="0 0 16 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1 12L6 4.5L10 8.5L15 0.5" stroke="white"/>
+      </svg>
+      <span class="ms-2">
+        Render chart and table
+      </span>
+    </button>
+    <button id="download-button" class="btn button button--secondary ms-2"
+            hx-get="{% url 'django_comparison_dashboard:render_data' %}?download=true"
+            hx-trigger="click"
+            hx-include="#scenario_id, #filters, #o_a_label, #graph_options_tab, #display_options_tab"
+            hx-swap="none"
+            hx-boost="true">
+      <span class="ms-2">Download Data</span>
+    </button>
   </div>
   <div class="card mt-3"
     {# djlint:off #}
@@ -294,6 +302,24 @@
       $('.ui.dropdown.clearable').dropdown({
         "clearable": true
       });
+    });
+  </script>
+  <script>
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+      if (evt.detail.target.id === 'download-button' && evt.detail.xhr.status === 200) {
+        const contentDisposition = evt.detail.xhr.getResponseHeader('Content-Disposition');
+        if (contentDisposition && contentDisposition.indexOf('attachment') !== -1) {
+          // Create a temporary link to trigger the download
+          const url = URL.createObjectURL(new Blob([evt.detail.xhr.response], { type: 'text/csv' }));
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'table_result_data.csv';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+      }
     });
   </script>
 {% endblock inline_javascript %}

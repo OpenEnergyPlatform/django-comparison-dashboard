@@ -96,7 +96,8 @@ def adapt_plot_figure(figure: go.Figure, filter_set: PlotFilterSet, data: pd.Dat
         )
     if value_axis == "x":
         xaxis_title_value = xaxis_title or (
-            f"{filter_set.plot_options['x']} [{unit}]" if unit else filter_set.plot_options["x"])
+            f"{filter_set.plot_options['x']} [{unit}]" if unit else filter_set.plot_options["x"]
+        )
         if filter_set.plot_options["facet_col"] and n_cols > 1:
             for c in range(1, n_cols + 1):
                 figure.update_xaxes(row=1, col=c, title=xaxis_title_value)
@@ -104,7 +105,8 @@ def adapt_plot_figure(figure: go.Figure, filter_set: PlotFilterSet, data: pd.Dat
             figure.update_xaxes(row=1, col=1, title=xaxis_title_value)
     if value_axis == "y":
         yaxis_title_value = yaxis_title or (
-            f"{filter_set.plot_options['y']} [{unit}]" if unit else filter_set.plot_options["y"])
+            f"{filter_set.plot_options['y']} [{unit}]" if unit else filter_set.plot_options["y"]
+        )
         if filter_set.plot_options["facet_col"] and n_rows > 1:
             for r in range(1, n_rows + 1):
                 figure.update_yaxes(row=r, col=1, title=yaxis_title_value)
@@ -133,6 +135,13 @@ def adapt_plot_figure(figure: go.Figure, filter_set: PlotFilterSet, data: pd.Dat
     figure.update_layout(template=GRAPHS_DEFAULT_TEMPLATE, **layout, **GRAPHS_DEFAULT_LAYOUT)
     figure.update_xaxes(GRAPHS_DEFAULT_XAXES_LAYOUT)
     figure.update_yaxes(GRAPHS_DEFAULT_YAXES_LAYOUT)
+
+    # Update x-ticks to available years if years are selected
+    selected_years = sorted(list(data.year.unique()))
+    if filter_set.plot_options["x"] == "year":
+        figure.update_xaxes(tickvals=selected_years)
+    elif filter_set.plot_options["y"] == "year":
+        figure.update_yaxes(tickvals=selected_years)
 
     return figure
 

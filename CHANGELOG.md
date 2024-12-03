@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project tries to adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2024-12-03
+### Added
+- databus source to import SEDOS results from databus
+- option to filter all groups in groups, input_groups or output_groups
+
+### Fixed
+- filter None values in input/output groups in case of none-sankey graphs
+
 ## [2.4.0] - 2024-10-18
 ### Changed
 - UI design by bmlancien

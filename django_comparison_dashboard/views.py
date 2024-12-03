@@ -1,3 +1,4 @@
+from io import StringIO
 from django.forms.formsets import formset_factory
 from django.http.response import HttpResponse
 from django.shortcuts import render
@@ -40,7 +41,7 @@ class KeyValueFormPartialView(View):
         return HttpResponse(form.as_p())
 
 
-def get_chart_and_table_from_request(request) -> tuple:
+def get_chart_and_table_from_request(request, as_html=True) -> tuple:
     """Render chart and data table from request."""
     selected_scenarios = request.GET.getlist("scenario_id")
 
@@ -56,7 +57,7 @@ def get_chart_and_table_from_request(request) -> tuple:
         selected_chart_type = request.GET.get("chart_type")
         graph_parameters = request.GET
 
-    filter_set = DataFilterSet(selected_scenarios, filter_parameters)
+    filter_set = DataFilterSet(selected_scenarios, selected_chart_type, filter_parameters)
     if not filter_set.is_valid():
         response = render(
             request,
@@ -79,8 +80,12 @@ def get_chart_and_table_from_request(request) -> tuple:
         response = retarget(response, "#graph_options")
         raise FormProcessingError(response, message="Graph filter set not valid.")
     chart_function = selected_chart["chart_function"]
-    chart = chart_function(df, graph_filter_set).to_html()
-    table = df.to_html()
+    chart = chart_function(df, graph_filter_set)
+    if as_html:
+        table = df.to_html()
+        chart = chart.to_html(config = {'toImageButtonOptions': {'format': 'svg'}})
+    else:
+        table = df
     return chart, table
 
 
@@ -99,7 +104,8 @@ class DashboardView(TemplateView):
         abbreviation_list = abbreviations["abbreviations"].unique()
         selected_scenarios = self.request.GET.getlist("scenario_id")
         filter_setting_names = list(NamedFilterSettings.objects.values("name"))
-        filter_set = DataFilterSet(selected_scenarios)
+        chart_type = self.request.GET.get("chart_type", "bar")
+        filter_set = DataFilterSet(selected_scenarios, chart_type)
         graph_filter_set = graphs.CHART_DATA["bar"]["form_class"]()
         chart_type_form = ChartTypeForm()
         return (
@@ -128,9 +134,17 @@ class ScalarView(TemplateView):
                 context={"requested_url": request.get_full_path()},
             )
 
-        # Check if chart shall be returned in embedded mode
+        if request.GET.get("download") == "true":
+            chart, table = get_chart_and_table_from_request(request, as_html=False)
+            csv_buffer = StringIO()
+            table.to_csv(csv_buffer, index=False)
+            response = HttpResponse(content_type="text/csv")
+            response["Content-Disposition"] = 'attachment; filename="data.csv"'
+            response.write(csv_buffer.getvalue())
+            csv_buffer.close()
+            return response
+
         if "parameters_id" not in request.GET:
-            # Store parameters in DB and change query to include "parameters_id" instead of parameter query
             parameter_id = save_filters(request.GET)
         else:
             parameter_id = request.GET["parameters_id"]
@@ -184,10 +198,8 @@ def load_filter_settings(request):
     try:
         # need to check the name and if it is in the database
         filter_settings = NamedFilterSettings.objects.get(name=name).filter_settings
-
-        filter_set = DataFilterSet(selected_scenarios, filter_settings.filter_set)
-
         selected_chart_type = filter_settings.graph_filter_set.pop("chart_type")
+        filter_set = DataFilterSet(selected_scenarios, selected_chart_type, filter_settings.filter_set)
         selected_chart = graphs.CHART_DATA.get(selected_chart_type)
         form_class = selected_chart["form_class"]
         graph_filter_set = form_class(filter_settings.graph_filter_set, data_filter_set=filter_set)
@@ -270,7 +282,10 @@ class ScenarioFormView(FormView):
         return source
 
     def get_form_class(self):
-        return self.get_source().form
+        form = self.get_source().form
+        if scenario_list := self.get_source().list_scenarios():
+            form.base_fields["scenario_id"].choices = [(scenario.id, scenario.id) for scenario in scenario_list]
+        return form
 
     def form_valid(self, form):
         source = self.get_source()
