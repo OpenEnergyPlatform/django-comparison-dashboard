@@ -39,25 +39,26 @@ class ScenarioValidationError(Exception):
 class Scenario(abc.ABC):
     source_name: str = None
 
-    def __init__(self, scenario_id, data_type: settings.DataType | str):
+    def __init__(self, scenario_id, data_type: settings.DataType | str, label: str | None = None):
         if self.source_name is None:
             raise RuntimeError("Source name not defined.")
         self.id = scenario_id
+        self.label = label
         self.data_type = data_type if isinstance(data_type, settings.DataType) else settings.DataType[data_type]
 
     def __str__(self):
         """Return string representation of scenario"""
-        return self.id
+        return self.id if self.label is None else self.label
 
     @property
     def source(self):
         return SourceRegistry()[self.source_name]
 
     def is_present(self) -> bool:
-        return models.Result.objects.filter(name=self.id, source__name=self.source.name).exists()
+        return models.Result.objects.filter(name=str(self), source__name=self.source.name).exists()
 
     def get(self) -> models.Result:
-        return get_object_or_404(models.Result.objects.filter(name=self.id, source__name=self.source.name))
+        return get_object_or_404(models.Result.objects.filter(name=str(self), source__name=self.source.name))
 
     def download(self):
         """Download scenario data, validate data and store in DB if data is valid"""
@@ -86,7 +87,7 @@ class Scenario(abc.ABC):
                 return []
 
         source = models.Source.objects.get_or_create(name=self.source.name)[0]
-        result = models.Result.objects.get_or_create(name=self.id, source=source)[0]
+        result = models.Result.objects.get_or_create(name=str(self), source=source)[0]
         if self.data_type == settings.DataType.Scalar:
             data_model = models.ScalarData
         elif self.data_type == models.TimeseriesData:

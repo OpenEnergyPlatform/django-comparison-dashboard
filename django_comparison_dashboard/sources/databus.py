@@ -15,8 +15,8 @@ DATABUS_COLLECTION_URL = "https://databus.openenergyplatform.org/sedos-project/c
 class DatabusScenario(core.Scenario):
     source_name = "Databus"
 
-    def __init__(self, scenario_id: str):
-        super().__init__(scenario_id, settings.DataType.Scalar)
+    def __init__(self, scenario_id: str, label: str | None = None):
+        super().__init__(scenario_id, settings.DataType.Scalar, label)
 
 
 class DatabusDataSource(core.DataSource):
