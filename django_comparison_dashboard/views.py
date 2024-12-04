@@ -7,6 +7,7 @@ from django.template.loader import render_to_string
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from django_energysystem_viewer.views import get_excel_data
 from django_htmx.http import retarget
+from pandera.errors import SchemaErrors
 
 from . import graphs, models, preprocessing, sources
 from .forms import ChartTypeForm, DataFilterSet  # noqa: F401
@@ -297,5 +298,13 @@ class ScenarioFormView(FormView):
         scenario = source.scenario(**form.cleaned_data)
         if models.Result.objects.filter(source__name=source.name, name=scenario.id).exists():
             return HttpResponse("Scenario already present in database.")
-        scenario.download()
+        try:
+            scenario.download()
+        except SchemaErrors as err:
+            error_msg = (
+                f"Error during import of scenario data.\n"
+                f"Reason:\n{err}\n"
+                f"Failures at:\n{err.failure_cases.to_html()}"
+            )
+            return HttpResponse(error_msg)
         return HttpResponse(f"Uploaded scenario '{scenario}'.")
