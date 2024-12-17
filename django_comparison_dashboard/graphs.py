@@ -72,6 +72,7 @@ def adapt_plot_figure(figure: go.Figure, filter_set: PlotFilterSet, data: pd.Dat
 
     # Add simple layout fields
     layout = {
+        "height": options.pop("chart_height"),
         "showlegend": options.pop("show_legend"),
         "legend_title": options.pop("legend_title"),
         "bargap": options.pop("bar_gap"),
