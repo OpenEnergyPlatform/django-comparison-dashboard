@@ -62,6 +62,7 @@ GRAPHS_DEFAULT_YAXES_LAYOUT = {
     "tickcolor": GRID_COLOR,
     "tickfont": {"size": 14},
 }
+GRAPHS_DEFAULT_ANNOTATIONS_LAYOUT = {"font_size": 14}
 
 # Load the color dictionary from the JSON file
 if os.path.exists(COLOR_DICT_PATH):

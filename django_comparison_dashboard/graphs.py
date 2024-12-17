@@ -9,6 +9,7 @@ from plotly import graph_objects as go
 from .forms import BarGraphFilterSet, LineGraphFilterSet, PlotFilterSet, SankeyGraphFilterSet
 from .settings import (
     COLOR_DICT,
+    GRAPHS_DEFAULT_ANNOTATIONS_LAYOUT,
     GRAPHS_DEFAULT_LAYOUT,
     GRAPHS_DEFAULT_TEMPLATE,
     GRAPHS_DEFAULT_XAXES_LAYOUT,
@@ -135,6 +136,7 @@ def adapt_plot_figure(figure: go.Figure, filter_set: PlotFilterSet, data: pd.Dat
     figure.update_layout(template=GRAPHS_DEFAULT_TEMPLATE, **layout, **GRAPHS_DEFAULT_LAYOUT)
     figure.update_xaxes(GRAPHS_DEFAULT_XAXES_LAYOUT)
     figure.update_yaxes(GRAPHS_DEFAULT_YAXES_LAYOUT)
+    figure.update_annotations(GRAPHS_DEFAULT_ANNOTATIONS_LAYOUT)
 
     # Update x-ticks to available years if years are selected
     selected_years = sorted(list(data.year.unique()))
