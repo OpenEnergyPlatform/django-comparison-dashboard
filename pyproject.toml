@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-comparison-dashboard"
-version = "2.7.0"
+version = "2.7.1"
 description = "Django app to compare scenarios in a dashboard"
 authors = ["Hendrik Huyskens <hendrik.huyskens@rl-institut.de>"]
 license = "MIT"
